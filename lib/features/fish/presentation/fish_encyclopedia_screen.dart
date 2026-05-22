@@ -5,9 +5,9 @@ class FishEncyclopediaScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
+    return Scaffold(
       appBar: AppBar(title: Text('香港魚類圖鑑')),
-      body: Center(
+      body: const Center(
         child: Text('Phase 3: 離線優先圖鑑將在此顯示'),
       ),
     );

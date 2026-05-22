@@ -1,5 +1,6 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../../core/config/supabase_config.dart';
 import '../domain/fish_species.dart';
 
 class RemoteFishSpeciesDataSource {
@@ -8,7 +9,12 @@ class RemoteFishSpeciesDataSource {
   final SupabaseClient _client;
 
   Future<List<FishSpecies>> fetchSpecies() async {
-    final rows = await _client.from('fish_species').select().order('common_name_zh');
+    if (!SupabaseConfig.isConfigured) {
+      throw StateError('Supabase is not configured for this environment.');
+    }
+
+    final rows =
+        await _client.from('fish_species').select().order('common_name_zh');
     return rows.map((row) => FishSpecies.fromMap(row)).toList();
   }
 }

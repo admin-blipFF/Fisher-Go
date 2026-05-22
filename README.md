@@ -4,8 +4,15 @@ Hong Kong fishing companion MVP: offline-first AFCD fish encyclopedia, catch log
 
 ## Current status
 
-This repository is a Phase 1/2 scaffold because Flutter CLI is not installed on this machine yet.
-Codex CLI was attempted, but its ChatGPT auth token is expired and must be re-login before autonomous Codex runs can continue.
+FisherGO is now web-first. Chrome is the primary development and preview target. Android/iOS builds are later phases after the web MVP is stable and Android SDK is installed.
+
+Implemented so far:
+
+- Flutter project templates for web, Windows, Android, and iOS.
+- Supabase schema migration and RLS policy draft.
+- Web-first fish encyclopedia screen.
+- Offline-first repository path with local cache and bundled Hong Kong sample fish fallback.
+- Placeholder screens for catch log, leaderboard, and profile.
 
 ## Non-negotiable product constraints
 
@@ -15,23 +22,38 @@ Codex CLI was attempted, but its ChatGPT auth token is expired and must be re-lo
 - Do not hardcode Supabase secrets in source code.
 - Do not add paid APIs such as Google Cloud Vision or Stormglass until explicitly approved.
 
-## Next commands after installing Flutter
+## Web-first development commands
 
 ```bash
 cd /c/Users/s0829/fishergo
-flutter create --platforms=ios,android .
-flutter pub add supabase_flutter flutter_dotenv hive hive_flutter path_provider connectivity_plus image_picker geolocator uuid
 flutter pub get
 flutter analyze
 flutter test
+flutter run -d chrome
 ```
 
-Then copy values:
+Build the web release:
+
+```bash
+flutter build web
+```
+
+## Environment
+
+A local `.env` is needed because Flutter declares it as an asset. Use placeholder values for local web MVP work:
 
 ```bash
 cp .env.example .env
-# fill SUPABASE_URL and SUPABASE_ANON_KEY
 ```
+
+When Supabase is ready, replace the placeholders:
+
+```env
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_ANON_KEY=your-anon-key
+```
+
+If these remain placeholders, the encyclopedia automatically uses the bundled fish samples and local cache.
 
 ## Supabase setup
 
@@ -49,10 +71,16 @@ If using the Supabase dashboard, run:
 
 ## MVP phases
 
-1. Project setup and app shell
-2. Supabase schema + RLS
-3. Offline-first fish encyclopedia
+1. Project setup and app shell — done
+2. Supabase schema + RLS — drafted
+3. Web-first offline fish encyclopedia — in progress
 4. Manual catch logging with offline queue
 5. Daily leaderboard
 6. AI recognition after MVP stability
 7. HK Spot Analyst placeholder only
+
+## Remaining environment notes
+
+- Chrome web development works on this machine.
+- Android SDK is not installed yet, so Android APK builds are deferred.
+- Codex CLI may need `codex login --device-auth` if it reports `refresh_token_reused` or `token_expired`.

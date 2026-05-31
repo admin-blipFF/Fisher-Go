@@ -1,0 +1,5 @@
+﻿id,name,scientificName,old_source,old_url,alt_query,alt_photo_url,alt_taxon,status
+fish-027,白點竹鯊,,wikimedia_commons_search,https://upload.wikimedia.org/wikipedia/commons/b/b0/Chrysochir_aureus_%28Richardson%2C_1846%29.jpg,,,,NOT_FOUND
+fish-087,鸚哥魚,,inat_zh_taxon,https://inaturalist-open-data.s3.amazonaws.com/photos/670241162/large.jpg,鸚哥魚,https://inaturalist-open-data.s3.amazonaws.com/photos/11940430/large.jpg,Scarus ghobban,FOUND
+fish-092,橫帶小鯛,,inat_obs_fill,https://inaturalist-open-data.s3.amazonaws.com/photos/429002392/large.jpeg,,,,NOT_FOUND
+fish-114,大眼竹筴魚,,inat_obs_fill,https://inaturalist-open-data.s3.amazonaws.com/photos/618095302/large.jpg,white head wrasse,https://inaturalist-open-data.s3.amazonaws.com/photos/618095302/large.jpg,Stigmatopora argus,FOUND

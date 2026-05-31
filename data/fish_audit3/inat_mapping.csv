@@ -1,0 +1,126 @@
+﻿id,zh,slug,query,scientificName,matchedCommon,iconic,score,status
+fish-001,河豚,yellowfin-seabream,yellowfin seabream,Acanthopagrus latus,Yellowfin Seabream,Actinopterygii,25,ok
+fish-002,魟魚,black-seabream,black seabream,Spondyliosoma cantharus,Black Seabream,Actinopterygii,25,ok
+fish-003,三角魚,goldlined-seabream,goldlined seabream,Rhabdosargus sarba,Tarwhine,Actinopterygii,5,ok
+fish-004,三鬚魚,russell-snapper,russell snapper,Lutjanus russellii,Moses' Snapper,Actinopterygii,15,ok
+fish-005,九肚魚,mangrove-red-snapper,mangrove red snapper,Lutjanus argentimaculatus,Mangrove Red Snapper,Actinopterygii,35,ok
+fish-006,咬仔鳚,johns-snapper,johns snapper,,,,0,missing
+fish-007,四指馬友,orange-spotted-grouper,orange spotted grouper,Epinephelus coioides,Goldspotted Rockcod,Actinopterygii,15,ok
+fish-008,大眼扁頭魚,malabar-grouper,malabar grouper,Epinephelus malabaricus,Malabar Grouper,Actinopterygii,25,ok
+fish-009,大頭帶魚,hong-kong-grouper,hong kong grouper,Epinephelus akaara,Hong Kong Grouper,Actinopterygii,35,ok
+fish-010,大頭黃姑魚,leopard-coral-grouper,leopard coral grouper,Plectropomus leopardus,Leopard Coralgrouper,Actinopterygii,35,ok
+fish-011,寶石隆頭魚,rabbitfish,rabbitfish,Siganus fuscescens,Dusky Rabbitfish,Actinopterygii,15,ok
+fish-012,小帶紋石首魚,spotted-scat,spotted scat,Scatophagus argus,Spotted Scat,Actinopterygii,25,ok
+fish-013,岩魚,grey-mullet,grey mullet,Chelon labrosus,Thicklip Grey Mullet,Actinopterygii,25,ok
+fish-014,斑點石鱸,large-scale-mullet,large scale mullet,Ellochelon vaigiensis,Squaretail Mullet,Actinopterygii,15,ok
+fish-015,斑點金鼓,japanese-seabass,japanese seabass,Lateolabrax japonicus,Japanese Seabass,Actinopterygii,25,ok
+fish-016,斑點鱚,barramundi,barramundi,Lates calcarifer,Barramundi,Actinopterygii,15,ok
+fish-017,旗魚,fourfinger-threadfin,fourfinger threadfin,Eleutheronema tetradactylum,Fourfinger Threadfin,Actinopterygii,25,ok
+fish-018,日本真鱸,largehead-hairtail,largehead hairtail,Trichiurus lepturus,Largehead Hairtail,Actinopterygii,25,ok
+fish-019,日本馬頭魚,bartail-flathead,bartail flathead,Platycephalus indicus,Bartail Flathead,Actinopterygii,25,ok
+fish-020,條紋伏波魚,bigeye-flathead,bigeye flathead,,,,0,missing
+fish-021,梭子魚,lizardfish,lizardfish,Synodus variegatus,Variegated Lizardfish,Actinopterygii,15,ok
+fish-022,沙甸魚,bombay-duck,bombay duck,Harpadon nehereus,Bombay Duck,Actinopterygii,25,ok
+fish-023,油魚,,,,,,0,missing
+fish-024,海鯽,golden-threadfin-bream,golden threadfin bream,Nemipterus virgatus,Golden Threadfin Bream,Actinopterygii,35,ok
+fish-025,海鱔,yellow-croaker,yellow croaker,Umbrina roncador,Yellowfin Croaker,Actinopterygii,25,ok
+fish-026,獨角革魨,big-head-croaker,big head croaker,Pennahia macrocephala,Big-head Pennah Croaker,Actinopterygii,35,ok
+fish-027,白點竹鯊,reeves-croaker,reeves croaker,,,,0,missing
+fish-028,皇帝魚,ponyfish,ponyfish,Leiognathus equula,Common Ponyfish,Actinopterygii,15,ok
+fish-029,短吻飛魚,orangefin-ponyfish,orangefin ponyfish,Photopectoralis bindus,Orangefin ponyfish,Actinopterygii,25,ok
+fish-030,石首魚,golden-trevally,golden trevally,Gnathanodon speciosus,Golden Trevally,Actinopterygii,25,ok
+fish-031,窄帶馬鮫,malabar-trevally,malabar trevally,Platycaranx malabaricus,White-spot Trevally,Actinopterygii,15,ok
+fish-032,紅魔鬼岩魚,yellowtail-scad,yellowtail scad,Trachurus novaezelandiae,Yellowtail Scad,Actinopterygii,25,ok
+fish-033,羊魚,queenfish,queenfish,Scomberoides lysan,Lesser Queenfish,Actinopterygii,15,ok
+fish-034,羊魚（鬚）,indian-mackerel,indian mackerel,Rastrelliger kanagurta,Longjaw Mackerel,Actinopterygii,15,ok
+fish-035,花生魚,narrow-barred-spanish-mackerel,narrow barred spanish mackerel,Scomberomorus commerson,Narrow-banded Spanish Mackerel,Actinopterygii,35,ok
+fish-036,花鰹,kawakawa,kawakawa,Euthynnus affinis,Mackerel Tuna,Actinopterygii,5,ok
+fish-037,蛋斑隆頭魚,longtail-tuna,longtail tuna,Thunnus tonggol,Longtail Tuna,Actinopterygii,25,ok
+fish-038,角聲魚,black-pomfret,black pomfret,Parastromateus niger,Black Pomfret,Actinopterygii,25,ok
+fish-039,豹紋珊瑚鱸,silver-pomfret,silver pomfret,Pampus argenteus,Silver Pomfret,Actinopterygii,25,ok
+fish-040,連米銀腹魚,pufferfish,pufferfish,Diodon holocanthus,Longspined Porcupinefish,Actinopterygii,5,ok
+fish-041,里夫黃姑魚,lionfish,lionfish,Pterois volitans,Common Lionfish,Actinopterygii,15,ok
+fish-042,金目鱸,stonefish,stonefish,Synanceia verrucosa,Reef Stonefish,Actinopterygii,15,ok
+fish-043,金線馬頭魚,scorpionfish,scorpionfish,Scorpaena porcus,Black Scorpionfish,Actinopterygii,15,ok
+fish-044,銀鯡,stingray,stingray,Hypanus americanus,Southern Stingray,Animalia,10,ok
+fish-045,銀鯧,white-spotted-bamboo-shark,white spotted bamboo shark,Chiloscyllium plagiosum,White-spotted Bamboo Shark,Animalia,40,ok
+fish-046,銀鱚,orangespotted-filefish,orangespotted filefish,Cantherhines pullus,Orangespotted Filefish,Actinopterygii,25,ok
+fish-047,青鱗小沙丁,unicorn-leatherjacket,unicorn leatherjacket,Aluterus monoceros,Unicorn Leatherjacket,Actinopterygii,25,ok
+fish-048,髭尾扁頭魚,flatfish,flatfish,Asterorhombus cocosensis,Angler Flatfish,Actinopterygii,15,ok
+fish-049,鮣魚,moray-eel,moray eel,Gymnothorax undulatus,Undulated Moray,Actinopterygii,15,ok
+fish-050,鯷魚,conger-eel,conger eel,Conger conger,European Conger,Actinopterygii,15,ok
+fish-051,鰶魚,red-seabream,red seabream,Pagrus major,Red Seabream,Actinopterygii,25,ok
+fish-052,黃姑魚,sand-seabream,sand seabream,,,,0,missing
+fish-053,黃甲魚,oil-seabream,oil seabream,,,,0,missing
+fish-054,黑帶金鼓,threadfin-seabream,threadfin seabream,,,,0,missing
+fish-055,黑邊銀鯽,small-scad,small scad,Alepes apercna,Smallmouth Scad,Actinopterygii,25,ok
+fish-056,黑鯧,egg-wrasse,egg wrasse,,,,0,missing
+fish-057,鼠尾隆頭魚,mouse-wrasse,mouse wrasse,,,,0,missing
+fish-058,龍舟魚,silver-sillago,silver sillago,Sillago argentifasciata,Silver-banded Sillago,Actinopterygii,25,ok
+fish-059,半嘴魚,goatfish,goatfish,Upeneichthys porosus,Goatfish,Actinopterygii,15,ok
+fish-060,針魚,grunt,grunt,Helotes octolineatus,Western Striped Grunter,Actinopterygii,15,ok
+fish-061,青針魚,small-banded-grunter,small banded grunter,Terapon puta,Spinycheek Grunter,Actinopterygii,15,ok
+fish-062,比目魚,silver-biddy,silver biddy,Gerres subfasciatus,Common Silverbiddy,Actinopterygii,25,ok
+fish-063,海鯰,anchovy,anchovy,Engraulis australis,Australian Anchovy,Actinopterygii,15,ok
+fish-064,大鱗烏頭,sardinella,sardinella,Sardinella aurita,Round Sardinella,Actinopterygii,15,ok
+fish-065,彈塗魚,barracuda,barracuda,Sphyraena barracuda,Great Barracuda,Actinopterygii,15,ok
+fish-066,灰烏頭,needlefish,needlefish,Petalichthys capensis,Cape Needlefish,Actinopterygii,15,ok
+fish-067,狗母魚,halfbeak,halfbeak,Hemiramphus far,Black-barred Halfbeak,Actinopterygii,15,ok
+fish-068,花狗母魚,eeltail-catfish,eeltail catfish,Tandanus tandanus,Freshwater Catfish,Actinopterygii,15,ok
+fish-069,鰕虎魚,sea-catfish,sea catfish,Genidens barbus,White Sea Catfish,Actinopterygii,25,ok
+fish-070,鰻尾鯰,mojarra,mojarra,Gerres simillimus,Pacific Yellowfin Mojarra,Actinopterygii,15,ok
+fish-071,康吉鰻,goby,goby,Neogobius melanostomus,Round Goby,Actinopterygii,15,ok
+fish-072,獅子魚,mudskipper,mudskipper,Periophthalmus barbarus,Atlantic Mudskipper,Actinopterygii,15,ok
+fish-073,石頭魚,thread-sail-filefish,thread sail filefish,Stephanolepis cirrhifer,Thread-sail Filefish,Actinopterygii,35,ok
+fish-074,蠍子魚,cardinalfish,cardinalfish,Apogon imberbis,Mediterranean Cardinalfish,Actinopterygii,15,ok
+fish-075,橙點石斑,butterflyfish,butterflyfish,Chaetodon marleyi,Marley's butterflyfish,Actinopterygii,15,ok
+fish-076,芝麻石斑,damselfish,damselfish,Chromis chromis,Mediterranean Damselfish,Actinopterygii,15,ok
+fish-077,花頭石斑,parrotfish,parrotfish,Sparisoma viride,Stoplight Parrotfish,Actinopterygii,15,ok
+fish-078,香港石斑,triggerfish,triggerfish,Balistoides viridescens,Titan Triggerfish,Actinopterygii,15,ok
+fish-079,馬拉巴石斑,boxfish,boxfish,Ostracion cubicum,Yellow Boxfish,Actinopterygii,15,ok
+fish-080,黑線石斑,remora,remora,Remora remora,Common Remora,Actinopterygii,15,ok
+fish-081,龍膽石斑,flame-snapper,flame snapper,Etelis coruscans,Flame Snapper,Actinopterygii,25,ok
+fish-082,箱魨,tooth-spotted-seabream,tooth spotted seabream,,,,0,missing
+fish-083,扳機魚,red-devil-rockfish,red devil rockfish,,,,0,missing
+fish-084,橙點馬面魨,black-sand-seabream,black sand seabream,,,,0,missing
+fish-085,長帆馬面魨,white-seabream,white seabream,Diplodus lineatus,White Seabream,Actinopterygii,25,ok
+fish-086,蝶魚,red-seabream-aka,red seabream aka,,,,0,missing
+fish-087,鸚哥魚,gold-thread-seabream,gold thread seabream,,,,0,missing
+fish-088,泥鯭,flagfish,flagfish,Jordanella floridae,American Flagfish,Actinopterygii,15,ok
+fish-089,三點雀鯛,blackline-grouper,blackline grouper,,,,0,missing
+fish-090,天竺鯛,yellow-nail,yellow nail,,,,0,missing
+fish-091,星點笛鯛,sesame-grouper,sesame grouper,,,,0,missing
+fish-092,橫帶小鯛,flower-head-grouper,flower head grouper,,,,0,missing
+fish-093,沙鯛,giant-grouper,giant grouper,Epinephelus lanceolatus,Giant Grouper,Actinopterygii,25,ok
+fish-094,油鯛,spotted-sweetlips,spotted sweetlips,Plectorhinchus flavomaculatus,Goldspotted Sweetlips,Actinopterygii,25,ok
+fish-095,火焰笛鯛,star-snapper,star snapper,Lutjanus stellatus,White-spotted Snapper,Actinopterygii,15,ok
+fish-096,牙點鯛,yellowstripe-trevally,yellowstripe trevally,Selaroides leptolepis,Yellowstripe Scad,Actinopterygii,15,ok
+fish-097,白鯛,spotted-sillago,spotted sillago,Sillaginodes punctatus,King George Whiting,Actinopterygii,5,ok
+fish-098,約翰笛鯛,rockfish,rockfish,Sebastes caurinus,Copper Rockfish,Actinopterygii,15,ok
+fish-099,紅樹笛鯛,goatfish-wrasp,goatfish wrasp,,,,0,missing
+fish-100,紅鯛,croaker-gwak,croaker gwak,,,,0,missing
+fish-101,羅素笛鯛,red-three-knife,red three knife,,,,0,missing
+fish-102,赤鯛,stone-bream,stone bream,Neoscorpis lithophilus,Stone Bream,Actinopterygii,25,ok
+fish-103,金線鯛,french-threadfin,french threadfin,,,,0,missing
+fish-104,金線鯛王,bigeye-scad,bigeye scad,Selar crumenophthalmus,Bigeye Scad,Actinopterygii,25,ok
+fish-105,鋸緣雀鯛,oilfish,oilfish,Ruvettus pretiosus,Oilfish,Actinopterygii,15,ok
+fish-106,雀鯛,ponyfishes-linmai,ponyfishes linmai,,,,0,missing
+fish-107,馬友鯛,peanut-fish,peanut fish,,,,0,missing
+fish-108,黃尾笛鯛,gizzard-shad,gizzard shad,Dorosoma cepedianum,American Gizzard Shad,Actinopterygii,25,ok
+fish-109,黃尾雀鯛,ten-lined-scad,ten lined scad,,,,0,missing
+fish-110,黃鰭鯛,three-whisker-fish,three whisker fish,,,,0,missing
+fish-111,黑沙鯛,bigeye-pomfret,bigeye pomfret,,,,0,missing
+fish-112,黑鯛,yellowtail-damselfish,yellowtail damselfish,Microspathodon chrysurus,Yellowtail Damselfish,Actinopterygii,25,ok
+fish-113,印度鯖,three-spot-damselfish,three spot damselfish,,,,0,missing
+fish-114,大眼竹筴魚,white-head-wrasse,white head wrasse,,,,0,missing
+fish-115,大眼竹筴魚王,silver-mojarra,silver mojarra,Eucinostomus gula,Silver Jenny,Actinopterygii,15,ok
+fish-116,橙鰭銀腹鯧鰺,biting-blenny,biting blenny,,,,0,missing
+fish-117,紫胸馬加鰆,green-wrasse,green wrasse,Labrus viridis,Green Wrasse,Actinopterygii,25,ok
+fish-118,細鱗竹筴魚,triangle-fish,triangle fish,,,,0,missing
+fish-119,金鰭鰺,dragon-boat-fish,dragon boat fish,,,,0,missing
+fish-120,銀腹鯧鰺,yellowtail-fusilier,yellowtail fusilier,Caesio cuning,Yellowtail Fusilier,Actinopterygii,25,ok
+fish-121,長尾吞拿,small-scad-subadult,small scad subadult,,,,0,missing
+fish-122,馬拉巴鰺,green-needlefish,green needlefish,,,,0,missing
+fish-123,黃尾擬鰺,flower-lizardfish,flower lizardfish,,,,0,missing
+fish-124,黃尾竹筴魚,daggertooth-pike-conger,daggertooth pike conger,,,,0,missing
+fish-125,黃條鰺,ribbon-eel,ribbon eel,Rhinomuraena quaesita,Ribbon Eel,Actinopterygii,25,ok

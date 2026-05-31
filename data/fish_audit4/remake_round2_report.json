@@ -1,0 +1,140 @@
+[
+  {
+    "id": "092",
+    "status": "remade",
+    "source": "092_hk-flower-head-grouper-local-badge.png",
+    "bg_removed": true
+  },
+  {
+    "id": "105",
+    "status": "remade",
+    "source": "105_hk-oilfish-local-badge.png",
+    "bg_removed": true
+  },
+  {
+    "id": "003",
+    "status": "remade",
+    "source": "003_hk-goldlined-seabream.png",
+    "bg_removed": false
+  },
+  {
+    "id": "004",
+    "status": "remade",
+    "source": "004_hk-russell-snapper.png",
+    "bg_removed": false
+  },
+  {
+    "id": "006",
+    "status": "remade",
+    "source": "006_hk-johns-snapper.png",
+    "bg_removed": false
+  },
+  {
+    "id": "011",
+    "status": "remade",
+    "source": "011_hk-rabbitfish.png",
+    "bg_removed": false
+  },
+  {
+    "id": "020",
+    "status": "remade",
+    "source": "020_hk-bigeye-flathead.png",
+    "bg_removed": false
+  },
+  {
+    "id": "023",
+    "status": "remade",
+    "source": "023_hk-japanese-threadfin-bream.png",
+    "bg_removed": false
+  },
+  {
+    "id": "029",
+    "status": "remade",
+    "source": "029_hk-orangefin-ponyfish.png",
+    "bg_removed": false
+  },
+  {
+    "id": "040",
+    "status": "remade",
+    "source": "040_hk-pufferfish.png",
+    "bg_removed": false
+  },
+  {
+    "id": "047",
+    "status": "remade",
+    "source": "047_hk-unicorn-leatherjacket.png",
+    "bg_removed": false
+  },
+  {
+    "id": "051",
+    "status": "remade",
+    "source": "051_hk-red-seabream-local-badge.png",
+    "bg_removed": true
+  },
+  {
+    "id": "054",
+    "status": "remade",
+    "source": "054_hk-threadfin-seabream-local-badge.png",
+    "bg_removed": true
+  },
+  {
+    "id": "055",
+    "status": "remade",
+    "source": "055_hk-small-scad-local-badge.png",
+    "bg_removed": true
+  },
+  {
+    "id": "058",
+    "status": "remade",
+    "source": "058_hk-silver-sillago-local-badge.png",
+    "bg_removed": true
+  },
+  {
+    "id": "061",
+    "status": "remade",
+    "source": "061_hk-small-banded-grunter-local-badge.png",
+    "bg_removed": true
+  },
+  {
+    "id": "068",
+    "status": "remade",
+    "source": "068_hk-eeltail-catfish-local-badge.png",
+    "bg_removed": true
+  },
+  {
+    "id": "089",
+    "status": "remade",
+    "source": "089_hk-blackline-grouper-local-badge.png",
+    "bg_removed": true
+  },
+  {
+    "id": "108",
+    "status": "remade",
+    "source": "108_hk-gizzard-shad-local-badge.png",
+    "bg_removed": true
+  },
+  {
+    "id": "109",
+    "status": "remade",
+    "source": "109_hk-ten-lined-scad-local-badge.png",
+    "bg_removed": true
+  },
+  {
+    "id": "115",
+    "status": "remade",
+    "source": "115_hk-silver-mojarra-local-badge.png",
+    "bg_removed": true
+  },
+  {
+    "id": "117",
+    "status": "remade",
+    "source": "117_hk-green-wrasse-local-badge.png",
+    "bg_removed": true
+  },
+  {
+    "id": "123",
+    "status": "remade",
+    "source": "123_hk-flower-lizardfish-local-badge.png",
+    "bg_removed": true
+  }
+]

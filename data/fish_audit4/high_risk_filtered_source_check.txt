@@ -1,0 +1,18 @@
+原高風險: 29
+用戶確認正確(剔除): 15
+需再查source: 14
+
+ 92 fish-092 橫帶小鯛 | 低可信-建議換source | score=1 | source=inat_obs_fill
+  1 fish-001 河豚 | 較可信 | score=6 | source=inat_obs
+ 14 fish-014 斑點石鱸 | 較可信 | score=6 | source=inat_obs
+ 16 fish-016 斑點鱚 | 較可信 | score=6 | source=inat_obs
+ 17 fish-017 旗魚 | 較可信 | score=6 | source=inat_obs
+ 27 fish-027 白點竹鯊 | 較可信 | score=6 | source=inat_sci_refresh
+ 35 fish-035 花生魚 | 較可信 | score=6 | source=inat_obs
+ 48 fish-048 髭尾扁頭魚 | 較可信 | score=5 | source=wikimedia_commons_search
+ 72 fish-072 獅子魚 | 較可信 | score=6 | source=inat_slug
+ 87 fish-087 鸚哥魚 | 較可信 | score=6 | source=inat_sci_refresh
+ 97 fish-097 白鯛 | 較可信 | score=5 | source=wiki_summary
+105 fish-105 鋸緣雀鯛 | 較可信 | score=6 | source=inat_slug
+110 fish-110 黃鰭鯛 | 較可信 | score=8 | source=inat_zh_taxon
+114 fish-114 大眼竹筴魚 | 較可信 | score=6 | source=inat_sci_refresh

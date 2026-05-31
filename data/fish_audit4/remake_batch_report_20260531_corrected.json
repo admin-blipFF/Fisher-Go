@@ -1,0 +1,107 @@
+[
+  {
+    "id": "003",
+    "status": "replaced_non_badge",
+    "from": "003_hk-goldlined-seabream.png"
+  },
+  {
+    "id": "004",
+    "status": "replaced_non_badge",
+    "from": "004_hk-russell-snapper.png"
+  },
+  {
+    "id": "006",
+    "status": "replaced_non_badge",
+    "from": "006_hk-johns-snapper.png"
+  },
+  {
+    "id": "011",
+    "status": "replaced_non_badge",
+    "from": "011_hk-rabbitfish.png"
+  },
+  {
+    "id": "020",
+    "status": "replaced_non_badge",
+    "from": "020_hk-bigeye-flathead.png"
+  },
+  {
+    "id": "023",
+    "status": "replaced_non_badge",
+    "from": "023_hk-japanese-threadfin-bream.png"
+  },
+  {
+    "id": "029",
+    "status": "replaced_non_badge",
+    "from": "029_hk-orangefin-ponyfish.png"
+  },
+  {
+    "id": "035",
+    "status": "kept_manual_035"
+  },
+  {
+    "id": "040",
+    "status": "replaced_non_badge",
+    "from": "040_hk-pufferfish.png"
+  },
+  {
+    "id": "047",
+    "status": "replaced_non_badge",
+    "from": "047_hk-unicorn-leatherjacket.png"
+  },
+  {
+    "id": "051",
+    "status": "restored_backup_no_nonbadge"
+  },
+  {
+    "id": "054",
+    "status": "restored_backup_no_nonbadge"
+  },
+  {
+    "id": "055",
+    "status": "restored_backup_no_nonbadge"
+  },
+  {
+    "id": "058",
+    "status": "restored_backup_no_nonbadge"
+  },
+  {
+    "id": "061",
+    "status": "restored_backup_no_nonbadge"
+  },
+  {
+    "id": "068",
+    "status": "restored_backup_no_nonbadge"
+  },
+  {
+    "id": "089",
+    "status": "restored_backup_no_nonbadge"
+  },
+  {
+    "id": "092",
+    "status": "restored_backup_no_nonbadge"
+  },
+  {
+    "id": "105",
+    "status": "restored_backup_no_nonbadge"
+  },
+  {
+    "id": "108",
+    "status": "restored_backup_no_nonbadge"
+  },
+  {
+    "id": "109",
+    "status": "restored_backup_no_nonbadge"
+  },
+  {
+    "id": "115",
+    "status": "restored_backup_no_nonbadge"
+  },
+  {
+    "id": "117",
+    "status": "restored_backup_no_nonbadge"
+  },
+  {
+    "id": "123",
+    "status": "restored_backup_no_nonbadge"
+  }
+]

@@ -1,0 +1,122 @@
+[
+  {
+    "id": "003",
+    "status": "replaced",
+    "from": "003_hk-goldlined-seabream.png"
+  },
+  {
+    "id": "004",
+    "status": "replaced",
+    "from": "004_hk-russell-snapper.png"
+  },
+  {
+    "id": "006",
+    "status": "replaced",
+    "from": "006_hk-johns-snapper.png"
+  },
+  {
+    "id": "011",
+    "status": "replaced",
+    "from": "011_hk-rabbitfish.png"
+  },
+  {
+    "id": "020",
+    "status": "replaced",
+    "from": "020_hk-bigeye-flathead.png"
+  },
+  {
+    "id": "023",
+    "status": "replaced",
+    "from": "023_hk-japanese-threadfin-bream.png"
+  },
+  {
+    "id": "029",
+    "status": "replaced",
+    "from": "029_hk-orangefin-ponyfish.png"
+  },
+  {
+    "id": "035",
+    "status": "replaced",
+    "from": "035_before_nonrare_fix_20260531.png"
+  },
+  {
+    "id": "040",
+    "status": "replaced",
+    "from": "040_hk-pufferfish.png"
+  },
+  {
+    "id": "047",
+    "status": "replaced",
+    "from": "047_hk-unicorn-leatherjacket.png"
+  },
+  {
+    "id": "051",
+    "status": "replaced",
+    "from": "051_hk-red-seabream-local-badge.png"
+  },
+  {
+    "id": "054",
+    "status": "replaced",
+    "from": "054_hk-threadfin-seabream-local-badge.png"
+  },
+  {
+    "id": "055",
+    "status": "replaced",
+    "from": "055_hk-small-scad-local-badge.png"
+  },
+  {
+    "id": "058",
+    "status": "replaced",
+    "from": "058_hk-silver-sillago-local-badge.png"
+  },
+  {
+    "id": "061",
+    "status": "replaced",
+    "from": "061_hk-small-banded-grunter-local-badge.png"
+  },
+  {
+    "id": "068",
+    "status": "replaced",
+    "from": "068_hk-eeltail-catfish-local-badge.png"
+  },
+  {
+    "id": "089",
+    "status": "replaced",
+    "from": "089_hk-blackline-grouper-local-badge.png"
+  },
+  {
+    "id": "092",
+    "status": "replaced",
+    "from": "092_hk-flower-head-grouper-local-badge.png"
+  },
+  {
+    "id": "105",
+    "status": "replaced",
+    "from": "105_hk-oilfish-local-badge.png"
+  },
+  {
+    "id": "108",
+    "status": "replaced",
+    "from": "108_hk-gizzard-shad-local-badge.png"
+  },
+  {
+    "id": "109",
+    "status": "replaced",
+    "from": "109_hk-ten-lined-scad-local-badge.png"
+  },
+  {
+    "id": "115",
+    "status": "replaced",
+    "from": "115_hk-silver-mojarra-local-badge.png"
+  },
+  {
+    "id": "117",
+    "status": "replaced",
+    "from": "117_hk-green-wrasse-local-badge.png"
+  },
+  {
+    "id": "123",
+    "status": "replaced",
+    "from": "123_hk-flower-lizardfish-local-badge.png"
+  }
+]

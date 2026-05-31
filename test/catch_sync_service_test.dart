@@ -1,0 +1,72 @@
+import 'package:flutter_test/flutter_test.dart';
+
+import 'package:fishergo/features/catches/data/catch_sync_service.dart';
+import 'package:fishergo/features/catches/domain/catch_log_entry.dart';
+
+class _FakeRemote implements CatchRemoteDataSource {
+  _FakeRemote({required this.failIds});
+
+  final Set<String> failIds;
+
+  @override
+  Future<void> uploadCatch({
+    required String userId,
+    required CatchLogEntry entry,
+  }) async {
+    if (failIds.contains(entry.id)) {
+      throw Exception('fail');
+    }
+  }
+}
+
+void main() {
+  CatchLogEntry entry(String id) => CatchLogEntry(
+        id: id,
+        speciesId: 'sample-yellowfin-seabream',
+        speciesName: '黃腳鱲',
+        caughtAt: DateTime(2026, 5, 31, 9, 0),
+      );
+
+  test('returns skipped when supabase is not configured', () async {
+    final service = CatchSyncService(
+      remote: _FakeRemote(failIds: {}),
+      isConfigured: () => false,
+      currentUserId: () => 'user-1',
+    );
+
+    final result = await service.sync([entry('a'), entry('b')]);
+
+    expect(result.skipped, 2);
+    expect(result.synced, 0);
+    expect(result.failed, 0);
+  });
+
+  test('returns skipped when user is not signed in', () async {
+    final service = CatchSyncService(
+      remote: _FakeRemote(failIds: {}),
+      isConfigured: () => true,
+      currentUserId: () => null,
+    );
+
+    final result = await service.sync([entry('a')]);
+
+    expect(result.skipped, 1);
+    expect(result.synced, 0);
+    expect(result.failed, 0);
+  });
+
+  test('sync returns exact failed ids', () async {
+    final service = CatchSyncService(
+      remote: _FakeRemote(failIds: {'b'}),
+      isConfigured: () => true,
+      currentUserId: () => 'user-1',
+    );
+
+    final result = await service.sync([entry('a'), entry('b'), entry('c')]);
+
+    expect(result.total, 3);
+    expect(result.synced, 2);
+    expect(result.failed, 1);
+    expect(result.failedIds, {'b'});
+  });
+}

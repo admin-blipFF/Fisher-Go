@@ -22,6 +22,7 @@ class _AppShellState extends State<AppShell> {
   Widget build(BuildContext context) {
     final screens = [
       FishEncyclopediaScreen(repository: widget.fishSpeciesRepository),
+      const CatchLogScreen(mapOnly: true),
       const CatchLogScreen(),
       const LeaderboardScreen(),
       const ProfileScreen(),
@@ -34,6 +35,7 @@ class _AppShellState extends State<AppShell> {
         onDestinationSelected: (value) => setState(() => _index = value),
         destinations: const [
           NavigationDestination(icon: Icon(Icons.menu_book), label: '圖鑑'),
+          NavigationDestination(icon: Icon(Icons.map), label: '地圖'),
           NavigationDestination(icon: Icon(Icons.camera_alt), label: '魚獲'),
           NavigationDestination(icon: Icon(Icons.emoji_events), label: '排行'),
           NavigationDestination(icon: Icon(Icons.person), label: '個人'),

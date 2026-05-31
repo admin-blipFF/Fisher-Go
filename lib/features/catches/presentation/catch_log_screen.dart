@@ -10,6 +10,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../fish/data/sample_fish_species_data_source.dart';
 import '../../fish/domain/fish_species.dart';
+import '../../profile/data/profile_wallet_service.dart';
 import '../data/catch_log_local_data_source.dart';
 import '../data/catch_sync_service.dart';
 import '../data/hk_fishing_spots_geocoded_seed.dart';
@@ -487,7 +488,7 @@ class _CatchLogScreenState extends State<CatchLogScreen> {
         _latitude = position.latitude;
         _longitude = position.longitude;
       });
-      _autoCheckpointByGeofence();
+      unawaited(_autoCheckpointByGeofence());
     });
   }
 
@@ -547,24 +548,24 @@ class _CatchLogScreenState extends State<CatchLogScreen> {
         _latitude = position.latitude;
         _longitude = position.longitude;
       });
-      _autoCheckpointByGeofence();
+      unawaited(_autoCheckpointByGeofence());
     } catch (_) {
       _showSnack('未能取得定位，請稍後再試。');
     }
   }
 
-  void _addCurrentLocationCheckpoint() {
+  Future<void> _addCurrentLocationCheckpoint() async {
     if (_latitude == null || _longitude == null) return;
-    _addCheckpoint(_latitude!, _longitude!, triggerType: 'manual');
+    await _addCheckpoint(_latitude!, _longitude!, triggerType: 'manual');
   }
 
-  void _addCheckpoint(
+  Future<void> _addCheckpoint(
     double lat,
     double lng, {
     String? spotId,
     String? spotName,
     String triggerType = 'manual',
-  }) {
+  }) async {
     setState(() {
       _checkpoints.add(
         CatchCheckpoint(
@@ -577,10 +578,15 @@ class _CatchLogScreenState extends State<CatchLogScreen> {
         ),
       );
     });
+
+    final reward = triggerType == 'geofence' ? 2 : 5;
+    await ProfileWalletService.addCoins(reward);
   }
 
-  void _autoCheckpointByGeofence() {
+  Future<void> _autoCheckpointByGeofence() async {
     if (!_autoCheckpointEnabled || _latitude == null || _longitude == null) return;
+
+
 
     for (final spot in _hkFishingSpots) {
       final distance = Geolocator.distanceBetween(
@@ -824,6 +830,7 @@ class _CatchLogScreenState extends State<CatchLogScreen> {
 
       await _localDataSource.addPending(entry);
       await _loadPending();
+      await ProfileWalletService.addCoins(20);
 
       _lengthController.clear();
       _weightController.clear();
@@ -837,7 +844,7 @@ class _CatchLogScreenState extends State<CatchLogScreen> {
         });
       }
 
-      _showSnack('已加入本地待同步佇列');
+      _showSnack('已加入本地待同步佇列（+20 金幣）');
     } finally {
       if (mounted) setState(() => _saving = false);
     }

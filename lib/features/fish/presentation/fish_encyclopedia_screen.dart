@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../data/fish_real_photo_urls.dart';
 import '../data/fish_species_repository.dart';
 import '../data/sample_fish_species_repository.dart';
 import '../domain/fish_species.dart';
@@ -219,7 +220,19 @@ class _FishSpeciesCard extends StatelessWidget {
       clipBehavior: Clip.antiAlias,
       elevation: unlocked ? 2 : 0,
       child: InkWell(
-        onTap: () {},
+        onTap: unlocked
+            ? () {
+                final realPhotoUrl = kFishRealPhotoUrls[species.id];
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => _FishSpeciesDetailScreen(
+                      species: species,
+                      realPhotoUrl: realPhotoUrl,
+                    ),
+                  ),
+                );
+              }
+            : null,
         child: Padding(
           padding: const EdgeInsets.all(14),
           child: Column(
@@ -227,22 +240,11 @@ class _FishSpeciesCard extends StatelessWidget {
             children: [
               Expanded(
                 child: Center(
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
-                    width: 96,
-                    height: 96,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: unlocked
-                          ? colorScheme.primaryContainer
-                          : colorScheme.surfaceContainerHighest,
-                    ),
-                    child: Icon(
-                      unlocked ? Icons.set_meal : Icons.question_mark,
-                      size: unlocked ? 58 : 48,
-                      color:
-                          unlocked ? colorScheme.primary : colorScheme.outline,
-                    ),
+                  child: _FishArtwork(
+                    unlocked: unlocked,
+                    imagePath: species.imageUrl,
+                    silhouettePath: species.silhouetteUrl,
+                    colorScheme: colorScheme,
                   ),
                 ),
               ),
@@ -251,7 +253,7 @@ class _FishSpeciesCard extends StatelessWidget {
                 children: [
                   Expanded(
                     child: Text(
-                      unlocked ? species.commonNameZh : '未解鎖魚種',
+                      unlocked ? species.displayLocalName : '未解鎖魚種',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
@@ -267,13 +269,18 @@ class _FishSpeciesCard extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 4),
-              Text(
-                unlocked
-                    ? (species.scientificName ?? species.commonNameEn ?? '學名待補')
-                    : '釣獲後顯示相片、學名與習性',
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: Theme.of(context).textTheme.bodySmall,
+              Tooltip(
+                message: unlocked
+                    ? species.displayNameLocalSlashCommon
+                    : '釣獲後顯示相片與魚種資訊',
+                child: Text(
+                  unlocked
+                      ? species.displayNameLocalSlashCommon
+                      : '釣獲後顯示相片與魚種資訊',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
               ),
               const SizedBox(height: 8),
               if (unlocked) ...[
@@ -327,6 +334,188 @@ class _FishSpeciesCard extends StatelessWidget {
       default:
         return '待確認';
     }
+  }
+}
+
+class _FishArtwork extends StatelessWidget {
+  const _FishArtwork({
+    required this.unlocked,
+    required this.imagePath,
+    required this.silhouettePath,
+    required this.colorScheme,
+  });
+
+  final bool unlocked;
+  final String? imagePath;
+  final String? silhouettePath;
+  final ColorScheme colorScheme;
+
+  @override
+  Widget build(BuildContext context) {
+    final previewPath = unlocked ? imagePath : silhouettePath;
+    if (previewPath != null && previewPath.startsWith('assets/')) {
+      return SizedBox(
+        width: 118,
+        height: 104,
+        child: Image.asset(
+          previewPath,
+          fit: BoxFit.contain,
+          filterQuality: FilterQuality.high,
+          errorBuilder: (_, __, ___) => _fallbackIcon(),
+        ),
+      );
+    }
+
+    return _fallbackIcon();
+  }
+
+  Widget _fallbackIcon() {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
+      width: 96,
+      height: 96,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: unlocked
+            ? colorScheme.primaryContainer
+            : colorScheme.surfaceContainerHighest,
+      ),
+      child: Icon(
+        unlocked ? Icons.set_meal : Icons.question_mark,
+        size: unlocked ? 58 : 48,
+        color: unlocked ? colorScheme.primary : colorScheme.outline,
+      ),
+    );
+  }
+}
+
+class _FishSpeciesDetailScreen extends StatelessWidget {
+  const _FishSpeciesDetailScreen({
+    required this.species,
+    required this.realPhotoUrl,
+  });
+
+  final FishSpecies species;
+  final String? realPhotoUrl;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text(species.displayNameLocalSlashCommon)),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _FishRealPhoto(realPhotoUrl: realPhotoUrl, fallbackAsset: species.imageUrl),
+            const SizedBox(height: 16),
+            _InfoTile(title: '本地名｜魚名', value: species.displayNameLocalSlashCommon),
+            _InfoTile(title: '學名', value: species.scientificName ?? '待補'),
+            _InfoTile(title: '英文名', value: species.commonNameEn ?? '待補'),
+            _InfoTile(title: '危險性', value: _dangerLabel(species.dangerLevel)),
+            _InfoTile(title: '棲息地', value: species.habitatZh ?? '待補'),
+            _InfoTile(title: '描述', value: species.descriptionZh ?? '待補'),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _dangerLabel(String level) {
+    switch (level) {
+      case 'high':
+        return '高';
+      case 'medium':
+        return '中';
+      case 'low':
+        return '低';
+      default:
+        return '待確認';
+    }
+  }
+}
+
+class _FishRealPhoto extends StatelessWidget {
+  const _FishRealPhoto({
+    required this.realPhotoUrl,
+    required this.fallbackAsset,
+  });
+
+  final String? realPhotoUrl;
+  final String? fallbackAsset;
+
+  @override
+  Widget build(BuildContext context) {
+    final borderRadius = BorderRadius.circular(16);
+
+    if (realPhotoUrl != null && realPhotoUrl!.isNotEmpty) {
+      return ClipRRect(
+        borderRadius: borderRadius,
+        child: AspectRatio(
+          aspectRatio: 16 / 9,
+          child: Image.network(
+            realPhotoUrl!,
+            fit: BoxFit.cover,
+            errorBuilder: (_, __, ___) => _fallback(borderRadius),
+            loadingBuilder: (context, child, progress) {
+              if (progress == null) return child;
+              return const Center(child: CircularProgressIndicator());
+            },
+          ),
+        ),
+      );
+    }
+
+    return _fallback(borderRadius);
+  }
+
+  Widget _fallback(BorderRadius borderRadius) {
+    if (fallbackAsset != null && fallbackAsset!.startsWith('assets/')) {
+      return ClipRRect(
+        borderRadius: borderRadius,
+        child: AspectRatio(
+          aspectRatio: 16 / 9,
+          child: Image.asset(fallbackAsset!, fit: BoxFit.contain),
+        ),
+      );
+    }
+
+    return Container(
+      height: 180,
+      decoration: BoxDecoration(
+        borderRadius: borderRadius,
+        color: Colors.black12,
+      ),
+      child: const Center(child: Icon(Icons.image_not_supported, size: 44)),
+    );
+  }
+}
+
+class _InfoTile extends StatelessWidget {
+  const _InfoTile({required this.title, required this.value});
+
+  final String title;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: Theme.of(context)
+                .textTheme
+                .labelLarge
+                ?.copyWith(fontWeight: FontWeight.w700),
+          ),
+          const SizedBox(height: 4),
+          Text(value, style: Theme.of(context).textTheme.bodyLarge),
+        ],
+      ),
+    );
   }
 }
 

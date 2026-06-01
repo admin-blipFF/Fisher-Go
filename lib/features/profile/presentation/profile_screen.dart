@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hive/hive.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/config/supabase_config.dart';
+import '../data/profile_wallet_service.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -21,6 +23,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   bool _isProfileLoading = true;
 
   late _AvatarProfileState _avatarState;
+  List<Map<String, dynamic>> _coinHistory = const [];
 
   @override
   void initState() {
@@ -39,22 +42,38 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Future<void> _loadAvatarState() async {
     final box = await Hive.openBox(_profileBoxName);
     final saved = box.get('avatar_state');
+    final history = await ProfileWalletService.getCoinHistory();
     if (!mounted) return;
 
     if (saved is Map) {
       setState(() {
         _avatarState = _AvatarProfileState.fromMap(Map<String, dynamic>.from(saved));
+        _coinHistory = history;
         _isProfileLoading = false;
       });
       return;
     }
 
-    setState(() => _isProfileLoading = false);
+    setState(() {
+      _coinHistory = history;
+      _isProfileLoading = false;
+    });
   }
 
   Future<void> _saveAvatarState() async {
     final box = await Hive.openBox(_profileBoxName);
-    await box.put('avatar_state', _avatarState.toMap());
+    final existingRaw = box.get('avatar_state');
+    final existing = existingRaw is Map
+        ? Map<String, dynamic>.from(existingRaw)
+        : <String, dynamic>{};
+    final merged = _avatarState.toMap()..addAll({
+      if (existing['coinHistory'] != null) 'coinHistory': existing['coinHistory'],
+    });
+    await box.put('avatar_state', merged);
+    final history = await ProfileWalletService.getCoinHistory();
+    if (mounted) {
+      setState(() => _coinHistory = history);
+    }
   }
 
   Future<void> _signIn() async {
@@ -128,6 +147,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       return;
     }
 
+    await ProfileWalletService.spendCoins(item.price, reason: '購買道具：${item.name}');
     setState(() {
       _avatarState = _avatarState.purchase(item.id, item.price);
     });
@@ -177,6 +197,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 _buildCustomizationPanel(),
                 const SizedBox(height: 16),
                 _buildShopPanel(),
+                const SizedBox(height: 16),
+                _buildCoinHistoryPanel(),
               ],
             ),
     );
@@ -285,6 +307,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
             _buildChoiceRow('性別', _genderOptions, _avatarState.selectedGender),
             const SizedBox(height: 12),
             _buildChoiceRow('髮型', _hairStyleOptions, _avatarState.selectedHairStyle),
+            const SizedBox(height: 12),
+            _buildPresetRow(),
           ],
         ),
       ),
@@ -309,6 +333,34 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     label == '性別' ? 'gender' : 'hair',
                     option,
                   ),
+                ),
+              )
+              .toList(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPresetRow() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text('角色圖樣'),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: _presetOptions
+              .map(
+                (n) => ChoiceChip(
+                  label: Text('樣式$n'),
+                  selected: _avatarState.selectedPreset == n,
+                  onSelected: (_) async {
+                    setState(() {
+                      _avatarState = _avatarState.copyWith(selectedPreset: n);
+                    });
+                    await _saveAvatarState();
+                  },
                 ),
               )
               .toList(),
@@ -342,7 +394,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return ListTile(
       contentPadding: EdgeInsets.zero,
       title: Text(item.name),
-      subtitle: Text('分類：${item.slotLabel}  •  價格：${item.price} 金幣'),
+      subtitle: Text(
+        '分類：${item.slotLabel}  •  價格：${item.price} 金幣\n稀有度：${item.rarityLabel}',
+      ),
       trailing: owned
           ? FilledButton.tonal(
               onPressed: equipped ? null : () => _equipItem(item),
@@ -354,6 +408,46 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
     );
   }
+
+  Widget _buildCoinHistoryPanel() {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('金幣來源明細', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+            const SizedBox(height: 8),
+            if (_coinHistory.isEmpty)
+              const Text('暫無紀錄')
+            else
+              ..._coinHistory.take(12).map((item) {
+                final amount = (item['amount'] as num?)?.toInt() ?? 0;
+                final reason = (item['reason'] as String?) ?? '未知';
+                final ts = (item['timestamp'] as String?) ?? '';
+                return ListTile(
+                  dense: true,
+                  contentPadding: EdgeInsets.zero,
+                  leading: Icon(
+                    amount >= 0 ? Icons.add_circle : Icons.remove_circle,
+                    color: amount >= 0 ? Colors.green : Colors.red,
+                  ),
+                  title: Text(reason),
+                  subtitle: Text(ts.replaceFirst('T', ' ').split('.').first),
+                  trailing: Text(
+                    amount >= 0 ? '+$amount' : '$amount',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w700,
+                      color: amount >= 0 ? Colors.green : Colors.red,
+                    ),
+                  ),
+                );
+              }),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 class _AvatarLayeredPreview extends StatelessWidget {
@@ -363,107 +457,107 @@ class _AvatarLayeredPreview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final genderSymbol = avatarState.selectedGender == 'male'
-        ? '♂'
-        : avatarState.selectedGender == 'female'
-            ? '♀'
-            : '⚥';
+    final preset = avatarState.selectedPreset.clamp(1, 5);
+    final bodyAsset = avatarState.selectedGender == 'female'
+        ? 'assets/avatar/layers/body_female_0$preset.svg'
+        : 'assets/avatar/layers/body_male_0$preset.svg';
 
-    return Container(
+    final hairAsset = switch (avatarState.selectedHairStyle) {
+      'long' => 'assets/avatar/layers/hair_long.svg',
+      'curly' => 'assets/avatar/layers/hair_curly.svg',
+      'buzz' => 'assets/avatar/layers/hair_buzz.svg',
+      'ponytail' => 'assets/avatar/layers/hair_ponytail.svg',
+      _ => 'assets/avatar/layers/hair_short.svg',
+    };
+
+    return SizedBox(
       width: 96,
       height: 96,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: Colors.blueGrey.shade50,
-        border: Border.all(color: Colors.blueGrey.shade200),
-      ),
       child: Stack(
-        alignment: Alignment.center,
+        fit: StackFit.expand,
         children: [
-          const Positioned(
-            bottom: 22,
-            child: Icon(Icons.person, size: 50, color: Colors.blueGrey),
-          ),
-          Positioned(
-            top: 12,
-            child: Icon(
-              _hairIcon(avatarState.selectedHairStyle),
-              size: 22,
-              color: Colors.brown.shade700,
-            ),
-          ),
-          if (avatarState.equipped['hat'] != null)
-            const Positioned(top: 2, child: Icon(Icons.checkroom, size: 18, color: Colors.deepOrange)),
-          if (avatarState.equipped['mask'] != null)
-            const Positioned(top: 37, child: Icon(Icons.masks, size: 18, color: Colors.teal)),
+          _svg(bodyAsset),
+          _svg(hairAsset),
           if (avatarState.equipped['shirt'] != null)
-            const Positioned(bottom: 26, child: Icon(Icons.dry_cleaning, size: 18, color: Colors.indigo)),
+            _svg(_assetForItemId(avatarState.equipped['shirt']!)),
           if (avatarState.equipped['pants'] != null)
-            const Positioned(bottom: 12, child: Icon(Icons.accessibility_new, size: 16, color: Colors.brown)),
+            _svg(_assetForItemId(avatarState.equipped['pants']!)),
           if (avatarState.equipped['shoes'] != null)
-            const Positioned(bottom: 2, child: Icon(Icons.hiking, size: 16, color: Colors.black54)),
+            _svg(_assetForItemId(avatarState.equipped['shoes']!)),
+          if (avatarState.equipped['hat'] != null)
+            _svg(_assetForItemId(avatarState.equipped['hat']!)),
+          if (avatarState.equipped['mask'] != null)
+            _svg(_assetForItemId(avatarState.equipped['mask']!)),
           if (avatarState.equipped['rod'] != null)
-            const Positioned(right: 4, top: 46, child: Icon(Icons.phishing, size: 17, color: Colors.blue)),
+            _svg(_assetForItemId(avatarState.equipped['rod']!)),
           if (avatarState.equipped['tackle_box'] != null)
-            const Positioned(left: 3, bottom: 20, child: Icon(Icons.inventory_2, size: 16, color: Colors.amber)),
+            _svg(_assetForItemId(avatarState.equipped['tackle_box']!)),
           if (avatarState.equipped['cooler'] != null)
-            const Positioned(left: 2, bottom: 5, child: Icon(Icons.kitchen, size: 16, color: Colors.lightBlue)),
-          Positioned(
-            right: 4,
-            top: 4,
-            child: Text(
-              genderSymbol,
-              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-            ),
-          ),
+            _svg(_assetForItemId(avatarState.equipped['cooler']!)),
         ],
       ),
     );
   }
 
-  static IconData _hairIcon(String hair) {
-    switch (hair) {
-      case 'long':
-        return Icons.face_retouching_natural;
-      case 'curly':
-        return Icons.bubble_chart;
-      case 'buzz':
-        return Icons.crop;
-      case 'ponytail':
-        return Icons.brush;
-      default:
-        return Icons.face;
-    }
+  Widget _svg(String path) {
+    return SvgPicture.asset(
+      path,
+      fit: BoxFit.contain,
+      placeholderBuilder: (_) => const SizedBox.shrink(),
+    );
   }
 }
 
-const _genderOptions = ['male', 'female', 'other'];
+String _assetForItemId(String itemId) => 'assets/avatar/layers/$itemId.svg';
+
+const _genderOptions = ['male', 'female'];
 const _hairStyleOptions = ['short', 'long', 'curly', 'buzz', 'ponytail'];
+const _presetOptions = [1, 2, 3, 4, 5];
 
 class _AvatarProfileState {
   const _AvatarProfileState({
     required this.selectedGender,
     required this.selectedHairStyle,
+    required this.selectedPreset,
     required this.coins,
     required this.ownedItemIds,
     required this.equipped,
   });
 
   factory _AvatarProfileState.initial() => const _AvatarProfileState(
-        selectedGender: 'other',
+        selectedGender: 'male',
         selectedHairStyle: 'short',
+        selectedPreset: 1,
         coins: 500,
-        ownedItemIds: {'shirt_basic', 'pants_basic', 'shoes_basic'},
+        ownedItemIds: {
+          'shirt_01',
+          'pants_01',
+          'shoes_01',
+          'hat_01',
+          'mask_01',
+          'rod_01',
+          'tackle_box_01',
+          'cooler_01',
+        },
         equipped: {
-          'shirt': 'shirt_basic',
-          'pants': 'pants_basic',
-          'shoes': 'shoes_basic',
+          'shirt': 'shirt_01',
+          'pants': 'pants_01',
+          'shoes': 'shoes_01',
+          'hat': 'hat_01',
+          'mask': 'mask_01',
+          'rod': 'rod_01',
+          'tackle_box': 'tackle_box_01',
+          'cooler': 'cooler_01',
         },
       );
 
   factory _AvatarProfileState.fromMap(Map<String, dynamic> map) => _AvatarProfileState(
-        selectedGender: (map['selectedGender'] as String?) ?? 'other',
+        selectedGender: (() {
+          final g = (map['selectedGender'] as String?) ?? 'male';
+          return _genderOptions.contains(g) ? g : 'male';
+        })(),
         selectedHairStyle: (map['selectedHairStyle'] as String?) ?? 'short',
+        selectedPreset: ((map['selectedPreset'] as num?)?.toInt() ?? 1).clamp(1, 5),
         coins: (map['coins'] as num?)?.toInt() ?? 500,
         ownedItemIds: Set<String>.from((map['ownedItemIds'] as List?) ?? const []),
         equipped: Map<String, String>.from((map['equipped'] as Map?) ?? const {}),
@@ -471,6 +565,7 @@ class _AvatarProfileState {
 
   final String selectedGender;
   final String selectedHairStyle;
+  final int selectedPreset;
   final int coins;
   final Set<String> ownedItemIds;
   final Map<String, String> equipped;
@@ -478,6 +573,7 @@ class _AvatarProfileState {
   _AvatarProfileState copyWith({
     String? selectedGender,
     String? selectedHairStyle,
+    int? selectedPreset,
     int? coins,
     Set<String>? ownedItemIds,
     Map<String, String>? equipped,
@@ -485,6 +581,7 @@ class _AvatarProfileState {
       _AvatarProfileState(
         selectedGender: selectedGender ?? this.selectedGender,
         selectedHairStyle: selectedHairStyle ?? this.selectedHairStyle,
+        selectedPreset: selectedPreset ?? this.selectedPreset,
         coins: coins ?? this.coins,
         ownedItemIds: ownedItemIds ?? this.ownedItemIds,
         equipped: equipped ?? this.equipped,
@@ -509,6 +606,7 @@ class _AvatarProfileState {
   Map<String, dynamic> toMap() => {
         'selectedGender': selectedGender,
         'selectedHairStyle': selectedHairStyle,
+        'selectedPreset': selectedPreset,
         'coins': coins,
         'ownedItemIds': ownedItemIds.toList(),
         'equipped': equipped,
@@ -522,6 +620,7 @@ class _ShopItem {
     required this.price,
     required this.slot,
     required this.slotLabel,
+    required this.rarityLabel,
   });
 
   final String id;
@@ -529,21 +628,58 @@ class _ShopItem {
   final int price;
   final String slot;
   final String slotLabel;
+  final String rarityLabel;
 }
 
 const _shopItems = <_ShopItem>[
-  _ShopItem(id: 'rod_pro', name: '碳纖魚竿', price: 120, slot: 'rod', slotLabel: '魚竿'),
-  _ShopItem(id: 'tackle_advanced', name: '專業釣箱', price: 100, slot: 'tackle_box', slotLabel: '釣箱'),
-  _ShopItem(id: 'cooler_arctic', name: '保冷冰箱', price: 90, slot: 'cooler', slotLabel: '冰箱'),
-  _ShopItem(id: 'shirt_basic', name: '基本釣魚衫', price: 0, slot: 'shirt', slotLabel: '衫'),
-  _ShopItem(id: 'shirt_dryfit', name: '速乾防曬衫', price: 80, slot: 'shirt', slotLabel: '衫'),
-  _ShopItem(id: 'pants_basic', name: '基本長褲', price: 0, slot: 'pants', slotLabel: '褲'),
-  _ShopItem(id: 'pants_cargo', name: '多袋工裝褲', price: 75, slot: 'pants', slotLabel: '褲'),
-  _ShopItem(id: 'shoes_basic', name: '基本防滑鞋', price: 0, slot: 'shoes', slotLabel: '鞋'),
-  _ShopItem(id: 'shoes_grip', name: '防滑釘鞋', price: 70, slot: 'shoes', slotLabel: '鞋'),
-  _ShopItem(id: 'hat_bucket', name: '漁夫帽', price: 55, slot: 'hat', slotLabel: '帽'),
-  _ShopItem(id: 'hat_cap', name: '防曬鴨舌帽', price: 60, slot: 'hat', slotLabel: '帽'),
-  _ShopItem(id: 'mask_uv', name: '防曬面罩', price: 45, slot: 'mask', slotLabel: '面罩'),
+  _ShopItem(id: 'hat_01', name: '帽 初級-1', price: 120, slot: 'hat', slotLabel: '帽', rarityLabel: '初級'),
+  _ShopItem(id: 'hat_02', name: '帽 初級-2', price: 180, slot: 'hat', slotLabel: '帽', rarityLabel: '初級'),
+  _ShopItem(id: 'hat_03', name: '帽 中級-1', price: 320, slot: 'hat', slotLabel: '帽', rarityLabel: '中級'),
+  _ShopItem(id: 'hat_04', name: '帽 中級-2', price: 450, slot: 'hat', slotLabel: '帽', rarityLabel: '中級'),
+  _ShopItem(id: 'hat_05', name: '帽 高級-1', price: 800, slot: 'hat', slotLabel: '帽', rarityLabel: '高級'),
+  _ShopItem(id: 'hat_06', name: '帽 高級-2', price: 1200, slot: 'hat', slotLabel: '帽', rarityLabel: '高級'),
+  _ShopItem(id: 'mask_01', name: '面罩 初級-1', price: 120, slot: 'mask', slotLabel: '面罩', rarityLabel: '初級'),
+  _ShopItem(id: 'mask_02', name: '面罩 初級-2', price: 180, slot: 'mask', slotLabel: '面罩', rarityLabel: '初級'),
+  _ShopItem(id: 'mask_03', name: '面罩 中級-1', price: 320, slot: 'mask', slotLabel: '面罩', rarityLabel: '中級'),
+  _ShopItem(id: 'mask_04', name: '面罩 中級-2', price: 450, slot: 'mask', slotLabel: '面罩', rarityLabel: '中級'),
+  _ShopItem(id: 'mask_05', name: '面罩 高級-1', price: 800, slot: 'mask', slotLabel: '面罩', rarityLabel: '高級'),
+  _ShopItem(id: 'mask_06', name: '面罩 高級-2', price: 1200, slot: 'mask', slotLabel: '面罩', rarityLabel: '高級'),
+  _ShopItem(id: 'shirt_01', name: '衫 初級-1', price: 120, slot: 'shirt', slotLabel: '衫', rarityLabel: '初級'),
+  _ShopItem(id: 'shirt_02', name: '衫 初級-2', price: 180, slot: 'shirt', slotLabel: '衫', rarityLabel: '初級'),
+  _ShopItem(id: 'shirt_03', name: '衫 中級-1', price: 320, slot: 'shirt', slotLabel: '衫', rarityLabel: '中級'),
+  _ShopItem(id: 'shirt_04', name: '衫 中級-2', price: 450, slot: 'shirt', slotLabel: '衫', rarityLabel: '中級'),
+  _ShopItem(id: 'shirt_05', name: '衫 高級-1', price: 800, slot: 'shirt', slotLabel: '衫', rarityLabel: '高級'),
+  _ShopItem(id: 'shirt_06', name: '衫 高級-2', price: 1200, slot: 'shirt', slotLabel: '衫', rarityLabel: '高級'),
+  _ShopItem(id: 'pants_01', name: '褲 初級-1', price: 120, slot: 'pants', slotLabel: '褲', rarityLabel: '初級'),
+  _ShopItem(id: 'pants_02', name: '褲 初級-2', price: 180, slot: 'pants', slotLabel: '褲', rarityLabel: '初級'),
+  _ShopItem(id: 'pants_03', name: '褲 中級-1', price: 320, slot: 'pants', slotLabel: '褲', rarityLabel: '中級'),
+  _ShopItem(id: 'pants_04', name: '褲 中級-2', price: 450, slot: 'pants', slotLabel: '褲', rarityLabel: '中級'),
+  _ShopItem(id: 'pants_05', name: '褲 高級-1', price: 800, slot: 'pants', slotLabel: '褲', rarityLabel: '高級'),
+  _ShopItem(id: 'pants_06', name: '褲 高級-2', price: 1200, slot: 'pants', slotLabel: '褲', rarityLabel: '高級'),
+  _ShopItem(id: 'shoes_01', name: '鞋 初級-1', price: 120, slot: 'shoes', slotLabel: '鞋', rarityLabel: '初級'),
+  _ShopItem(id: 'shoes_02', name: '鞋 初級-2', price: 180, slot: 'shoes', slotLabel: '鞋', rarityLabel: '初級'),
+  _ShopItem(id: 'shoes_03', name: '鞋 中級-1', price: 320, slot: 'shoes', slotLabel: '鞋', rarityLabel: '中級'),
+  _ShopItem(id: 'shoes_04', name: '鞋 中級-2', price: 450, slot: 'shoes', slotLabel: '鞋', rarityLabel: '中級'),
+  _ShopItem(id: 'shoes_05', name: '鞋 高級-1', price: 800, slot: 'shoes', slotLabel: '鞋', rarityLabel: '高級'),
+  _ShopItem(id: 'shoes_06', name: '鞋 高級-2', price: 1200, slot: 'shoes', slotLabel: '鞋', rarityLabel: '高級'),
+  _ShopItem(id: 'rod_01', name: '魚竿 初級-1', price: 120, slot: 'rod', slotLabel: '魚竿', rarityLabel: '初級'),
+  _ShopItem(id: 'rod_02', name: '魚竿 初級-2', price: 180, slot: 'rod', slotLabel: '魚竿', rarityLabel: '初級'),
+  _ShopItem(id: 'rod_03', name: '魚竿 中級-1', price: 320, slot: 'rod', slotLabel: '魚竿', rarityLabel: '中級'),
+  _ShopItem(id: 'rod_04', name: '魚竿 中級-2', price: 450, slot: 'rod', slotLabel: '魚竿', rarityLabel: '中級'),
+  _ShopItem(id: 'rod_05', name: '魚竿 高級-1', price: 800, slot: 'rod', slotLabel: '魚竿', rarityLabel: '高級'),
+  _ShopItem(id: 'rod_06', name: '魚竿 高級-2', price: 1200, slot: 'rod', slotLabel: '魚竿', rarityLabel: '高級'),
+  _ShopItem(id: 'tackle_box_01', name: '釣箱 初級-1', price: 120, slot: 'tackle_box', slotLabel: '釣箱', rarityLabel: '初級'),
+  _ShopItem(id: 'tackle_box_02', name: '釣箱 初級-2', price: 180, slot: 'tackle_box', slotLabel: '釣箱', rarityLabel: '初級'),
+  _ShopItem(id: 'tackle_box_03', name: '釣箱 中級-1', price: 320, slot: 'tackle_box', slotLabel: '釣箱', rarityLabel: '中級'),
+  _ShopItem(id: 'tackle_box_04', name: '釣箱 中級-2', price: 450, slot: 'tackle_box', slotLabel: '釣箱', rarityLabel: '中級'),
+  _ShopItem(id: 'tackle_box_05', name: '釣箱 高級-1', price: 800, slot: 'tackle_box', slotLabel: '釣箱', rarityLabel: '高級'),
+  _ShopItem(id: 'tackle_box_06', name: '釣箱 高級-2', price: 1200, slot: 'tackle_box', slotLabel: '釣箱', rarityLabel: '高級'),
+  _ShopItem(id: 'cooler_01', name: '冰箱 初級-1', price: 120, slot: 'cooler', slotLabel: '冰箱', rarityLabel: '初級'),
+  _ShopItem(id: 'cooler_02', name: '冰箱 初級-2', price: 180, slot: 'cooler', slotLabel: '冰箱', rarityLabel: '初級'),
+  _ShopItem(id: 'cooler_03', name: '冰箱 中級-1', price: 320, slot: 'cooler', slotLabel: '冰箱', rarityLabel: '中級'),
+  _ShopItem(id: 'cooler_04', name: '冰箱 中級-2', price: 450, slot: 'cooler', slotLabel: '冰箱', rarityLabel: '中級'),
+  _ShopItem(id: 'cooler_05', name: '冰箱 高級-1', price: 800, slot: 'cooler', slotLabel: '冰箱', rarityLabel: '高級'),
+  _ShopItem(id: 'cooler_06', name: '冰箱 高級-2', price: 1200, slot: 'cooler', slotLabel: '冰箱', rarityLabel: '高級'),
 ];
 
 final _shopItemById = {for (final item in _shopItems) item.id: item};

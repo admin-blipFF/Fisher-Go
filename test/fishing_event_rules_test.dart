@@ -246,6 +246,15 @@ void main() {
       expect(
         FishingEventRules.eventMultiplier(
           spotName: '東龍洲碼頭',
+          fishName: '惑魚',
+          fishId: 'fish-126',
+          now: dusk,
+        ),
+        1.8,
+      );
+      expect(
+        FishingEventRules.eventMultiplier(
+          spotName: '東龍洲碼頭',
           fishName: '紅鱲',
           fishId: 'fish-110',
           now: dusk,

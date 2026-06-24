@@ -68,7 +68,10 @@ class FishingEventRules {
     }
     if (_isEastWater(spot) &&
         window == FishingTimeWindow.dusk &&
-        (_isScad(fish) || _isChickenFish(fish) || _isRedBream(fish))) {
+        (_isScad(fish) ||
+            _isCroaker(fish) ||
+            _isChickenFish(fish) ||
+            _isRedBream(fish))) {
       return eastWaterDuskMultiplier;
     }
     if (_isInnerSea(spot) &&
@@ -224,6 +227,12 @@ class FishingEventRules {
         'scad',
         'fish-131',
         'fish-135',
+      ]);
+
+  static bool _isCroaker(String fish) => _hasAny(fish, const [
+        '惑魚',
+        '或魚',
+        'fish-126',
       ]);
 
   static bool _isChickenFish(String fish) => _hasAny(fish, const [

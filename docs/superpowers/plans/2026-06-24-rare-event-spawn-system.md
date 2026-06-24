@@ -30,7 +30,7 @@
 **Files:**
 - Create: `test/fishing_event_rules_test.dart`
 
-- [ ] **Step 1: Write failing tests for time windows and event labels**
+- [x] **Step 1: Write failing tests for time windows and event labels**
 
 Create `test/fishing_event_rules_test.dart`:
 
@@ -153,7 +153,7 @@ void main() {
 }
 ```
 
-- [ ] **Step 2: Run tests to verify RED**
+- [x] **Step 2: Run tests to verify RED**
 
 Run:
 
@@ -171,7 +171,7 @@ Expected: FAIL because `fishing_event_rules.dart` does not exist.
 - Create: `lib/features/game_home/domain/fishing_event_rules.dart`
 - Test: `test/fishing_event_rules_test.dart`
 
-- [ ] **Step 1: Create the domain rule file**
+- [x] **Step 1: Create the domain rule file**
 
 Create `lib/features/game_home/domain/fishing_event_rules.dart`:
 
@@ -400,7 +400,7 @@ class FishingEventRules {
 }
 ```
 
-- [ ] **Step 2: Add multiplier tests**
+- [x] **Step 2: Add multiplier tests**
 
 Append to `test/fishing_event_rules_test.dart` inside the group:
 
@@ -519,7 +519,7 @@ test('boosts runway bream during morning and dusk only', () {
 });
 ```
 
-- [ ] **Step 3: Run event tests**
+- [x] **Step 3: Run event tests**
 
 Run:
 
@@ -529,7 +529,7 @@ flutter test test\fishing_event_rules_test.dart
 
 Expected: PASS.
 
-- [ ] **Step 4: Commit domain event rules**
+- [x] **Step 4: Commit domain event rules**
 
 Run:
 
@@ -546,7 +546,7 @@ git commit -m "FisherGO: add local fishing event rules"
 - Modify: `lib/features/game_home/domain/fishing_spawn_rules.dart`
 - Modify: `test/fishing_spawn_rules_test.dart`
 
-- [ ] **Step 1: Write failing spawn integration tests**
+- [x] **Step 1: Write failing spawn integration tests**
 
 Add to `test/fishing_spawn_rules_test.dart`:
 
@@ -601,7 +601,7 @@ Also add:
 import 'package:fishergo/features/game_home/domain/fishing_biome_rules.dart';
 ```
 
-- [ ] **Step 2: Run spawn tests to verify RED**
+- [x] **Step 2: Run spawn tests to verify RED**
 
 Run:
 
@@ -611,7 +611,7 @@ flutter test test\fishing_spawn_rules_test.dart
 
 Expected: FAIL because `locationMultiplier` does not accept `now`.
 
-- [ ] **Step 3: Integrate `FishingEventRules`**
+- [x] **Step 3: Integrate `FishingEventRules`**
 
 In `lib/features/game_home/domain/fishing_spawn_rules.dart`, add:
 
@@ -662,7 +662,7 @@ Keep this block unchanged:
 if (isSpecialLocationFish) return 0;
 ```
 
-- [ ] **Step 4: Run spawn tests**
+- [x] **Step 4: Run spawn tests**
 
 Run:
 
@@ -672,7 +672,7 @@ flutter test test\fishing_spawn_rules_test.dart
 
 Expected: PASS.
 
-- [ ] **Step 5: Commit spawn integration**
+- [x] **Step 5: Commit spawn integration**
 
 Run:
 
@@ -688,7 +688,7 @@ git commit -m "FisherGO: stack fishing event spawn boosts"
 **Files:**
 - Modify: `lib/features/game_home/presentation/game_home_screen.dart`
 
-- [ ] **Step 1: Import event rules**
+- [x] **Step 1: Import event rules**
 
 Add:
 
@@ -696,7 +696,7 @@ Add:
 import '../domain/fishing_event_rules.dart';
 ```
 
-- [ ] **Step 2: Pass time into spawn rolls**
+- [x] **Step 2: Pass time into spawn rolls**
 
 In `_FishingOverlayState._selectRandomFish`, change:
 
@@ -721,7 +721,7 @@ final locationBoost = FishingSpawnRules.locationMultiplier(
 );
 ```
 
-- [ ] **Step 3: Display event chips near existing intel chips**
+- [x] **Step 3: Display event chips near existing intel chips**
 
 In `_buildSpotSelect`, after:
 
@@ -795,7 +795,7 @@ Widget _spotEventChips(List<String> labels) {
 }
 ```
 
-- [ ] **Step 4: Run analyzer**
+- [x] **Step 4: Run analyzer**
 
 Run:
 
@@ -805,7 +805,7 @@ flutter analyze
 
 Expected: No issues found.
 
-- [ ] **Step 5: Commit UI integration**
+- [x] **Step 5: Commit UI integration**
 
 Run:
 
@@ -821,7 +821,7 @@ git commit -m "FisherGO: show active fishing event chips"
 **Files:**
 - Verify all touched code.
 
-- [ ] **Step 1: Format edited files**
+- [x] **Step 1: Format edited files**
 
 Run:
 
@@ -831,7 +831,7 @@ dart format lib\features\game_home\domain\fishing_event_rules.dart lib\features\
 
 Expected: formatter completes successfully.
 
-- [ ] **Step 2: Run focused tests**
+- [x] **Step 2: Run focused tests**
 
 Run:
 
@@ -841,7 +841,7 @@ flutter test test\fishing_event_rules_test.dart test\fishing_spawn_rules_test.da
 
 Expected: all tests pass.
 
-- [ ] **Step 3: Run full analyzer and test suite**
+- [x] **Step 3: Run full analyzer and test suite**
 
 Run:
 
@@ -852,7 +852,7 @@ flutter test
 
 Expected: analyzer clean and full test suite passes.
 
-- [ ] **Step 4: Build Android debug APK**
+- [x] **Step 4: Build Android debug APK**
 
 Run:
 
@@ -862,7 +862,7 @@ flutter build apk --debug
 
 Expected: `build\app\outputs\flutter-apk\app-debug.apk` is created.
 
-- [ ] **Step 5: Run emulator smoke**
+- [x] **Step 5: Run emulator smoke**
 
 Run:
 

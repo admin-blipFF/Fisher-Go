@@ -6,20 +6,28 @@ class SupabaseConfig {
     'SUPABASE_ANON_KEY',
   );
 
-  static String get url =>
-      _urlFromDefine.isNotEmpty ? _urlFromDefine : _envValue('SUPABASE_URL');
+  static String get url {
+    final urlFromDefine = _normalizeValue(_urlFromDefine);
+    return urlFromDefine.isNotEmpty ? urlFromDefine : _envValue('SUPABASE_URL');
+  }
 
-  static String get anonKey => _anonKeyFromDefine.isNotEmpty
-      ? _anonKeyFromDefine
-      : _envValue('SUPABASE_ANON_KEY');
+  static String get anonKey {
+    final anonKeyFromDefine = _normalizeValue(_anonKeyFromDefine);
+    return anonKeyFromDefine.isNotEmpty
+        ? anonKeyFromDefine
+        : _envValue('SUPABASE_ANON_KEY');
+  }
 
   static String _envValue(String key) {
     try {
-      return dotenv.env[key] ?? '';
+      return _normalizeValue(dotenv.env[key] ?? '');
     } catch (_) {
       return '';
     }
   }
+
+  static String _normalizeValue(String value) =>
+      value.replaceFirst('\uFEFF', '').trim();
 
   static bool get isConfigured {
     final configuredUrl = url;

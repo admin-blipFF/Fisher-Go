@@ -42,14 +42,28 @@ void main() {
       expect(
         FishingEventRules.activeEventLabels(
           spotName: '青馬大橋橋底',
-          now: DateTime(2026, 6, 24, 22),
+          now: DateTime(2026, 6, 24, 20, 0),
         ),
-        contains('夜水：石斑 / 海塘蝨提升'),
+        equals(['夜水：石斑 / 海塘蝨提升']),
       );
       expect(
         FishingEventRules.activeEventLabels(
           spotName: '青馬大橋橋底',
-          now: DateTime(2026, 6, 24, 14),
+          now: DateTime(2026, 6, 24, 4, 59),
+        ),
+        equals(['夜水：石斑 / 海塘蝨提升']),
+      );
+      expect(
+        FishingEventRules.activeEventLabels(
+          spotName: '青馬大橋橋底',
+          now: DateTime(2026, 6, 24, 19, 59),
+        ),
+        isEmpty,
+      );
+      expect(
+        FishingEventRules.activeEventLabels(
+          spotName: '青馬大橋橋底',
+          now: DateTime(2026, 6, 24, 5, 0),
         ),
         isEmpty,
       );
@@ -59,14 +73,28 @@ void main() {
       expect(
         FishingEventRules.activeEventLabels(
           spotName: '東龍洲碼頭',
-          now: DateTime(2026, 6, 24, 18),
+          now: DateTime(2026, 6, 24, 17, 0),
         ),
-        contains('黃昏：池仔 / 黃雞魚提升'),
+        equals(['黃昏：池仔 / 黃雞魚提升']),
       );
       expect(
         FishingEventRules.activeEventLabels(
           spotName: '東龍洲碼頭',
-          now: DateTime(2026, 6, 24, 11),
+          now: DateTime(2026, 6, 24, 19, 59),
+        ),
+        equals(['黃昏：池仔 / 黃雞魚提升']),
+      );
+      expect(
+        FishingEventRules.activeEventLabels(
+          spotName: '東龍洲碼頭',
+          now: DateTime(2026, 6, 24, 16, 59),
+        ),
+        isEmpty,
+      );
+      expect(
+        FishingEventRules.activeEventLabels(
+          spotName: '東龍洲碼頭',
+          now: DateTime(2026, 6, 24, 20, 0),
         ),
         isEmpty,
       );
@@ -76,14 +104,28 @@ void main() {
       expect(
         FishingEventRules.activeEventLabels(
           spotName: '三門仔村碼頭',
-          now: DateTime(2026, 6, 24, 7),
+          now: DateTime(2026, 6, 24, 5, 0),
         ),
-        contains('早水：烏頭提升'),
+        equals(['早水：烏頭提升']),
       );
       expect(
         FishingEventRules.activeEventLabels(
           spotName: '三門仔村碼頭',
-          now: DateTime(2026, 6, 24, 20),
+          now: DateTime(2026, 6, 24, 9, 59),
+        ),
+        equals(['早水：烏頭提升']),
+      );
+      expect(
+        FishingEventRules.activeEventLabels(
+          spotName: '三門仔村碼頭',
+          now: DateTime(2026, 6, 24, 10, 0),
+        ),
+        isEmpty,
+      );
+      expect(
+        FishingEventRules.activeEventLabels(
+          spotName: '三門仔村碼頭',
+          now: DateTime(2026, 6, 24, 4, 59),
         ),
         isEmpty,
       );
@@ -93,21 +135,56 @@ void main() {
       expect(
         FishingEventRules.activeEventLabels(
           spotName: '赤鱲角機場跑道尾',
-          now: DateTime(2026, 6, 24, 6),
+          now: DateTime(2026, 6, 24, 5, 0),
         ),
-        contains('早晚：立魚提升'),
+        equals(['早晚：立魚提升']),
       );
       expect(
         FishingEventRules.activeEventLabels(
           spotName: '赤鱲角機場跑道尾',
-          now: DateTime(2026, 6, 24, 18),
+          now: DateTime(2026, 6, 24, 9, 59),
         ),
-        contains('早晚：立魚提升'),
+        equals(['早晚：立魚提升']),
       );
       expect(
         FishingEventRules.activeEventLabels(
           spotName: '赤鱲角機場跑道尾',
-          now: DateTime(2026, 6, 24, 13),
+          now: DateTime(2026, 6, 24, 17, 0),
+        ),
+        equals(['早晚：立魚提升']),
+      );
+      expect(
+        FishingEventRules.activeEventLabels(
+          spotName: '赤鱲角機場跑道尾',
+          now: DateTime(2026, 6, 24, 19, 59),
+        ),
+        equals(['早晚：立魚提升']),
+      );
+      expect(
+        FishingEventRules.activeEventLabels(
+          spotName: '赤鱲角機場跑道尾',
+          now: DateTime(2026, 6, 24, 10, 0),
+        ),
+        isEmpty,
+      );
+      expect(
+        FishingEventRules.activeEventLabels(
+          spotName: '赤鱲角機場跑道尾',
+          now: DateTime(2026, 6, 24, 16, 59),
+        ),
+        isEmpty,
+      );
+      expect(
+        FishingEventRules.activeEventLabels(
+          spotName: '赤鱲角機場跑道尾',
+          now: DateTime(2026, 6, 24, 20, 0),
+        ),
+        isEmpty,
+      );
+      expect(
+        FishingEventRules.activeEventLabels(
+          spotName: '赤鱲角機場跑道尾',
+          now: DateTime(2026, 6, 24, 4, 59),
         ),
         isEmpty,
       );

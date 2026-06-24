@@ -7,6 +7,7 @@ class _FakeRemote implements CatchRemoteDataSource {
   _FakeRemote({required this.failIds});
 
   final Set<String> failIds;
+  final List<CatchLogEntry> uploaded = [];
 
   @override
   Future<void> uploadCatch({
@@ -16,6 +17,7 @@ class _FakeRemote implements CatchRemoteDataSource {
     if (failIds.contains(entry.id)) {
       throw Exception('fail');
     }
+    uploaded.add(entry);
   }
 }
 
@@ -68,5 +70,34 @@ void main() {
     expect(result.synced, 2);
     expect(result.failed, 1);
     expect(result.failedIds, {'b'});
+  });
+
+  test('sync carries real catch proof metadata to the remote', () async {
+    final remote = _FakeRemote(failIds: {});
+    final service = CatchSyncService(
+      remote: remote,
+      isConfigured: () => true,
+      currentUserId: () => 'user-1',
+    );
+    final proofEntry = CatchLogEntry(
+      id: 'proof-1',
+      speciesId: 'fish-063',
+      speciesName: '烏頭',
+      caughtAt: DateTime.utc(2026, 6, 24, 8),
+      photoPath: '/local/photo.jpg',
+      isRealCatchProof: true,
+      recognitionConfidence: 0.82,
+      recognizedSpeciesId: 'fish-063',
+      verifiedAt: DateTime.utc(2026, 6, 24, 8, 1),
+    );
+
+    final result = await service.sync([proofEntry]);
+
+    expect(result.synced, 1);
+    expect(remote.uploaded, hasLength(1));
+    expect(remote.uploaded.single.isRealCatchProof, true);
+    expect(remote.uploaded.single.recognitionConfidence, 0.82);
+    expect(remote.uploaded.single.recognizedSpeciesId, 'fish-063');
+    expect(remote.uploaded.single.verifiedAt, DateTime.utc(2026, 6, 24, 8, 1));
   });
 }

@@ -55,6 +55,10 @@ class CatchLogEntry {
     this.longitude,
     this.checkpoints = const [],
     this.syncStatus = CatchSyncStatus.pending,
+    this.isRealCatchProof = false,
+    this.recognitionConfidence,
+    this.recognizedSpeciesId,
+    this.verifiedAt,
   }) : id = id ?? const Uuid().v4();
 
   final String id;
@@ -69,6 +73,10 @@ class CatchLogEntry {
   final double? longitude;
   final List<CatchCheckpoint> checkpoints;
   final CatchSyncStatus syncStatus;
+  final bool isRealCatchProof;
+  final double? recognitionConfidence;
+  final String? recognizedSpeciesId;
+  final DateTime? verifiedAt;
 
   Map<String, dynamic> toMap() => {
         'id': id,
@@ -83,6 +91,10 @@ class CatchLogEntry {
         'longitude': longitude,
         'checkpoints': checkpoints.map((item) => item.toMap()).toList(),
         'syncStatus': syncStatus.name,
+        'isRealCatchProof': isRealCatchProof,
+        'recognitionConfidence': recognitionConfidence,
+        'recognizedSpeciesId': recognizedSpeciesId,
+        'verifiedAt': verifiedAt?.toIso8601String(),
       };
 
   factory CatchLogEntry.fromMap(Map<dynamic, dynamic> raw) {
@@ -105,6 +117,12 @@ class CatchLogEntry {
         (value) => value.name == map['syncStatus'],
         orElse: () => CatchSyncStatus.pending,
       ),
+      isRealCatchProof: (map['isRealCatchProof'] as bool?) ?? false,
+      recognitionConfidence: (map['recognitionConfidence'] as num?)?.toDouble(),
+      recognizedSpeciesId: map['recognizedSpeciesId'] as String?,
+      verifiedAt: map['verifiedAt'] == null
+          ? null
+          : DateTime.tryParse(map['verifiedAt'] as String),
     );
   }
 }

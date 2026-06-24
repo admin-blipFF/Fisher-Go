@@ -470,10 +470,13 @@ class _PhotoProofBadge extends StatelessWidget {
           ),
         ],
       ),
-      child: const Icon(
-        Icons.phishing,
-        size: 17,
-        color: Colors.white,
+      child: const Tooltip(
+        message: '真實釣獲相片',
+        child: Icon(
+          Icons.phishing,
+          size: 17,
+          color: Colors.white,
+        ),
       ),
     );
   }

@@ -21,6 +21,7 @@ import '../../profile/domain/game_shop_item.dart';
 import '../../profile/presentation/profile_screen.dart';
 import '../data/catch_log_local_data_source.dart';
 import '../data/fish_recognition_service.dart';
+import '../data/real_catch_claim_service.dart';
 import '../data/catch_sync_service.dart';
 import '../data/hk_fishing_spots_geocoded_seed.dart';
 import '../domain/catch_log_entry.dart';
@@ -1414,6 +1415,10 @@ class _CatchLogScreenState extends State<CatchLogScreen> {
               longitude: entry.longitude,
               checkpoints: entry.checkpoints,
               syncStatus: CatchSyncStatus.failed,
+              isRealCatchProof: entry.isRealCatchProof,
+              recognitionConfidence: entry.recognitionConfidence,
+              recognizedSpeciesId: entry.recognizedSpeciesId,
+              verifiedAt: entry.verifiedAt,
             ),
           )
           .toList(growable: false);
@@ -1434,31 +1439,25 @@ class _CatchLogScreenState extends State<CatchLogScreen> {
     setState(() => _saving = true);
     try {
       final fish = _species.firstWhere((item) => item.id == _selectedSpeciesId);
-      final entry = CatchLogEntry(
+      final photoPath = _photoXFile?.path;
+      if (photoPath == null || photoPath.trim().isEmpty) {
+        _showSnack('請先上載魚獲相片，才可記錄真實釣獲。');
+        return;
+      }
+
+      final service = RealCatchClaimService(localDataSource: _localDataSource);
+      await service.claim(
         speciesId: fish.id,
         speciesName: fish.displayLocalName,
         caughtAt: _caughtAt,
         lengthCm: _toDoubleOrNull(_lengthController.text),
         weightKg: _toDoubleOrNull(_weightController.text),
         notes: _emptyToNull(_notesController.text),
-        photoPath: _photoXFile?.path,
+        photoPath: photoPath,
         latitude: _latitude,
         longitude: _longitude,
         checkpoints: List<CatchCheckpoint>.unmodifiable(_checkpoints),
       );
-
-      await _localDataSource.addPending(entry);
-      if (_photoXFile?.path.isNotEmpty == true) {
-        await FishCollectionService.markVerifiedRealCatch(
-          fish.id,
-          photoPath: _photoXFile?.path,
-          bestLengthCm: _toDoubleOrNull(_lengthController.text),
-          latitude: _latitude,
-          longitude: _longitude,
-        );
-      } else {
-        await FishCollectionService.markGameCaught(fish.id);
-      }
       await _loadPending();
       // Auto-sync if Supabase is configured
       if (SupabaseConfig.isConfigured) {
@@ -1482,6 +1481,10 @@ class _CatchLogScreenState extends State<CatchLogScreen> {
                   longitude: entry.longitude,
                   checkpoints: entry.checkpoints,
                   syncStatus: CatchSyncStatus.failed,
+                  isRealCatchProof: entry.isRealCatchProof,
+                  recognitionConfidence: entry.recognitionConfidence,
+                  recognizedSpeciesId: entry.recognizedSpeciesId,
+                  verifiedAt: entry.verifiedAt,
                 ),
               )
               .toList(growable: false);
@@ -1504,7 +1507,7 @@ class _CatchLogScreenState extends State<CatchLogScreen> {
         });
       }
 
-      _showSnack('已加入魚獲記錄（+20 金幣）');
+      _showSnack('已加入待同步，圖鑑已標記為真實釣獲（+20 金幣）');
     } finally {
       if (mounted) setState(() => _saving = false);
     }

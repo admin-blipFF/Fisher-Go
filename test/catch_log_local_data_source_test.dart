@@ -63,4 +63,26 @@ void main() {
     expect(loaded.first.longitude, 114.158);
     expect(loaded.first.syncStatus, CatchSyncStatus.pending);
   });
+
+  test('persists real catch proof metadata in hive queue', () async {
+    final entry = CatchLogEntry(
+      speciesId: 'fish-063',
+      speciesName: '烏頭',
+      caughtAt: DateTime.utc(2026, 6, 24, 8),
+      photoPath: '/local/photo.jpg',
+      latitude: 22.45,
+      longitude: 114.18,
+      isRealCatchProof: true,
+      recognitionConfidence: 0.82,
+      recognizedSpeciesId: 'fish-063',
+      verifiedAt: DateTime.utc(2026, 6, 24, 8, 1),
+    );
+
+    final restored = CatchLogEntry.fromMap(entry.toMap());
+
+    expect(restored.isRealCatchProof, true);
+    expect(restored.recognitionConfidence, 0.82);
+    expect(restored.recognizedSpeciesId, 'fish-063');
+    expect(restored.verifiedAt, DateTime.utc(2026, 6, 24, 8, 1));
+  });
 }

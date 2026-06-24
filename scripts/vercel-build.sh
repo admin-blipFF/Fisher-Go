@@ -30,13 +30,18 @@ const fs = require('fs');
 const path = 'build/web/flutter_bootstrap.js';
 const buildId = process.env.BUILD_ID;
 const text = fs.readFileSync(path, 'utf8');
-const next = text.replace(
+let next = text.replace(
   '"mainJsPath":"main.dart.js"',
   `"mainJsPath":"main.dart.js?v=${buildId}"`,
 );
 if (next === text) {
   throw new Error('Unable to version main.dart.js in flutter_bootstrap.js');
 }
+const serviceWorkerStart = next.lastIndexOf('_flutter.loader.load({');
+if (serviceWorkerStart === -1) {
+  throw new Error('Unable to disable Flutter service worker in flutter_bootstrap.js');
+}
+next = `${next.slice(0, serviceWorkerStart)}_flutter.loader.load();\n`;
 fs.writeFileSync(
   path,
   next,

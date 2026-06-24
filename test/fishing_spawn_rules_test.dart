@@ -1,4 +1,5 @@
 import 'package:fishergo/features/game_home/domain/fishing_spawn_rules.dart';
+import 'package:fishergo/features/game_home/domain/fishing_biome_rules.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -112,6 +113,50 @@ void main() {
           spotName: '中環碼頭',
           fishName: '藍鰭鮪',
           fishId: 'fish-153',
+        ),
+        1,
+      );
+    });
+
+    test('stacks Tsing Ma night event on top of location and biome boosts', () {
+      final normal = FishingSpawnRules.locationMultiplier(
+        spotName: '青馬大橋橋底',
+        fishName: '石斑魚',
+        fishId: 'fish-073',
+        biome: FishingSpotBiome.bridge,
+        now: DateTime(2026, 6, 24, 13),
+      );
+      final event = FishingSpawnRules.locationMultiplier(
+        spotName: '青馬大橋橋底',
+        fishName: '石斑魚',
+        fishId: 'fish-073',
+        biome: FishingSpotBiome.bridge,
+        now: DateTime(2026, 6, 24, 22),
+      );
+
+      expect(event, normal * 2.0);
+    });
+
+    test('does not unblock location-special fish in unrelated event waters',
+        () {
+      expect(
+        FishingSpawnRules.locationMultiplier(
+          spotName: '東龍洲碼頭',
+          fishName: '石斑魚',
+          fishId: 'fish-073',
+          now: DateTime(2026, 6, 24, 18),
+        ),
+        0,
+      );
+    });
+
+    test('keeps generic fish unchanged during active event windows', () {
+      expect(
+        FishingSpawnRules.locationMultiplier(
+          spotName: '青馬大橋橋底',
+          fishName: '藍鰭鮪',
+          fishId: 'fish-153',
+          now: DateTime(2026, 6, 24, 22),
         ),
         1,
       );

@@ -1,6 +1,7 @@
 import 'dart:collection';
 
 import 'fishing_biome_rules.dart';
+import 'fishing_event_rules.dart';
 
 class FishingSpawnRules {
   static const double targetMultiplier = 4;
@@ -12,6 +13,7 @@ class FishingSpawnRules {
     required String fishName,
     String? fishId,
     FishingSpotBiome? biome,
+    DateTime? now,
   }) {
     final spot = _normalize(spotName);
     final fish = _normalize('$fishName ${fishId ?? ''}');
@@ -22,32 +24,40 @@ class FishingSpawnRules {
             fishName: fishName,
             fishId: fishId,
           );
+    final eventMultiplier = now == null
+        ? 1.0
+        : FishingEventRules.eventMultiplier(
+            spotName: spotName,
+            fishName: fishName,
+            fishId: fishId,
+            now: now,
+          );
     var isSpecialLocationFish = false;
 
     if (_isBream(fish) && (_isNorthWater(spot) || _isTungChungRunway(spot))) {
-      return targetMultiplier * biomeMultiplier;
+      return targetMultiplier * biomeMultiplier * eventMultiplier;
     }
     isSpecialLocationFish = isSpecialLocationFish || _isBream(fish);
 
     if (_isMullet(fish) && _isSamMunTsaiTaiPoInnerWater(spot)) {
-      return targetMultiplier * biomeMultiplier;
+      return targetMultiplier * biomeMultiplier * eventMultiplier;
     }
     isSpecialLocationFish = isSpecialLocationFish || _isMullet(fish);
 
     if ((_isGrouper(fish) || _isCatfish(fish)) && _isTsingMaWater(spot)) {
-      return targetMultiplier * biomeMultiplier;
+      return targetMultiplier * biomeMultiplier * eventMultiplier;
     }
     isSpecialLocationFish =
         isSpecialLocationFish || _isGrouper(fish) || _isCatfish(fish);
 
     if (_isEastWaterFish(fish) && _isEastWater(spot)) {
-      return targetMultiplier * biomeMultiplier;
+      return targetMultiplier * biomeMultiplier * eventMultiplier;
     }
     isSpecialLocationFish = isSpecialLocationFish || _isEastWaterFish(fish);
 
     if (isSpecialLocationFish) return 0;
 
-    return biomeMultiplier;
+    return biomeMultiplier * eventMultiplier;
   }
 
   static List<String> spotIntelLabels(String spotName) {

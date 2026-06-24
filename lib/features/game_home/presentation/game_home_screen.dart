@@ -20,6 +20,7 @@ import '../../catches/data/hk_fishing_spots_geocoded_seed.dart';
 import '../../fish/domain/fish_collection_service.dart';
 import '../../fish/domain/fish_collection_status.dart';
 import '../domain/fishing_biome_rules.dart';
+import '../domain/fishing_event_rules.dart';
 import '../domain/fishing_spawn_rules.dart';
 import '../domain/fishing_strike_rules.dart';
 import '../../navigation/game_screen.dart';
@@ -1685,6 +1686,7 @@ class _FishingOverlayState extends State<_FishingOverlay>
 
   _FishEntry _selectRandomFish(_FishSpot spot) {
     if (widget.tutorialMode) return _tutorialFish;
+    final now = DateTime.now();
     final adjustedWeights = List<double>.generate(spot.fish.length, (i) {
       final fish = spot.fish[i];
       final boost = widget.fishBoosts[fish.name] ?? 1.0;
@@ -1693,6 +1695,7 @@ class _FishingOverlayState extends State<_FishingOverlay>
         fishName: fish.name,
         fishId: fish.fishId,
         biome: widget.spotBiome,
+        now: now,
       );
       return spot.weights[i] * boost * locationBoost;
     });
@@ -1786,6 +1789,10 @@ class _FishingOverlayState extends State<_FishingOverlay>
       ]);
     }
     final intelLabels = FishingSpawnRules.spotIntelLabels(widget.spotName);
+    final eventLabels = FishingEventRules.activeEventLabels(
+      spotName: widget.spotName,
+      now: DateTime.now(),
+    );
     return Column(mainAxisSize: MainAxisSize.min, children: [
       const Text(
         '🎣 選擇釣點',
@@ -1800,6 +1807,10 @@ class _FishingOverlayState extends State<_FishingOverlay>
       if (intelLabels.isNotEmpty) ...[
         const SizedBox(height: 10),
         _spotIntelChips(intelLabels),
+      ],
+      if (eventLabels.isNotEmpty) ...[
+        const SizedBox(height: 8),
+        _spotEventChips(eventLabels),
       ],
       const SizedBox(height: 16),
       // 水域選擇 — 碼頭只有淺水；外島有淺/中/深三區
@@ -1902,6 +1913,39 @@ class _FishingOverlayState extends State<_FishingOverlay>
                 fontWeight: FontWeight.w700,
               ),
             ),
+          ),
+      ],
+    );
+  }
+
+  Widget _spotEventChips(List<String> labels) {
+    return Wrap(
+      alignment: WrapAlignment.center,
+      spacing: 6,
+      runSpacing: 6,
+      children: [
+        for (final label in labels)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(
+              color: Colors.amberAccent.withValues(alpha: 0.16),
+              border: Border.all(
+                color: Colors.amberAccent.withValues(alpha: 0.62),
+              ),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Row(mainAxisSize: MainAxisSize.min, children: [
+              const Icon(Icons.bolt, color: Colors.amberAccent, size: 14),
+              const SizedBox(width: 4),
+              Text(
+                label,
+                style: const TextStyle(
+                  color: Colors.amberAccent,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ]),
           ),
       ],
     );

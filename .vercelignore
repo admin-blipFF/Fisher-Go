@@ -1,9 +1,9 @@
 .git
 .dart_tool
-build
+/build
 *.zip
 *.tar
 *.tar.gz
 assets/fish/icons/renumbered_*/
-data/
-coverage/
+/data/
+/coverage/

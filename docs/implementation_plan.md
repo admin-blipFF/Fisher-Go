@@ -1,23 +1,27 @@
 # FisherGO MVP Implementation Plan
 
-Goal: Build a simple, working Hong Kong fishing app MVP with an offline-first fish encyclopedia and Supabase backend.
+Goal: Build a Hong Kong fishing mobile game with an offline-first fish encyclopedia, GPS fishing loop, catch logging, Supabase backend, and daily leaderboard.
 
-Current priority: Web-first development. Chrome is the primary runtime for design, testing, and demos. Android/iOS remain supported by the Flutter project but are deferred until the web MVP is stable and Android SDK is installed.
+Current priority: Android-first mobile product development. Chrome web remains a fast preview/demo/admin target, but native mobile behavior is the product source of truth for GPS, camera, offline sync, notifications, haptics, and app lifecycle.
 
 Architecture: Flutter feature folders, repository pattern for remote/local/sample data, Supabase as source of truth when configured, Hive as offline cache, bundled sample species as a no-credential web fallback.
 
-## Phase 1 — Web app shell
+## Phase 1 — Mobile foundation
 
-- Initialize Flutter app.
-- Add dependencies.
-- Configure `.env` without hardcoding secrets.
-- Create app shell with bottom navigation.
-- Verify in Chrome first.
+- Keep Flutter analyzer clean.
+- Keep full test suite green.
+- Keep web build usable for preview/admin, but do not design gameplay around web limitations.
+- Install and configure Android SDK.
+- Audit Android permission needs: location, camera/photo library, notifications, and app lifecycle.
+- Prepare shared code so Android APK builds without source restructuring.
+- Use Android application ID `com.fishergo.app`.
 
 Verification:
 - `flutter analyze`
 - `flutter test`
-- `flutter run -d chrome`
+- `flutter doctor -v`
+- `flutter build apk --debug`
+- `flutter build web`
 
 ## Phase 2 — Supabase schema
 
@@ -32,6 +36,8 @@ Verification:
 - user can only create/read own `catches`
 
 ## Phase 3 — Web-first offline encyclopedia
+
+Status: keep as cross-platform encyclopedia foundation, but no longer the product driver.
 
 - Render responsive fish grid in Chrome.
 - Use repository order: Supabase remote when configured → Hive cache → bundled Hong Kong sample fish.
@@ -48,9 +54,11 @@ Verification:
 
 ## Phase 4 — Web catch logging
 
+Reframe as native mobile catch logging, with web as a fallback/demo surface.
+
 - Manual species selection first.
-- Browser file upload for photo.
-- Optional location with browser permission.
+- Native camera/photo flow on mobile.
+- GPS location with permission handling.
 - Local pending queue.
 - Sync to Supabase only when credentials are configured.
 
@@ -68,8 +76,15 @@ Verification:
 - User confirmation required.
 - No paid API until approved.
 
-## Deferred mobile work
+## Mobile-first game loop
 
-- Android SDK setup.
-- Android APK build.
+- GPS spot discovery and distance checks.
+- Fishing attempt minigame.
+- Catch confirmation with photo/location/time metadata.
+- Fish collection unlock state.
+- Coins, XP, streaks, daily tasks, and event boosts.
+- Push notification hooks when app credentials are ready.
+
+## Deferred platform work
+
 - iOS build validation on macOS.

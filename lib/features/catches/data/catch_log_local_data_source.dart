@@ -36,7 +36,8 @@ class CatchLogLocalDataSource {
       return;
     }
 
-    final payload = entries.map((entry) => entry.toMap()).toList(growable: false);
+    final payload =
+        entries.map((entry) => entry.toMap()).toList(growable: false);
     await box.put(itemsKey, payload);
   }
 

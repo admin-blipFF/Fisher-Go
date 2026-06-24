@@ -1,0 +1,156 @@
+FisherGO 全魚庫排序清單
+規則: 魚類 -> 體形 -> 稀有程度(高到低) -> 編號(小到大)
+
+
+[其他魚類 / 圓筒膨脹型]
+001. #040 | R4 | 040_hk-pufferfish.png
+
+[其他魚類 / 標準紡錘型]
+002. #004 | R2 | 004_hk-russell-snapper.png
+003. #005 | R2 | 005_hk-mangrove-red-snapper.png
+004. #006 | R2 | 006_hk-johns-snapper.png
+005. #012 | R2 | 012_hk-spotted-scat.png
+006. #015 | R2 | 015_hk-japanese-seabass.png
+007. #016 | R2 | 016_hk-barramundi.png
+008. #017 | R2 | 017_hk-fourfinger-threadfin.png
+009. #018 | R2 | 018_hk-largehead-hairtail.png
+010. #019 | R2 | 019_hk-bartail-flathead.png
+011. #020 | R2 | 020_hk-bigeye-flathead.png
+012. #022 | R2 | 022_hk-bombay-duck.png
+013. #023 | R2 | 023_hk-japanese-threadfin-bream.png
+014. #024 | R2 | 024_hk-golden-threadfin-bream.png
+015. #025 | R2 | 025_hk-yellow-croaker.png
+016. #026 | R2 | 026_hk-big-head-croaker.png
+017. #027 | R2 | 027_hk-reeves-croaker.png
+018. #028 | R2 | 028_hk-ponyfish.png
+019. #029 | R2 | 029_hk-orangefin-ponyfish.png
+020. #034 | R2 | 034_hk-indian-mackerel.png
+021. #035 | R2 | 035_hk-narrow-barred-spanish-mackerel.png
+022. #036 | R2 | 036_hk-kawakawa.png
+023. #037 | R2 | 037_hk-longtail-tuna.png
+024. #038 | R2 | 038_hk-black-pomfret.png
+025. #039 | R2 | 039_hk-silver-pomfret.png
+026. #044 | R2 | 044_hk-stingray.png
+027. #045 | R2 | 045_hk-white-spotted-bamboo-shark.png
+028. #047 | R2 | 047_hk-unicorn-leatherjacket.png
+029. #049 | R2 | 049_hk-moray-eel.png
+030. #050 | R2 | 050_hk-conger-eel.png
+031. #056 | R2 | 056_hk-egg-wrasse-local-badge.png
+032. #057 | R2 | 057_hk-mouse-wrasse-local-badge.png
+033. #058 | R2 | 058_hk-silver-sillago-local-badge.png
+034. #059 | R2 | 059_hk-goatfish-local-badge.png
+035. #060 | R2 | 060_hk-grunt-local-badge.png
+036. #061 | R2 | 061_hk-small-banded-grunter-local-badge.png
+037. #062 | R2 | 062_hk-silver-biddy-local-badge.png
+038. #063 | R2 | 063_hk-anchovy-local-badge.png
+039. #064 | R2 | 064_hk-sardinella-local-badge.png
+040. #065 | R2 | 065_hk-barracuda-local-badge.png
+041. #067 | R2 | 067_hk-halfbeak-local-badge.png
+042. #070 | R2 | 070_hk-mojarra-local-badge.png
+043. #071 | R2 | 071_hk-goby-local-badge.png
+044. #072 | R2 | 072_hk-mudskipper-local-badge.png
+045. #074 | R2 | 074_hk-cardinalfish-local-badge.png
+046. #080 | R2 | 080_hk-remora-local-badge.png
+047. #081 | R2 | 081_hk-flame-snapper-local-badge.png
+048. #083 | R2 | 083_hk-red-devil-rockfish-local-badge.png
+049. #088 | R2 | 088_hk-flagfish-local-badge.png
+050. #090 | R2 | 090_hk-yellow-nail-local-badge.png
+051. #094 | R2 | 094_hk-spotted-sweetlips-local-badge.png
+052. #095 | R2 | 095_hk-star-snapper-local-badge.png
+053. #097 | R2 | 097_hk-spotted-sillago-local-badge.png
+054. #098 | R2 | 098_hk-rockfish-local-badge.png
+055. #099 | R2 | 099_hk-goatfish-wrasp-local-badge.png
+056. #100 | R2 | 100_hk-croaker-gwak-local-badge.png
+057. #101 | R2 | 101_icon.png
+058. #102 | R2 | 102_icon.png
+059. #103 | R2 | 103_icon.png
+060. #104 | R2 | 104.png
+061. #105 | R2 | 105_icon.png
+062. #106 | R2 | 106_icon.png
+063. #107 | R2 | 107.png
+064. #108 | R2 | 108_icon.png
+065. #109 | R2 | 109.png
+066. #110 | R2 | 110.png
+067. #111 | R2 | 111.png
+068. #112 | R2 | 112.png
+069. #113 | R2 | 113.png
+070. #114 | R2 | 114.png
+071. #115 | R2 | 115.png
+072. #116 | R2 | 116.png
+073. #117 | R2 | 117.png
+074. #118 | R2 | 118.png
+075. #119 | R2 | 119.png
+076. #120 | R2 | 120.png
+077. #121 | R2 | 121.png
+078. #122 | R2 | 122.png
+079. #123 | R2 | 123.png
+080. #124 | R2 | 124.png
+081. #125 | R2 | 125.png
+
+[其他魚類 / 細長流線型]
+082. #066 | R2 | 066_hk-needlefish-local-badge.png
+
+[洄游掠食魚類 / 標準紡錘型]
+083. #030 | R2 | 030_hk-golden-trevally.png
+084. #031 | R2 | 031_hk-malabar-trevally.png
+085. #032 | R2 | 032_hk-yellowtail-scad.png
+086. #033 | R2 | 033_hk-queenfish.png
+087. #055 | R2 | 055_hk-small-scad-local-badge.png
+088. #096 | R2 | 096_hk-yellowstripe-trevally-local-badge.png
+
+[礁棲魚類 / 圓筒膨脹型]
+089. #079 | R4 | 079_hk-boxfish-local-badge.png
+
+[礁棲魚類 / 扇形棘鰭型]
+090. #041 | R5 | 041_hk-lionfish.png
+091. #042 | R5 | 042_hk-stonefish.png
+092. #043 | R4 | 043_hk-scorpionfish.png
+
+[礁棲魚類 / 標準紡錘型]
+093. #078 | R4 | 078_hk-triggerfish-local-badge.png
+094. #046 | R3 | 046_hk-orangespotted-filefish.png
+095. #073 | R3 | 073_hk-thread-sail-filefish-local-badge.png
+096. #077 | R2 | 077_hk-parrotfish-local-badge.png
+
+[礁棲魚類 / 粗壯紡錘型]
+097. #007 | R3 | 007_hk-orange-spotted-grouper.png
+098. #008 | R3 | 008_hk-malabar-grouper.png
+099. #009 | R3 | 009_hk-hong-kong-grouper.png
+100. #010 | R3 | 010_hk-leopard-coral-grouper.png
+101. #089 | R3 | 089_hk-blackline-grouper-local-badge.png
+102. #091 | R3 | 091_hk-sesame-grouper-local-badge.png
+103. #092 | R3 | 092_hk-flower-head-grouper-local-badge.png
+104. #093 | R3 | 093_hk-giant-grouper-local-badge.png
+
+[礁棲魚類 / 高身側扁型]
+105. #075 | R2 | 075_hk-butterflyfish-local-badge.png
+106. #076 | R2 | 076_hk-damselfish-local-badge.png
+
+[近岸底層魚類 / 扁平貼底型]
+107. #048 | R2 | 048_hk-flatfish.png
+
+[近岸底層魚類 / 標準紡錘型]
+108. #069 | R3 | 069_hk-sea-catfish-local-badge.png
+109. #013 | R2 | 013_hk-grey-mullet.png
+110. #014 | R2 | 014_hk-large-scale-mullet.png
+111. #021 | R2 | 021_hk-lizardfish.png
+
+[近岸底層魚類 / 細長流線型]
+112. #068 | R3 | 068_hk-eeltail-catfish-local-badge.png
+
+[近岸草食魚類 / 高身側扁型]
+113. #011 | R2 | 011_hk-rabbitfish.png
+
+[鯛科魚類 / 高身側扁型]
+114. #001 | R2 | 001_hk-yellowfin-seabream.png
+115. #002 | R2 | 002_hk-black-seabream.png
+116. #003 | R2 | 003_hk-goldlined-seabream.png
+117. #051 | R2 | 051_hk-red-seabream-local-badge.png
+118. #052 | R2 | 052_hk-sand-seabream-local-badge.png
+119. #053 | R2 | 053_hk-oil-seabream-local-badge.png
+120. #054 | R2 | 054_hk-threadfin-seabream-local-badge.png
+121. #082 | R2 | 082_hk-tooth-spotted-seabream-local-badge.png
+122. #084 | R2 | 084_hk-black-sand-seabream-local-badge.png
+123. #085 | R2 | 085_hk-white-seabream-local-badge.png
+124. #086 | R2 | 086_hk-red-seabream-aka-local-badge.png
+125. #087 | R2 | 087_hk-gold-thread-seabream-local-badge.png

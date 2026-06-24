@@ -1,0 +1,126 @@
+﻿new_id,commonNameZh,localNameZh,scientificName,fishType,bodyShape,rarityRank,photo_url,photo_source,icon_path
+001,河豚,雞泡,Diodon holocanthus,其他魚類,圓筒型,,https://inaturalist-open-data.s3.amazonaws.com/photos/6493337/large.jpg,inaturalist_by_sci,assets/fish/icons/generated/001.png
+002,魟魚,魔鬼魚,Hypanus americanus,其他魚類,扁平型,,https://inaturalist-open-data.s3.amazonaws.com/photos/5856356/large.jpg,inaturalist_by_sci,assets/fish/icons/generated/002.png
+003,三角魚,三角魚,,其他魚類,標準紡錘型,,https://inaturalist-open-data.s3.amazonaws.com/photos/567121483/large.jpg,inaturalist_by_common,assets/fish/icons/generated/003.png
+004,三鬚魚,三鬚,,其他魚類,標準紡錘型,,,not_found,assets/fish/icons/generated/004.png
+005,九肚魚,九肚魚,Harpadon nehereus,其他魚類,標準紡錘型,,https://static.inaturalist.org/photos/22207916/large.jpeg,inaturalist_by_sci,assets/fish/icons/generated/005.png
+006,咬仔鳚,狗母鳚,,其他魚類,標準紡錘型,,,not_found,assets/fish/icons/generated/006.png
+007,四指馬友,馬友,Eleutheronema tetradactylum,其他魚類,標準紡錘型,,https://inaturalist-open-data.s3.amazonaws.com/photos/5002958/large.jpg,inaturalist_by_sci,assets/fish/icons/generated/007.png
+008,大眼扁頭魚,大眼牛鰍,,其他魚類,標準紡錘型,,,not_found,assets/fish/icons/generated/008.png
+009,大頭帶魚,刀魚,Trichiurus lepturus,其他魚類,標準紡錘型,,https://static.inaturalist.org/photos/181477483/large.jpg,inaturalist_by_sci,assets/fish/icons/generated/009.png
+010,大頭黃姑魚,大頭黃花,Pennahia macrocephala,其他魚類,標準紡錘型,,https://inaturalist-open-data.s3.amazonaws.com/photos/167191195/large.jpeg,inaturalist_by_sci,assets/fish/icons/generated/010.png
+011,寶石隆頭魚,寶石青衣,,其他魚類,標準紡錘型,,,not_found,assets/fish/icons/generated/011.png
+012,小帶紋石首魚,花石首,Terapon puta,其他魚類,標準紡錘型,,https://inaturalist-open-data.s3.amazonaws.com/photos/162032088/large.jpeg,inaturalist_by_sci,assets/fish/icons/generated/012.png
+013,岩魚,石狗公仔,Sebastes caurinus,其他魚類,標準紡錘型,,https://inaturalist-open-data.s3.amazonaws.com/photos/117750791/large.jpg,inaturalist_by_sci,assets/fish/icons/generated/013.png
+014,斑點石鱸,石鱸,Plectorhinchus flavomaculatus,其他魚類,標準紡錘型,,https://static.inaturalist.org/photos/241195181/large.jpg,inaturalist_by_sci,assets/fish/icons/generated/014.png
+015,斑點金鼓,金鼓,Scatophagus argus,其他魚類,標準紡錘型,,https://inaturalist-open-data.s3.amazonaws.com/photos/171540853/large.jpeg,inaturalist_by_sci,assets/fish/icons/generated/015.png
+016,斑點鱚,花沙鑽,Sillaginodes punctatus,其他魚類,標準紡錘型,,https://inaturalist-open-data.s3.amazonaws.com/photos/559797868/large.jpg,inaturalist_by_sci,assets/fish/icons/generated/016.png
+017,旗魚,劍旗魚,Jordanella floridae,其他魚類,標準紡錘型,,https://static.inaturalist.org/photos/39869434/large.jpg,inaturalist_by_sci,assets/fish/icons/generated/017.png
+018,日本真鱸,海鱸,Lateolabrax japonicus,其他魚類,標準紡錘型,,https://static.inaturalist.org/photos/61342151/large.jpg,inaturalist_by_sci,assets/fish/icons/generated/018.png
+019,日本馬頭魚,馬頭魚,,其他魚類,標準紡錘型,,https://inaturalist-open-data.s3.amazonaws.com/photos/330972114/large.jpg,inaturalist_by_common,assets/fish/icons/generated/019.png
+020,條紋伏波魚,伏波魚,Eucinostomus gula,其他魚類,標準紡錘型,,https://inaturalist-open-data.s3.amazonaws.com/photos/30776419/large.jpg,inaturalist_by_sci,assets/fish/icons/generated/020.png
+021,梭子魚,梭魚,Sphyraena barracuda,其他魚類,標準紡錘型,,https://inaturalist-open-data.s3.amazonaws.com/photos/294595913/large.jpg,inaturalist_by_sci,assets/fish/icons/generated/021.png
+022,沙甸魚,沙甸,Sardinella aurita,其他魚類,標準紡錘型,,https://static.inaturalist.org/photos/126459849/large.jpeg,inaturalist_by_sci,assets/fish/icons/generated/022.png
+023,油魚,油甘魚,Ruvettus pretiosus,其他魚類,標準紡錘型,,https://inaturalist-open-data.s3.amazonaws.com/photos/197034220/large.jpg,inaturalist_by_sci,assets/fish/icons/generated/023.png
+024,海鯽,海鯽,Gerres simillimus,其他魚類,標準紡錘型,,https://inaturalist-open-data.s3.amazonaws.com/photos/612603181/large.jpg,inaturalist_by_sci,assets/fish/icons/generated/024.png
+025,海鱔,海鱔,Gymnothorax undulatus,其他魚類,標準紡錘型,,https://inaturalist-open-data.s3.amazonaws.com/photos/112702429/large.jpg,inaturalist_by_sci,assets/fish/icons/generated/025.png
+026,獨角革魨,剝皮魚,Aluterus monoceros,其他魚類,標準紡錘型,,https://inaturalist-open-data.s3.amazonaws.com/photos/4614108/large.jpeg,inaturalist_by_sci,assets/fish/icons/generated/026.png
+027,白點竹鯊,狗仔鯊,Chiloscyllium plagiosum,其他魚類,標準紡錘型,,https://inaturalist-open-data.s3.amazonaws.com/photos/452814206/large.jpeg,inaturalist_by_sci,assets/fish/icons/generated/027.png
+028,皇帝魚,皇帝魚,Scomberoides lysan,其他魚類,標準紡錘型,,https://inaturalist-open-data.s3.amazonaws.com/photos/568300826/large.jpg,inaturalist_by_sci,assets/fish/icons/generated/028.png
+029,短吻飛魚,飛魚,,其他魚類,標準紡錘型,,,not_found,assets/fish/icons/generated/029.png
+030,石首魚,石首,Helotes octolineatus,其他魚類,標準紡錘型,,https://static.inaturalist.org/photos/560865392/large.jpg,inaturalist_by_sci,assets/fish/icons/generated/030.png
+031,窄帶馬鮫,馬鮫,Scomberomorus commerson,其他魚類,標準紡錘型,,https://inaturalist-open-data.s3.amazonaws.com/photos/218054923/large.jpg,inaturalist_by_sci,assets/fish/icons/generated/031.png
+032,紅魔鬼岩魚,紅魔鬼,,其他魚類,標準紡錘型,,,not_found,assets/fish/icons/generated/032.png
+033,羊魚,鬚鯛,Upeneichthys porosus,其他魚類,標準紡錘型,,https://inaturalist-open-data.s3.amazonaws.com/photos/597242015/large.jpg,inaturalist_by_sci,assets/fish/icons/generated/033.png
+034,羊魚（鬚）,鬚羊魚,,其他魚類,標準紡錘型,,,not_found,assets/fish/icons/generated/034.png
+035,花生魚,花生魚,,其他魚類,標準紡錘型,,,not_found,assets/fish/icons/generated/035.png
+036,花鰹,花煙,Euthynnus affinis,其他魚類,標準紡錘型,,https://inaturalist-open-data.s3.amazonaws.com/photos/490499838/large.jpg,inaturalist_by_sci,assets/fish/icons/generated/036.png
+037,蛋斑隆頭魚,青衣,,其他魚類,標準紡錘型,,,not_found,assets/fish/icons/generated/037.png
+038,角聲魚,角聲,,其他魚類,標準紡錘型,,,not_found,assets/fish/icons/generated/038.png
+039,豹紋珊瑚鱸,東星斑,Plectropomus leopardus,其他魚類,標準紡錘型,,https://inaturalist-open-data.s3.amazonaws.com/photos/368379613/large.jpg,inaturalist_by_sci,assets/fish/icons/generated/039.png
+040,連米銀腹魚,連米魚,,其他魚類,標準紡錘型,,,not_found,assets/fish/icons/generated/040.png
+041,里夫黃姑魚,花黃姑,,其他魚類,標準紡錘型,,,not_found,assets/fish/icons/generated/041.png
+042,金目鱸,金目鱸,Lates calcarifer,其他魚類,標準紡錘型,,https://inaturalist-open-data.s3.amazonaws.com/photos/185179192/large.jpg,inaturalist_by_sci,assets/fish/icons/generated/042.png
+043,金線馬頭魚,紅衫馬頭,Nemipterus virgatus,其他魚類,標準紡錘型,,https://inaturalist-open-data.s3.amazonaws.com/photos/199294742/large.jpg,inaturalist_by_sci,assets/fish/icons/generated/043.png
+044,銀鯡,鯡魚,Gerres subfasciatus,其他魚類,標準紡錘型,,https://inaturalist-open-data.s3.amazonaws.com/photos/273254451/large.jpeg,inaturalist_by_sci,assets/fish/icons/generated/044.png
+045,銀鯧,白鯧,Pampus argenteus,其他魚類,標準紡錘型,,https://static.inaturalist.org/photos/22208601/large.jpeg,inaturalist_by_sci,assets/fish/icons/generated/045.png
+046,銀鱚,沙鑽,Sillago argentifasciata,其他魚類,標準紡錘型,,,not_found,assets/fish/icons/generated/046.png
+047,青鱗小沙丁,青鱗沙甸,,其他魚類,標準紡錘型,,https://inaturalist-open-data.s3.amazonaws.com/photos/430734377/large.jpg,inaturalist_by_common,assets/fish/icons/generated/047.png
+048,髭尾扁頭魚,牛鰍魚,Platycephalus indicus,其他魚類,標準紡錘型,,https://inaturalist-open-data.s3.amazonaws.com/photos/610324367/large.jpg,inaturalist_by_sci,assets/fish/icons/generated/048.png
+049,鮣魚,貼魚,Remora remora,其他魚類,標準紡錘型,,https://inaturalist-open-data.s3.amazonaws.com/photos/114608642/large.jpg,inaturalist_by_sci,assets/fish/icons/generated/049.png
+050,鯷魚,鯷仔,Engraulis australis,其他魚類,標準紡錘型,,https://inaturalist-open-data.s3.amazonaws.com/photos/410499471/large.jpg,inaturalist_by_sci,assets/fish/icons/generated/050.png
+051,鰶魚,鰶魚,Dorosoma cepedianum,其他魚類,標準紡錘型,,https://inaturalist-open-data.s3.amazonaws.com/photos/13512005/large.jpeg,inaturalist_by_sci,assets/fish/icons/generated/051.png
+052,黃姑魚,黃花魚,Umbrina roncador,其他魚類,標準紡錘型,,https://static.inaturalist.org/photos/50887928/large.jpg,inaturalist_by_sci,assets/fish/icons/generated/052.png
+053,黃甲魚,黃甲,,其他魚類,標準紡錘型,,,not_found,assets/fish/icons/generated/053.png
+054,黑帶金鼓,黑帶金鼓,Neoscorpis lithophilus,其他魚類,標準紡錘型,,https://inaturalist-open-data.s3.amazonaws.com/photos/595194086/large.jpg,inaturalist_by_sci,assets/fish/icons/generated/054.png
+055,黑邊銀鯽,黑邊銀鯽,,其他魚類,標準紡錘型,,,not_found,assets/fish/icons/generated/055.png
+056,黑鯧,黑鯧,Parastromateus niger,其他魚類,標準紡錘型,,https://inaturalist-open-data.s3.amazonaws.com/photos/240696337/large.jpeg,inaturalist_by_sci,assets/fish/icons/generated/056.png
+057,鼠尾隆頭魚,老鼠斑衣,,其他魚類,標準紡錘型,,,not_found,assets/fish/icons/generated/057.png
+058,龍舟魚,龍舟,,其他魚類,標準紡錘型,,,not_found,assets/fish/icons/generated/058.png
+059,半嘴魚,半嘴,Hemiramphus far,其他魚類,細長型,,https://static.inaturalist.org/photos/87077055/large.jpg,inaturalist_by_sci,assets/fish/icons/generated/059.png
+060,針魚,針魚,Petalichthys capensis,其他魚類,細長型,,https://inaturalist-open-data.s3.amazonaws.com/photos/197668546/large.jpg,inaturalist_by_common,assets/fish/icons/generated/060.png
+061,青針魚,青針,,其他魚類,細長型,,,not_found,assets/fish/icons/generated/061.png
+062,比目魚,左口魚,Asterorhombus cocosensis,底棲近岸類,扁平型,,https://inaturalist-open-data.s3.amazonaws.com/photos/59034671/large.jpeg,inaturalist_by_common,assets/fish/icons/generated/062.png
+063,海鯰,海塘蝨,Genidens barbus,底棲近岸類,標準紡錘型,,https://inaturalist-open-data.s3.amazonaws.com/photos/467915811/large.jpg,inaturalist_by_sci,assets/fish/icons/generated/063.png
+064,大鱗烏頭,大眼烏頭,Ellochelon vaigiensis,底棲近岸類,標準紡錘型,,https://inaturalist-open-data.s3.amazonaws.com/photos/23475092/large.jpeg,inaturalist_by_sci,assets/fish/icons/generated/064.png
+065,彈塗魚,彈塗,Periophthalmus barbarus,底棲近岸類,標準紡錘型,,https://inaturalist-open-data.s3.amazonaws.com/photos/348457955/large.jpeg,inaturalist_by_sci,assets/fish/icons/generated/065.png
+066,灰烏頭,烏頭,Chelon labrosus,底棲近岸類,標準紡錘型,,https://inaturalist-open-data.s3.amazonaws.com/photos/291922759/large.jpg,inaturalist_by_sci,assets/fish/icons/generated/066.png
+067,狗母魚,狗母,Synodus variegatus,底棲近岸類,標準紡錘型,,https://inaturalist-open-data.s3.amazonaws.com/photos/30808247/large.jpg,inaturalist_by_sci,assets/fish/icons/generated/067.png
+068,花狗母魚,花狗母,,底棲近岸類,標準紡錘型,,https://inaturalist-open-data.s3.amazonaws.com/photos/630414239/large.jpg,inaturalist_by_common,assets/fish/icons/generated/068.png
+069,鰕虎魚,狗公魚,Neogobius melanostomus,底棲近岸類,標準紡錘型,,https://static.inaturalist.org/photos/13163749/large.jpg,inaturalist_by_sci,assets/fish/icons/generated/069.png
+070,鰻尾鯰,海塘蝨,Tandanus tandanus,底棲近岸類,細長型,,https://inaturalist-open-data.s3.amazonaws.com/photos/538401186/large.jpg,inaturalist_by_sci,assets/fish/icons/generated/070.png
+071,康吉鰻,星鰻,Conger conger,底棲近岸類,細長型,,https://inaturalist-open-data.s3.amazonaws.com/photos/196988613/large.jpeg,inaturalist_by_sci,assets/fish/icons/generated/071.png
+072,獅子魚,火魚,Pterois volitans,毒棘礁棲類,棘鰭型,,https://static.inaturalist.org/photos/29368079/large.jpg,inaturalist_by_sci,assets/fish/icons/generated/072.png
+073,石頭魚,石狗公,Synanceia verrucosa,毒棘礁棲類,棘鰭型,,https://inaturalist-open-data.s3.amazonaws.com/photos/76659416/large.jpg,inaturalist_by_sci,assets/fish/icons/generated/073.png
+074,蠍子魚,蠍子魚,Scorpaena porcus,毒棘礁棲類,棘鰭型,,https://inaturalist-open-data.s3.amazonaws.com/photos/51396772/large.jpg,inaturalist_by_sci,assets/fish/icons/generated/074.png
+075,橙點石斑,紅斑,Epinephelus coioides,石斑類,粗壯型,,https://static.inaturalist.org/photos/421816214/large.jpeg,inaturalist_by_sci,assets/fish/icons/generated/075.png
+076,芝麻石斑,芝麻斑,,石斑類,粗壯型,,,not_found,assets/fish/icons/generated/076.png
+077,花頭石斑,花頭斑,,石斑類,粗壯型,,,not_found,assets/fish/icons/generated/077.png
+078,香港石斑,青斑,Epinephelus akaara,石斑類,粗壯型,,https://static.inaturalist.org/photos/67181260/large.jpeg,inaturalist_by_sci,assets/fish/icons/generated/078.png
+079,馬拉巴石斑,老虎斑,Epinephelus malabaricus,石斑類,粗壯型,,https://static.inaturalist.org/photos/25405443/large.jpg,inaturalist_by_sci,assets/fish/icons/generated/079.png
+080,黑線石斑,黑線斑,,石斑類,粗壯型,,,not_found,assets/fish/icons/generated/080.png
+081,龍膽石斑,龍躉,Epinephelus lanceolatus,石斑類,粗壯型,,https://static.inaturalist.org/photos/386562137/large.jpg,inaturalist_by_sci,assets/fish/icons/generated/081.png
+082,箱魨,箱魨,Ostracion cubicum,礁棲觀賞類,圓筒型,,https://inaturalist-open-data.s3.amazonaws.com/photos/228340980/large.jpg,inaturalist_by_sci,assets/fish/icons/generated/082.png
+083,扳機魚,炮彈魚,Balistoides viridescens,礁棲觀賞類,標準紡錘型,,https://inaturalist-open-data.s3.amazonaws.com/photos/91080390/large.jpg,inaturalist_by_sci,assets/fish/icons/generated/083.png
+084,橙點馬面魨,馬面,Cantherhines pullus,礁棲觀賞類,標準紡錘型,,https://inaturalist-open-data.s3.amazonaws.com/photos/599527615/large.jpg,inaturalist_by_sci,assets/fish/icons/generated/084.png
+085,長帆馬面魨,長帆馬面,Stephanolepis cirrhifer,礁棲觀賞類,標準紡錘型,,https://inaturalist-open-data.s3.amazonaws.com/photos/454159082/large.jpeg,inaturalist_by_sci,assets/fish/icons/generated/085.png
+086,蝶魚,蝴蝶魚,Chaetodon marleyi,礁棲觀賞類,標準紡錘型,,https://inaturalist-open-data.s3.amazonaws.com/photos/359692990/large.jpg,inaturalist_by_sci,assets/fish/icons/generated/086.png
+087,鸚哥魚,鸚哥,Sparisoma viride,礁棲觀賞類,標準紡錘型,,https://inaturalist-open-data.s3.amazonaws.com/photos/451417243/large.jpeg,inaturalist_by_sci,assets/fish/icons/generated/087.png
+088,泥鯭,泥鯭,Siganus fuscescens,近岸草食類,標準紡錘型,,https://inaturalist-open-data.s3.amazonaws.com/photos/459084177/large.jpg,inaturalist_by_sci,assets/fish/icons/generated/088.png
+089,三點雀鯛,三點姑娘魚,,鯛科/笛鯛類,標準紡錘型,,,not_found,assets/fish/icons/generated/089.png
+090,天竺鯛,天竺鯛,Apogon imberbis,鯛科/笛鯛類,標準紡錘型,,https://inaturalist-open-data.s3.amazonaws.com/photos/54291487/large.jpg,inaturalist_by_sci,assets/fish/icons/generated/090.png
+091,星點笛鯛,星點紅友,Lutjanus stellatus,鯛科/笛鯛類,標準紡錘型,,https://inaturalist-open-data.s3.amazonaws.com/photos/314617014/large.jpg,inaturalist_by_sci,assets/fish/icons/generated/091.png
+092,橫帶小鯛,橫帶小鱲,Labrus viridis,鯛科/笛鯛類,標準紡錘型,,https://inaturalist-open-data.s3.amazonaws.com/photos/225545021/large.jpg,inaturalist_by_sci,assets/fish/icons/generated/092.png
+093,沙鯛,沙鱲,,鯛科/笛鯛類,標準紡錘型,,https://inaturalist-open-data.s3.amazonaws.com/photos/156153979/large.jpg,inaturalist_by_common,assets/fish/icons/generated/093.png
+094,油鯛,油甘魚,,鯛科/笛鯛類,標準紡錘型,,,not_found,assets/fish/icons/generated/094.png
+095,火焰笛鯛,火焰紅友,Etelis coruscans,鯛科/笛鯛類,標準紡錘型,,https://inaturalist-open-data.s3.amazonaws.com/photos/381328073/large.jpeg,inaturalist_by_sci,assets/fish/icons/generated/095.png
+096,牙點鯛,牙點鱲,,鯛科/笛鯛類,標準紡錘型,,https://static.inaturalist.org/photos/55710354/large.jpeg,inaturalist_by_common,assets/fish/icons/generated/096.png
+097,白鯛,白鱲,Diplodus lineatus,鯛科/笛鯛類,標準紡錘型,,https://static.inaturalist.org/photos/28259662/large.jpg,inaturalist_by_sci,assets/fish/icons/generated/097.png
+098,約翰笛鯛,黃雞魚,,鯛科/笛鯛類,標準紡錘型,,https://inaturalist-open-data.s3.amazonaws.com/photos/6200097/large.jpg,inaturalist_by_common,assets/fish/icons/generated/098.png
+099,紅樹笛鯛,紅衫公,Lutjanus argentimaculatus,鯛科/笛鯛類,標準紡錘型,,https://static.inaturalist.org/photos/224966772/large.jpeg,inaturalist_by_sci,assets/fish/icons/generated/099.png
+100,紅鯛,紅鱲,Pagrus major,鯛科/笛鯛類,標準紡錘型,,https://inaturalist-open-data.s3.amazonaws.com/photos/436455057/large.jpeg,inaturalist_by_sci,assets/fish/icons/generated/100.png
+101,羅素笛鯛,紅友,Lutjanus russellii,鯛科/笛鯛類,標準紡錘型,,https://inaturalist-open-data.s3.amazonaws.com/photos/83501289/large.jpg,inaturalist_by_sci,assets/fish/icons/generated/101.png
+102,赤鯛,赤鱲,,鯛科/笛鯛類,標準紡錘型,,https://static.inaturalist.org/photos/54968915/large.jpeg,inaturalist_by_common,assets/fish/icons/generated/102.png
+103,金線鯛,紅衫,Rhabdosargus sarba,鯛科/笛鯛類,標準紡錘型,,https://inaturalist-open-data.s3.amazonaws.com/photos/452695506/large.jpeg,inaturalist_by_sci,assets/fish/icons/generated/103.png
+104,金線鯛王,大紅衫,,鯛科/笛鯛類,標準紡錘型,,,not_found,assets/fish/icons/generated/104.png
+105,鋸緣雀鯛,鋸緣姑娘魚,,鯛科/笛鯛類,標準紡錘型,,,not_found,assets/fish/icons/generated/105.png
+106,雀鯛,姑娘魚,Chromis chromis,鯛科/笛鯛類,標準紡錘型,,https://static.inaturalist.org/photos/343571122/large.jpg,inaturalist_by_sci,assets/fish/icons/generated/106.png
+107,馬友鯛,馬友鱲,,鯛科/笛鯛類,標準紡錘型,,,not_found,assets/fish/icons/generated/107.png
+108,黃尾笛鯛,黃尾紅友,Caesio cuning,鯛科/笛鯛類,標準紡錘型,,https://inaturalist-open-data.s3.amazonaws.com/photos/244458288/large.jpg,inaturalist_by_sci,assets/fish/icons/generated/108.png
+109,黃尾雀鯛,黃尾姑娘魚,Microspathodon chrysurus,鯛科/笛鯛類,標準紡錘型,,https://inaturalist-open-data.s3.amazonaws.com/photos/248693932/large.jpg,inaturalist_by_sci,assets/fish/icons/generated/109.png
+110,黃鰭鯛,黃腳鱲,Acanthopagrus latus,鯛科/笛鯛類,標準紡錘型,,https://inaturalist-open-data.s3.amazonaws.com/photos/41426256/large.jpg,inaturalist_by_sci,assets/fish/icons/generated/110.png
+111,黑沙鯛,黑沙鱲,,鯛科/笛鯛類,標準紡錘型,,,not_found,assets/fish/icons/generated/111.png
+112,黑鯛,烏頭鱲,Spondyliosoma cantharus,鯛科/笛鯛類,標準紡錘型,,https://inaturalist-open-data.s3.amazonaws.com/photos/531386046/large.jpg,inaturalist_by_sci,assets/fish/icons/generated/112.png
+113,印度鯖,鯖魚,Rastrelliger kanagurta,鰺科/洄游類,標準紡錘型,,https://inaturalist-open-data.s3.amazonaws.com/photos/254005025/large.jpg,inaturalist_by_sci,assets/fish/icons/generated/113.png
+114,大眼竹筴魚,大眼竹筴,,鰺科/洄游類,標準紡錘型,,,not_found,assets/fish/icons/generated/114.png
+115,大眼竹筴魚王,竹筴王,Selar crumenophthalmus,鰺科/洄游類,標準紡錘型,,https://inaturalist-open-data.s3.amazonaws.com/photos/156581317/large.jpg,inaturalist_by_sci,assets/fish/icons/generated/115.png
+116,橙鰭銀腹鯧鰺,黃腳鯧鰺,Photopectoralis bindus,鰺科/洄游類,標準紡錘型,,https://inaturalist-open-data.s3.amazonaws.com/photos/425931931/large.jpeg,inaturalist_by_sci,assets/fish/icons/generated/116.png
+117,紫胸馬加鰆,馬加鰆,Rhinomuraena quaesita,鰺科/洄游類,標準紡錘型,,https://inaturalist-open-data.s3.amazonaws.com/photos/50912229/large.jpg,inaturalist_by_sci,assets/fish/icons/generated/117.png
+118,細鱗竹筴魚,細鱗竹筴,Alepes apercna,鰺科/洄游類,標準紡錘型,,https://inaturalist-open-data.s3.amazonaws.com/photos/400119177/large.jpeg,inaturalist_by_sci,assets/fish/icons/generated/118.png
+119,金鰭鰺,金鰭瓜,Gnathanodon speciosus,鰺科/洄游類,標準紡錘型,,https://inaturalist-open-data.s3.amazonaws.com/photos/361844564/large.jpeg,inaturalist_by_sci,assets/fish/icons/generated/119.png
+120,銀腹鯧鰺,鯧鰺,Leiognathus equula,鰺科/洄游類,標準紡錘型,,https://inaturalist-open-data.s3.amazonaws.com/photos/72776138/large.jpg,inaturalist_by_sci,assets/fish/icons/generated/120.png
+121,長尾吞拿,吞拿,Thunnus tonggol,鰺科/洄游類,標準紡錘型,,https://inaturalist-open-data.s3.amazonaws.com/photos/431555995/large.jpg,inaturalist_by_sci,assets/fish/icons/generated/121.png
+122,馬拉巴鰺,白瓜,Platycaranx malabaricus,鰺科/洄游類,標準紡錘型,,https://inaturalist-open-data.s3.amazonaws.com/photos/396455734/large.jpeg,inaturalist_by_sci,assets/fish/icons/generated/122.png
+123,黃尾擬鰺,黃尾瓜,,鰺科/洄游類,標準紡錘型,,,not_found,assets/fish/icons/generated/123.png
+124,黃尾竹筴魚,竹筴,Trachurus novaezelandiae,鰺科/洄游類,標準紡錘型,,https://inaturalist-open-data.s3.amazonaws.com/photos/14760631/large.jpeg,inaturalist_by_sci,assets/fish/icons/generated/124.png
+125,黃條鰺,黃條瓜,Selaroides leptolepis,鰺科/洄游類,標準紡錘型,,https://static.inaturalist.org/photos/418370025/large.jpg,inaturalist_by_sci,assets/fish/icons/generated/125.png

@@ -48,7 +48,8 @@ void main() {
 
     await dataSource.addPending(entry);
 
-    final freshDataSource = CatchLogLocalDataSource(boxName: 'test_catch_queue');
+    final freshDataSource =
+        CatchLogLocalDataSource(boxName: 'test_catch_queue');
     final loaded = await freshDataSource.loadPending();
 
     expect(loaded.length, 1);

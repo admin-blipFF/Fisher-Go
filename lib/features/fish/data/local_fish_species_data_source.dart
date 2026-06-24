@@ -1,6 +1,7 @@
 import 'package:hive/hive.dart';
 
 import '../domain/fish_species.dart';
+import 'fish_species_sorting.dart';
 
 class LocalFishSpeciesDataSource {
   static const _boxName = 'fish_species_cache';
@@ -21,10 +22,11 @@ class LocalFishSpeciesDataSource {
     try {
       final box = await _box();
       final rawItems = box.get('items', defaultValue: <dynamic>[]) as List;
-      return rawItems
+      final loaded = rawItems
           .cast<Map>()
           .map((item) => FishSpecies.fromMap(Map<String, dynamic>.from(item)))
           .toList();
+      return sortFullSpeciesLibrary(loaded);
     } catch (_) {
       return const [];
     }

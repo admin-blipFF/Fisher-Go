@@ -1,0 +1,159 @@
+FisherGO 重新編號魚庫
+規則：魚類 -> 體形 -> 稀有程度(高到低) -> 魚名
+顯示：新數字 | 原數字 | 魚名 | 本地俗名
+
+
+[其他魚類 / 圓筒型]
+#001 | #040 | Pufferfish | Pufferfish
+
+[其他魚類 / 扁平型]
+#002 | #044 | Stingray | Stingray
+
+[其他魚類 / 標準紡錘型]
+#003 | #063 | Anchovy | Anchovy
+#004 | #065 | Barracuda | Barracuda
+#005 | #016 | Barramundi | Barramundi
+#006 | #019 | Bartail Flathead | Bartail Flathead
+#007 | #026 | Big Head Croaker | Big Head Croaker
+#008 | #020 | Bigeye Flathead | Bigeye Flathead
+#009 | #111 | Bigeye Pomfret | Bigeye Pomfret
+#010 | #116 | Biting Blenny | Biting Blenny
+#011 | #038 | Black Pomfret | Black Pomfret
+#012 | #022 | Bombay Duck | Bombay Duck
+#013 | #074 | Cardinalfish | Cardinalfish
+#014 | #100 | Croaker | gwak
+#015 | #124 | Daggertooth Pike Conger | Daggertooth Pike Conger
+#016 | #119 | Dragon Boat Fish | Dragon Boat Fish
+#017 | #056 | Egg Wrasse | Egg Wrasse
+#018 | #088 | Flagfish | Flagfish
+#019 | #017 | Fourfinger Threadfin | Fourfinger Threadfin
+#020 | #059 | Goatfish | Goatfish
+#021 | #099 | Goatfish | wrasp
+#022 | #117 | Green Wrasse | Green Wrasse
+#023 | #060 | Grunt | Grunt
+#024 | #101 | Icon | Icon
+#025 | #102 | Icon | Icon
+#026 | #103 | Icon | Icon
+#027 | #105 | Icon | Icon
+#028 | #106 | Icon | Icon
+#029 | #108 | Icon | Icon
+#030 | #113 | Icon | Icon
+#031 | #114 | Icon | Icon
+#032 | #015 | Japanese Seabass | Japanese Seabass
+#033 | #018 | Largehead Hairtail | Largehead Hairtail
+#034 | #070 | Mojarra | Mojarra
+#035 | #057 | Mouse Wrasse | Mouse Wrasse
+#036 | #029 | Orangefin Ponyfish | Orangefin Ponyfish
+#037 | #107 | Peanut Fish | Peanut Fish
+#038 | #028 | Ponyfish | Ponyfish
+#039 | #027 | Reeves Croaker | Reeves Croaker
+#040 | #080 | Remora | Remora
+#041 | #064 | Sardinella | Sardinella
+#042 | #062 | Silver Biddy | Silver Biddy
+#043 | #115 | Silver Mojarra | Silver Mojarra
+#044 | #039 | Silver Pomfret | Silver Pomfret
+#045 | #058 | Silver Sillago | Silver Sillago
+#046 | #061 | Small Banded Grunter | Small Banded Grunter
+#047 | #012 | Spotted Scat | Spotted Scat
+#048 | #097 | Spotted Sillago | Spotted Sillago
+#049 | #094 | Spotted Sweetlips | Spotted Sweetlips
+#050 | #110 | Three Whisker Fish | Three Whisker Fish
+#051 | #118 | Triangle Fish | Triangle Fish
+#052 | #047 | Unicorn Leatherjacket | Unicorn Leatherjacket
+#053 | #045 | White Spotted Bamboo Shark | White Spotted Bamboo Shark
+#054 | #025 | Yellow Croaker | Yellow Croaker
+#055 | #090 | Yellow Nail | Yellow Nail
+#056 | #120 | Yellowtail Fusilier | Yellowtail Fusilier
+
+[其他魚類 / 細長型]
+#057 | #122 | Green Needlefish | Green Needlefish
+#058 | #067 | Halfbeak | Halfbeak
+#059 | #066 | Needlefish | Needlefish
+
+[底棲近岸類 / 扁平型]
+#060 | #048 | Flatfish | Flatfish
+#061 | #049 | Moray Eel | Moray Eel
+
+[底棲近岸類 / 標準紡錘型]
+#062 | #069 | Sea Catfish | Sea Catfish
+#063 | #050 | Conger Eel | Conger Eel
+#064 | #123 | Flower Lizardfish | Flower Lizardfish
+#065 | #071 | Goby | Goby
+#066 | #013 | Grey Mullet | Grey Mullet
+#067 | #014 | Large Scale Mullet | Large Scale Mullet
+#068 | #021 | Lizardfish | Lizardfish
+#069 | #072 | Mudskipper | Mudskipper
+#070 | #125 | Ribbon Eel | Ribbon Eel
+
+[底棲近岸類 / 細長型]
+#071 | #068 | Eeltail Catfish | Eeltail Catfish
+
+[毒棘礁棲類 / 棘鰭型]
+#072 | #041 | Lionfish | Lionfish
+#073 | #042 | Stonefish | Stonefish
+#074 | #043 | Scorpionfish | Scorpionfish
+
+[毒棘礁棲類 / 標準紡錘型]
+#075 | #083 | Red Devil Rockfish | Red Devil Rockfish
+#076 | #098 | Rockfish | Rockfish
+
+[石斑類 / 粗壯型]
+#077 | #089 | Blackline Grouper | Blackline Grouper
+#078 | #092 | Flower Head Grouper | Flower Head Grouper
+#079 | #093 | Giant Grouper | Giant Grouper
+#080 | #009 | Hong Kong Grouper | Hong Kong Grouper
+#081 | #010 | Leopard Coral Grouper | Leopard Coral Grouper
+#082 | #008 | Malabar Grouper | Malabar Grouper
+#083 | #007 | Orange Spotted Grouper | Orange Spotted Grouper
+#084 | #091 | Sesame Grouper | Sesame Grouper
+
+[礁棲觀賞類 / 圓筒型]
+#085 | #079 | Boxfish | Boxfish
+
+[礁棲觀賞類 / 標準紡錘型]
+#086 | #078 | Triggerfish | Triggerfish
+#087 | #046 | Orangespotted Filefish | Orangespotted Filefish
+#088 | #073 | Thread Sail Filefish | Thread Sail Filefish
+#089 | #075 | Butterflyfish | Butterflyfish
+#090 | #076 | Damselfish | Damselfish
+#091 | #077 | Parrotfish | Parrotfish
+#092 | #112 | Yellowtail Damselfish | Yellowtail Damselfish
+
+[近岸草食類 / 標準紡錘型]
+#093 | #011 | Rabbitfish | Rabbitfish
+
+[鯛科/笛鯛類 / 標準紡錘型]
+#094 | #084 | Black Sand Seabream | Black Sand Seabream
+#095 | #002 | Black Seabream | Black Seabream
+#096 | #081 | Flame Snapper | Flame Snapper
+#097 | #087 | Gold Thread Seabream | Gold Thread Seabream
+#098 | #024 | Golden Threadfin Bream | Golden Threadfin Bream
+#099 | #003 | Goldlined Seabream | Goldlined Seabream
+#100 | #023 | Japanese Threadfin Bream | Japanese Threadfin Bream
+#101 | #006 | Johns Snapper | Johns Snapper
+#102 | #005 | Mangrove Red Snapper | Mangrove Red Snapper
+#103 | #053 | Oil Seabream | Oil Seabream
+#104 | #051 | Red Seabream | Red Seabream
+#105 | #086 | Red Seabream | aka
+#106 | #004 | Russell Snapper | Russell Snapper
+#107 | #052 | Sand Seabream | Sand Seabream
+#108 | #095 | Star Snapper | Star Snapper
+#109 | #054 | Threadfin Seabream | Threadfin Seabream
+#110 | #082 | Tooth Spotted Seabream | Tooth Spotted Seabream
+#111 | #085 | White Seabream | White Seabream
+#112 | #001 | Yellowfin Seabream | Yellowfin Seabream
+
+[鰺科/洄游類 / 標準紡錘型]
+#113 | #104 | Bigeye Scad | Bigeye Scad
+#114 | #030 | Golden Trevally | Golden Trevally
+#115 | #034 | Indian Mackerel | Indian Mackerel
+#116 | #036 | Kawakawa | Kawakawa
+#117 | #037 | Longtail Tuna | Longtail Tuna
+#118 | #031 | Malabar Trevally | Malabar Trevally
+#119 | #035 | Narrow Barred Spanish Mackerel | Narrow Barred Spanish Mackerel
+#120 | #033 | Queenfish | Queenfish
+#121 | #055 | Small Scad | Small Scad
+#122 | #121 | Small Scad Subadult | Small Scad Subadult
+#123 | #109 | Ten Lined Scad | Ten Lined Scad
+#124 | #096 | Yellowstripe Trevally | Yellowstripe Trevally
+#125 | #032 | Yellowtail Scad | Yellowtail Scad

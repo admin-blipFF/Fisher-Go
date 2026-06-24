@@ -1,0 +1,126 @@
+﻿new_id,old_id,fish_type,body_shape,rarity,fish_name,local_name,rep_file
+1,40,其他魚類,圓筒型,4,Pufferfish,Pufferfish,040_hk-pufferfish.png
+2,44,其他魚類,扁平型,2,Stingray,Stingray,044_hk-stingray.png
+3,63,其他魚類,標準紡錘型,2,Anchovy,Anchovy,063_hk-anchovy-local-badge.png
+4,65,其他魚類,標準紡錘型,2,Barracuda,Barracuda,065_hk-barracuda-local-badge.png
+5,16,其他魚類,標準紡錘型,2,Barramundi,Barramundi,016_hk-barramundi.png
+6,19,其他魚類,標準紡錘型,2,Bartail Flathead,Bartail Flathead,019_hk-bartail-flathead.png
+7,26,其他魚類,標準紡錘型,2,Big Head Croaker,Big Head Croaker,026_hk-big-head-croaker.png
+8,20,其他魚類,標準紡錘型,2,Bigeye Flathead,Bigeye Flathead,020_hk-bigeye-flathead.png
+9,111,其他魚類,標準紡錘型,2,Bigeye Pomfret,Bigeye Pomfret,111_hk-bigeye-pomfret-local-badge.png
+10,116,其他魚類,標準紡錘型,2,Biting Blenny,Biting Blenny,116_hk-biting-blenny-local-badge.png
+11,38,其他魚類,標準紡錘型,2,Black Pomfret,Black Pomfret,038_hk-black-pomfret.png
+12,22,其他魚類,標準紡錘型,2,Bombay Duck,Bombay Duck,022_hk-bombay-duck.png
+13,74,其他魚類,標準紡錘型,2,Cardinalfish,Cardinalfish,074_hk-cardinalfish-local-badge.png
+14,100,其他魚類,標準紡錘型,2,Croaker,gwak,100_hk-croaker-gwak-local-badge.png
+15,124,其他魚類,標準紡錘型,2,Daggertooth Pike Conger,Daggertooth Pike Conger,124_hk-daggertooth-pike-conger-local-badge.png
+16,119,其他魚類,標準紡錘型,2,Dragon Boat Fish,Dragon Boat Fish,119_hk-dragon-boat-fish-local-badge.png
+17,56,其他魚類,標準紡錘型,2,Egg Wrasse,Egg Wrasse,056_hk-egg-wrasse-local-badge.png
+18,88,其他魚類,標準紡錘型,2,Flagfish,Flagfish,088_hk-flagfish-local-badge.png
+19,17,其他魚類,標準紡錘型,2,Fourfinger Threadfin,Fourfinger Threadfin,017_hk-fourfinger-threadfin.png
+20,59,其他魚類,標準紡錘型,2,Goatfish,Goatfish,059_hk-goatfish-local-badge.png
+21,99,其他魚類,標準紡錘型,2,Goatfish,wrasp,099_hk-goatfish-wrasp-local-badge.png
+22,117,其他魚類,標準紡錘型,2,Green Wrasse,Green Wrasse,117_hk-green-wrasse-local-badge.png
+23,60,其他魚類,標準紡錘型,2,Grunt,Grunt,060_hk-grunt-local-badge.png
+24,101,其他魚類,標準紡錘型,2,Icon,Icon,101_icon.png
+25,102,其他魚類,標準紡錘型,2,Icon,Icon,102_icon.png
+26,103,其他魚類,標準紡錘型,2,Icon,Icon,103_icon.png
+27,105,其他魚類,標準紡錘型,2,Icon,Icon,105_icon.png
+28,106,其他魚類,標準紡錘型,2,Icon,Icon,106_icon.png
+29,108,其他魚類,標準紡錘型,2,Icon,Icon,108_icon.png
+30,113,其他魚類,標準紡錘型,2,Icon,Icon,113_icon.png
+31,114,其他魚類,標準紡錘型,2,Icon,Icon,114_icon.png
+32,15,其他魚類,標準紡錘型,2,Japanese Seabass,Japanese Seabass,015_hk-japanese-seabass.png
+33,18,其他魚類,標準紡錘型,2,Largehead Hairtail,Largehead Hairtail,018_hk-largehead-hairtail.png
+34,70,其他魚類,標準紡錘型,2,Mojarra,Mojarra,070_hk-mojarra-local-badge.png
+35,57,其他魚類,標準紡錘型,2,Mouse Wrasse,Mouse Wrasse,057_hk-mouse-wrasse-local-badge.png
+36,29,其他魚類,標準紡錘型,2,Orangefin Ponyfish,Orangefin Ponyfish,029_hk-orangefin-ponyfish.png
+37,107,其他魚類,標準紡錘型,2,Peanut Fish,Peanut Fish,107_hk-peanut-fish-local-badge.png
+38,28,其他魚類,標準紡錘型,2,Ponyfish,Ponyfish,028_hk-ponyfish.png
+39,27,其他魚類,標準紡錘型,2,Reeves Croaker,Reeves Croaker,027_hk-reeves-croaker.png
+40,80,其他魚類,標準紡錘型,2,Remora,Remora,080_hk-remora-local-badge.png
+41,64,其他魚類,標準紡錘型,2,Sardinella,Sardinella,064_hk-sardinella-local-badge.png
+42,62,其他魚類,標準紡錘型,2,Silver Biddy,Silver Biddy,062_hk-silver-biddy-local-badge.png
+43,115,其他魚類,標準紡錘型,2,Silver Mojarra,Silver Mojarra,115_hk-silver-mojarra-local-badge.png
+44,39,其他魚類,標準紡錘型,2,Silver Pomfret,Silver Pomfret,039_hk-silver-pomfret.png
+45,58,其他魚類,標準紡錘型,2,Silver Sillago,Silver Sillago,058_hk-silver-sillago-local-badge.png
+46,61,其他魚類,標準紡錘型,2,Small Banded Grunter,Small Banded Grunter,061_hk-small-banded-grunter-local-badge.png
+47,12,其他魚類,標準紡錘型,2,Spotted Scat,Spotted Scat,012_hk-spotted-scat.png
+48,97,其他魚類,標準紡錘型,2,Spotted Sillago,Spotted Sillago,097_hk-spotted-sillago-local-badge.png
+49,94,其他魚類,標準紡錘型,2,Spotted Sweetlips,Spotted Sweetlips,094_hk-spotted-sweetlips-local-badge.png
+50,110,其他魚類,標準紡錘型,2,Three Whisker Fish,Three Whisker Fish,110_hk-three-whisker-fish-local-badge.png
+51,118,其他魚類,標準紡錘型,2,Triangle Fish,Triangle Fish,118_hk-triangle-fish-local-badge.png
+52,47,其他魚類,標準紡錘型,2,Unicorn Leatherjacket,Unicorn Leatherjacket,047_hk-unicorn-leatherjacket.png
+53,45,其他魚類,標準紡錘型,2,White Spotted Bamboo Shark,White Spotted Bamboo Shark,045_hk-white-spotted-bamboo-shark.png
+54,25,其他魚類,標準紡錘型,2,Yellow Croaker,Yellow Croaker,025_hk-yellow-croaker.png
+55,90,其他魚類,標準紡錘型,2,Yellow Nail,Yellow Nail,090_hk-yellow-nail-local-badge.png
+56,120,其他魚類,標準紡錘型,2,Yellowtail Fusilier,Yellowtail Fusilier,120_hk-yellowtail-fusilier-local-badge.png
+57,122,其他魚類,細長型,2,Green Needlefish,Green Needlefish,122_hk-green-needlefish-local-badge.png
+58,67,其他魚類,細長型,2,Halfbeak,Halfbeak,067_hk-halfbeak-local-badge.png
+59,66,其他魚類,細長型,2,Needlefish,Needlefish,066_hk-needlefish-local-badge.png
+60,48,底棲近岸類,扁平型,2,Flatfish,Flatfish,048_hk-flatfish.png
+61,49,底棲近岸類,扁平型,2,Moray Eel,Moray Eel,049_hk-moray-eel.png
+62,69,底棲近岸類,標準紡錘型,3,Sea Catfish,Sea Catfish,069_hk-sea-catfish-local-badge.png
+63,50,底棲近岸類,標準紡錘型,2,Conger Eel,Conger Eel,050_hk-conger-eel.png
+64,123,底棲近岸類,標準紡錘型,2,Flower Lizardfish,Flower Lizardfish,123_hk-flower-lizardfish-local-badge.png
+65,71,底棲近岸類,標準紡錘型,2,Goby,Goby,071_hk-goby-local-badge.png
+66,13,底棲近岸類,標準紡錘型,2,Grey Mullet,Grey Mullet,013_hk-grey-mullet.png
+67,14,底棲近岸類,標準紡錘型,2,Large Scale Mullet,Large Scale Mullet,014_hk-large-scale-mullet.png
+68,21,底棲近岸類,標準紡錘型,2,Lizardfish,Lizardfish,021_hk-lizardfish.png
+69,72,底棲近岸類,標準紡錘型,2,Mudskipper,Mudskipper,072_hk-mudskipper-local-badge.png
+70,125,底棲近岸類,標準紡錘型,2,Ribbon Eel,Ribbon Eel,125_hk-ribbon-eel-local-badge.png
+71,68,底棲近岸類,細長型,3,Eeltail Catfish,Eeltail Catfish,068_hk-eeltail-catfish-local-badge.png
+72,41,毒棘礁棲類,棘鰭型,5,Lionfish,Lionfish,041_hk-lionfish.png
+73,42,毒棘礁棲類,棘鰭型,5,Stonefish,Stonefish,042_hk-stonefish.png
+74,43,毒棘礁棲類,棘鰭型,4,Scorpionfish,Scorpionfish,043_hk-scorpionfish.png
+75,83,毒棘礁棲類,標準紡錘型,2,Red Devil Rockfish,Red Devil Rockfish,083_hk-red-devil-rockfish-local-badge.png
+76,98,毒棘礁棲類,標準紡錘型,2,Rockfish,Rockfish,098_hk-rockfish-local-badge.png
+77,89,石斑類,粗壯型,3,Blackline Grouper,Blackline Grouper,089_hk-blackline-grouper-local-badge.png
+78,92,石斑類,粗壯型,3,Flower Head Grouper,Flower Head Grouper,092_hk-flower-head-grouper-local-badge.png
+79,93,石斑類,粗壯型,3,Giant Grouper,Giant Grouper,093_hk-giant-grouper-local-badge.png
+80,9,石斑類,粗壯型,3,Hong Kong Grouper,Hong Kong Grouper,009_hk-hong-kong-grouper.png
+81,10,石斑類,粗壯型,3,Leopard Coral Grouper,Leopard Coral Grouper,010_hk-leopard-coral-grouper.png
+82,8,石斑類,粗壯型,3,Malabar Grouper,Malabar Grouper,008_hk-malabar-grouper.png
+83,7,石斑類,粗壯型,3,Orange Spotted Grouper,Orange Spotted Grouper,007_hk-orange-spotted-grouper.png
+84,91,石斑類,粗壯型,3,Sesame Grouper,Sesame Grouper,091_hk-sesame-grouper-local-badge.png
+85,79,礁棲觀賞類,圓筒型,4,Boxfish,Boxfish,079_hk-boxfish-local-badge.png
+86,78,礁棲觀賞類,標準紡錘型,4,Triggerfish,Triggerfish,078_hk-triggerfish-local-badge.png
+87,46,礁棲觀賞類,標準紡錘型,3,Orangespotted Filefish,Orangespotted Filefish,046_hk-orangespotted-filefish.png
+88,73,礁棲觀賞類,標準紡錘型,3,Thread Sail Filefish,Thread Sail Filefish,073_hk-thread-sail-filefish-local-badge.png
+89,75,礁棲觀賞類,標準紡錘型,2,Butterflyfish,Butterflyfish,075_hk-butterflyfish-local-badge.png
+90,76,礁棲觀賞類,標準紡錘型,2,Damselfish,Damselfish,076_hk-damselfish-local-badge.png
+91,77,礁棲觀賞類,標準紡錘型,2,Parrotfish,Parrotfish,077_hk-parrotfish-local-badge.png
+92,112,礁棲觀賞類,標準紡錘型,2,Yellowtail Damselfish,Yellowtail Damselfish,112_hk-yellowtail-damselfish-local-badge.png
+93,11,近岸草食類,標準紡錘型,2,Rabbitfish,Rabbitfish,011_hk-rabbitfish.png
+94,84,鯛科/笛鯛類,標準紡錘型,2,Black Sand Seabream,Black Sand Seabream,084_hk-black-sand-seabream-local-badge.png
+95,2,鯛科/笛鯛類,標準紡錘型,2,Black Seabream,Black Seabream,002_hk-black-seabream.png
+96,81,鯛科/笛鯛類,標準紡錘型,2,Flame Snapper,Flame Snapper,081_hk-flame-snapper-local-badge.png
+97,87,鯛科/笛鯛類,標準紡錘型,2,Gold Thread Seabream,Gold Thread Seabream,087_hk-gold-thread-seabream-local-badge.png
+98,24,鯛科/笛鯛類,標準紡錘型,2,Golden Threadfin Bream,Golden Threadfin Bream,024_hk-golden-threadfin-bream.png
+99,3,鯛科/笛鯛類,標準紡錘型,2,Goldlined Seabream,Goldlined Seabream,003_hk-goldlined-seabream.png
+100,23,鯛科/笛鯛類,標準紡錘型,2,Japanese Threadfin Bream,Japanese Threadfin Bream,023_hk-japanese-threadfin-bream.png
+101,6,鯛科/笛鯛類,標準紡錘型,2,Johns Snapper,Johns Snapper,006_hk-johns-snapper.png
+102,5,鯛科/笛鯛類,標準紡錘型,2,Mangrove Red Snapper,Mangrove Red Snapper,005_hk-mangrove-red-snapper.png
+103,53,鯛科/笛鯛類,標準紡錘型,2,Oil Seabream,Oil Seabream,053_hk-oil-seabream-local-badge.png
+104,51,鯛科/笛鯛類,標準紡錘型,2,Red Seabream,Red Seabream,051_hk-red-seabream-local-badge.png
+105,86,鯛科/笛鯛類,標準紡錘型,2,Red Seabream,aka,086_hk-red-seabream-aka-local-badge.png
+106,4,鯛科/笛鯛類,標準紡錘型,2,Russell Snapper,Russell Snapper,004_hk-russell-snapper.png
+107,52,鯛科/笛鯛類,標準紡錘型,2,Sand Seabream,Sand Seabream,052_hk-sand-seabream-local-badge.png
+108,95,鯛科/笛鯛類,標準紡錘型,2,Star Snapper,Star Snapper,095_hk-star-snapper-local-badge.png
+109,54,鯛科/笛鯛類,標準紡錘型,2,Threadfin Seabream,Threadfin Seabream,054_hk-threadfin-seabream-local-badge.png
+110,82,鯛科/笛鯛類,標準紡錘型,2,Tooth Spotted Seabream,Tooth Spotted Seabream,082_hk-tooth-spotted-seabream-local-badge.png
+111,85,鯛科/笛鯛類,標準紡錘型,2,White Seabream,White Seabream,085_hk-white-seabream-local-badge.png
+112,1,鯛科/笛鯛類,標準紡錘型,2,Yellowfin Seabream,Yellowfin Seabream,001_hk-yellowfin-seabream.png
+113,104,鰺科/洄游類,標準紡錘型,2,Bigeye Scad,Bigeye Scad,104_hk-bigeye-scad-local-badge.png
+114,30,鰺科/洄游類,標準紡錘型,2,Golden Trevally,Golden Trevally,030_hk-golden-trevally.png
+115,34,鰺科/洄游類,標準紡錘型,2,Indian Mackerel,Indian Mackerel,034_hk-indian-mackerel.png
+116,36,鰺科/洄游類,標準紡錘型,2,Kawakawa,Kawakawa,036_hk-kawakawa.png
+117,37,鰺科/洄游類,標準紡錘型,2,Longtail Tuna,Longtail Tuna,037_hk-longtail-tuna.png
+118,31,鰺科/洄游類,標準紡錘型,2,Malabar Trevally,Malabar Trevally,031_hk-malabar-trevally.png
+119,35,鰺科/洄游類,標準紡錘型,2,Narrow Barred Spanish Mackerel,Narrow Barred Spanish Mackerel,035_hk-narrow-barred-spanish-mackerel.png
+120,33,鰺科/洄游類,標準紡錘型,2,Queenfish,Queenfish,033_hk-queenfish.png
+121,55,鰺科/洄游類,標準紡錘型,2,Small Scad,Small Scad,055_hk-small-scad-local-badge.png
+122,121,鰺科/洄游類,標準紡錘型,2,Small Scad Subadult,Small Scad Subadult,121_hk-small-scad-subadult-local-badge.png
+123,109,鰺科/洄游類,標準紡錘型,2,Ten Lined Scad,Ten Lined Scad,109_hk-ten-lined-scad-local-badge.png
+124,96,鰺科/洄游類,標準紡錘型,2,Yellowstripe Trevally,Yellowstripe Trevally,096_hk-yellowstripe-trevally-local-badge.png
+125,32,鰺科/洄游類,標準紡錘型,2,Yellowtail Scad,Yellowtail Scad,032_hk-yellowtail-scad.png

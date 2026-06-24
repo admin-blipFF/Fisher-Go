@@ -1,0 +1,154 @@
+﻿old_id,new_id,commonNameZh,localNameZh,scientificName,fishType,bodyShape,rarityRank,dangerLevelInt,marketPrice,isNew
+fish-003,fish-001,三角魚,三角魚,,其他魚類,fish,1,0,30,False
+fish-004,fish-002,三鬚魚,三鬚,,其他魚類,fish,1,0,30,False
+fish-005,fish-003,九肚魚,九肚魚,Harpadon nehereus,其他魚類,fish,1,0,40,False
+fish-059,fish-004,半嘴魚,半嘴,Hemiramphus far,其他魚類,fish,1,0,35,False
+fish-006,fish-005,咬仔鳚,狗母鳚,,其他魚類,fish,1,0,25,False
+fish-015,fish-006,斑點金鼓,金鼓,Scatophagus argus,其他魚類,fish,1,0,35,False
+fish-022,fish-007,沙甸魚,沙甸,Sardinella aurita,其他魚類,fish,1,0,30,False
+fish-001,fish-008,河豚,雞泡,Diodon holocanthus,其他魚類,fish,1,0,200,False
+fish-024,fish-009,海鯽,海鯽,Gerres simillimus,其他魚類,fish,1,0,35,False
+fish-029,fish-010,短吻飛魚,飛魚,,其他魚類,fish,1,0,30,False
+fish-034,fish-011,羊魚（鬚）,鬚羊魚,,其他魚類,fish,1,0,35,False
+fish-035,fish-012,花生魚,花生魚,,其他魚類,fish,1,0,30,False
+fish-060,fish-013,針魚,針魚,Petalichthys capensis,其他魚類,fish,1,0,30,False
+fish-044,fish-014,銀鯡,鯡魚,Gerres subfasciatus,其他魚類,fish,1,0,30,False
+fish-061,fish-015,青針魚,青針,,其他魚類,fish,1,0,30,False
+fish-047,fish-016,青鱗小沙丁,青鱗沙甸,,其他魚類,fish,1,0,25,False
+fish-002,fish-017,魟魚,魔鬼魚,Hypanus americanus,其他魚類,fish,1,0,150,False
+fish-050,fish-018,鯷魚,鯷仔,Engraulis australis,其他魚類,fish,1,0,25,False
+fish-051,fish-019,鰶魚,鰶魚,Dorosoma cepedianum,其他魚類,fish,1,0,30,False
+fish-055,fish-020,黑邊銀鯽,黑邊銀鯽,,其他魚類,fish,1,0,35,False
+fish-007,fish-021,四指馬友,馬友,Eleutheronema tetradactylum,其他魚類,fish,2,0,80,False
+fish-008,fish-022,大眼扁頭魚,大眼牛鰍,,其他魚類,fish,2,0,55,False
+fish-009,fish-023,大頭帶魚,刀魚,Trichiurus lepturus,其他魚類,fish,2,0,65,False
+fish-010,fish-024,大頭黃姑魚,白䱛,Pennahia macrocephala,其他魚類,fish,2,0,60,False
+fish-012,fish-025,小帶紋石首魚,花石首,Terapon puta,其他魚類,fish,2,0,45,False
+fish-014,fish-026,斑點石鱸,石鱸,Plectorhinchus flavomaculatus,其他魚類,fish,2,0,55,False
+fish-016,fish-027,斑點鱚,花沙鑽,Sillaginodes punctatus,其他魚類,fish,2,0,50,False
+fish-019,fish-028,日本馬頭魚,馬頭魚,,其他魚類,fish,2,0,65,False
+fish-020,fish-029,條紋伏波魚,伏波魚,Eucinostomus gula,其他魚類,fish,2,0,40,False
+fish-023,fish-030,油魚,油甘魚,Ruvettus pretiosus,其他魚類,fish,2,0,60,False
+fish-026,fish-031,獨角革魨,剝皮魚,Aluterus monoceros,其他魚類,fish,2,0,45,False
+fish-027,fish-032,白點竹鯊,狗仔鯊,Chiloscyllium plagiosum,其他魚類,fish,2,0,50,False
+fish-030,fish-033,石首魚,石首,Helotes octolineatus,其他魚類,fish,2,0,45,False
+fish-033,fish-034,羊魚,鬚鯛,Upeneichthys porosus,其他魚類,fish,2,0,50,False
+fish-036,fish-035,花鰹,花煙,Euthynnus affinis,其他魚類,fish,2,0,55,False
+fish-038,fish-036,角聲魚,角聲,,其他魚類,fish,2,0,45,False
+fish-040,fish-037,連米銀腹魚,連米魚,,其他魚類,fish,2,0,40,False
+fish-041,fish-038,里夫黃姑魚,花黃姑,,其他魚類,fish,2,0,50,False
+fish-043,fish-039,金線馬頭魚,紅衫馬頭,Nemipterus virgatus,其他魚類,fish,2,0,65,False
+fish-045,fish-040,銀鯧,白鯧,Pampus argenteus,其他魚類,fish,2,0,60,False
+fish-046,fish-041,銀鱚,沙鑽,Sillago argentifasciata,其他魚類,fish,2,0,50,False
+fish-048,fish-042,髭尾扁頭魚,牛鰍魚,Platycephalus indicus,其他魚類,fish,2,0,50,False
+fish-049,fish-043,鯣魚,貼魚,Remora remora,其他魚類,fish,2,0,30,False
+fish-052,fish-044,黃姑魚,黃花魚,Umbrina roncador,其他魚類,fish,2,0,55,False
+fish-053,fish-045,黃甲魚,黃甲,,其他魚類,fish,2,0,45,False
+fish-054,fish-046,黑帶金鼓,黑帶金鼓,Neoscorpis lithophilus,其他魚類,fish,2,0,50,False
+fish-056,fish-047,黑鯧,黑鯧,Parastromateus niger,其他魚類,fish,2,0,55,False
+fish-058,fish-048,龍舟魚,龍舟,,其他魚類,fish,2,0,45,False
+fish-011,fish-049,寶石隆頭魚,寶石青衣,,其他魚類,fish,3,0,70,False
+fish-013,fish-050,岩魚,石狗公仔,Sebastes caurinus,其他魚類,fish,3,0,75,False
+fish-017,fish-051,旗魚,劍旗魚,Jordanella floridae,其他魚類,fish,3,0,90,False
+fish-018,fish-052,日本真鱸,海鱸,Lateolabrax japonicus,其他魚類,fish,3,0,100,False
+fish-021,fish-053,梭子魚,梭魚,Sphyraena barracuda,其他魚類,fish,3,0,85,False
+fish-025,fish-054,海鱔,海鱔,Gymnothorax undulatus,其他魚類,fish,3,0,95,False
+fish-028,fish-055,皇帝魚,皇帝魚,Scomberoides lysan,其他魚類,fish,3,0,80,False
+fish-031,fish-056,窄帶馬鮫,馬鮫,Scomberomorus commerson,其他魚類,fish,3,0,90,False
+fish-032,fish-057,紅魔鬼岩魚,紅魔鬼,,其他魚類,fish,3,0,75,False
+fish-037,fish-058,蛋斑隆頭魚,青衣,,其他魚類,fish,3,0,65,False
+fish-039,fish-059,豹紋珊瑚鱸,東星斑,Plectropomus leopardus,其他魚類,fish,3,0,120,False
+fish-042,fish-060,金目鱸,金目鱸,Lates calcarifer,其他魚類,fish,3,0,110,False
+fish-057,fish-061,鼠尾隆頭魚,老鼠斑衣,,其他魚類,fish,3,0,60,False
+fish-065,fish-062,彈塗魚,彈塗,Periophthalmus barbarus,底棲近岸類,fish,1,0,30,False
+fish-066,fish-063,灰烏頭,烏頭,Chelon labrosus,底棲近岸類,fish,1,0,35,False
+fish-067,fish-064,狗母魚,狗母,Synodus variegatus,底棲近岸類,fish,1,0,30,False
+fish-068,fish-065,花狗母魚,花狗母,,底棲近岸類,fish,1,0,30,False
+fish-069,fish-066,鰕虎魚,狗公魚,Neogobius melanostomus,底棲近岸類,fish,1,0,25,False
+fish-064,fish-067,大鱗烏頭,大眼烏頭,Ellochelon vaigiensis,底棲近岸類,fish,2,0,55,False
+fish-062,fish-068,比目魚,左口魚,Asterorhombus cocosensis,底棲近岸類,fish,2,0,55,False
+fish-063,fish-069,海鯰,海塘蝨,Genidens barbus,底棲近岸類,fish,2,0,45,False
+fish-070,fish-070,鰻尾鯰,海塘蝨,Tandanus tandanus,底棲近岸類,fish,2,0,40,False
+fish-071,fish-071,康吉鰻,星鰻,Conger conger,底棲近岸類,fish,3,0,75,False
+NEW,fish-072,杉斑,杉斑,Epinephelus polyphekadion,石斑類,fish,3,0,120,True
+fish-072,fish-073,橙點石斑,紅斑,Epinephelus coioides,石斑類,fish,3,0,120,False
+NEW,fish-074,紅瓜子斑,紅瓜子斑,Epinephelus areolatus,石斑類,fish,3,0,150,True
+fish-073,fish-075,芝麻石斑,芝麻斑,,石斑類,fish,3,0,110,False
+fish-074,fish-076,花頭石斑,花頭斑,,石斑類,fish,3,0,110,False
+fish-075,fish-077,香港石斑,青斑,Epinephelus akaara,石斑類,fish,3,0,115,False
+fish-076,fish-078,馬拉巴石斑,老虎斑,Epinephelus malabaricus,石斑類,fish,3,0,130,False
+fish-077,fish-079,黑線石斑,黑線斑,,石斑類,fish,3,0,110,False
+NEW,fish-080,西星斑,西星斑,Plectropomus laevis,石斑類,fish,4,0,250,True
+NEW,fish-081,金錢斑,金錢斑,Epinephelus amblycephalus,石斑類,fish,4,0,220,True
+fish-078,fish-082,龍膽石斑,龍躉,Epinephelus lanceolatus,石斑類,fish,4,0,250,False
+NEW,fish-083,老鼠斑,老鼠斑,Cromileptes altivelis,石斑類,fish,5,0,380,True
+NEW,fish-084,蘇鼠斑,蘇鼠斑,Epinephelus tukula,石斑類,fish,5,0,420,True
+fish-080,fish-085,扳機魚,炮彈魚,Balistoides viridescens,礁棲觀賞類,fish,2,0,55,False
+fish-081,fish-086,橙點馬面魨,馬面,Cantherhines pullus,礁棲觀賞類,fish,2,0,50,False
+fish-079,fish-087,箱魨,箱魨,Ostracion cubicum,礁棲觀賞類,fish,2,0,50,False
+fish-083,fish-088,蝶魚,蝴蝶魚,Chaetodon marleyi,礁棲觀賞類,fish,2,0,40,False
+fish-082,fish-089,長帆馬面魨,長帆馬面,Stephanolepis cirrhifer,礁棲觀賞類,fish,2,0,45,False
+fish-084,fish-090,鸚哥魚,鸚哥,Sparisoma viride,礁棲觀賞類,fish,3,0,65,False
+fish-085,fish-091,泥鯭,泥鯭,Siganus fuscescens,近岸草食類,fish,1,0,30,False
+fish-103,fish-092,雀鯛,姑娘魚,Chromis chromis,鯛科/笛鯛類,fish,1,0,35,False
+fish-086,fish-093,三點雀鯛,三點姑娘魚,,鯛科/笛鯛類,fish,2,0,45,False
+NEW,fish-094,二長棘鯛,盤仔,Parargyrops edita,鯛科/笛鯛類,fish,2,0,75,True
+fish-087,fish-095,天竺鯛,天竺鯛,Apogon imberbis,鯛科/笛鯛類,fish,2,0,40,False
+fish-089,fish-096,橫帶小鯛,橫帶小鱲,Labrus viridis,鯛科/笛鯛類,fish,2,0,50,False
+fish-090,fish-097,沙鯛,沙鱲,,鯛科/笛鯛類,fish,2,0,55,False
+fish-091,fish-098,油鯛,油甘魚,,鯛科/笛鯛類,fish,2,0,55,False
+fish-093,fish-099,牙點鯛,牙點鱲,,鯛科/笛鯛類,fish,2,0,50,False
+fish-094,fish-100,白鯛,白鱲,Diplodus lineatus,鯛科/笛鯛類,fish,2,0,55,False
+fish-095,fish-101,約翰笛鯛,黃雞魚,,鯛科/笛鯛類,fish,2,0,65,False
+fish-097,fish-102,紅鯛,紅鱲,Pagrus major,鯛科/笛鯛類,fish,2,0,70,False
+fish-099,fish-103,赤鯛,赤鱲,,鯛科/笛鯛類,fish,2,0,60,False
+fish-100,fish-104,金線鯛,紅衫,Rhabdosargus sarba,鯛科/笛鯛類,fish,2,0,60,False
+fish-102,fish-105,鋸緣雀鯛,鋸緣姑娘魚,,鯛科/笛鯛類,fish,2,0,45,False
+fish-104,fish-106,馬友鯛,馬友鱲,,鯛科/笛鯛類,fish,2,0,55,False
+fish-105,fish-107,黃尾笛鯛,黃尾紅友,Caesio cuning,鯛科/笛鯛類,fish,2,0,65,False
+fish-106,fish-108,黃尾雀鯛,黃尾姑娘魚,Microspathodon chrysurus,鯛科/笛鯛類,fish,2,0,45,False
+fish-107,fish-109,黃鰭鯛,黃腳鱲,Acanthopagrus latus,鯛科/笛鯛類,fish,2,0,70,False
+fish-108,fish-110,黑沙鯛,黑沙鱲,,鯛科/笛鯛類,fish,2,0,55,False
+fish-109,fish-111,黑鯛,烏頭鱲,Spondyliosoma cantharus,鯛科/笛鯛類,fish,2,0,60,False
+fish-088,fish-112,星點笛鯛,星點紅友,Lutjanus stellatus,鯛科/笛鯛類,fish,3,0,90,False
+fish-096,fish-113,紅樹笛鯛,紅衫公,Lutjanus argentimaculatus,鯛科/笛鯛類,fish,3,0,95,False
+fish-098,fish-114,羅素笛鯛,紅友,Lutjanus russellii,鯛科/笛鯛類,fish,3,0,90,False
+fish-101,fish-115,金線鯛王,大紅衫,,鯛科/笛鯛類,fish,3,0,85,False
+fish-092,fish-116,火焰笛鯛,火焰紅友,Etelis coruscans,鯛科/笛鯛類,fish,4,0,180,False
+NEW,fish-117,五線笛鯛,五間畫眉,Lutjanus quinquelineatus,笛鯛科,fish,2,0,80,True
+NEW,fish-118,四間畫眉,四間畫眉,Lutjanus kasmira,笛鯛科,fish,2,0,75,True
+NEW,fish-119,約氏笛鯛,約翰紅友,Lutjanus johnii,笛鯛科,fish,3,0,130,True
+NEW,fish-120,千年笛鯛,白點笛鯛,Lutjanus rivulatus,笛鯛科,fish,4,0,180,True
+NEW,fish-121,老鼠䱛,老鼠䱛,Johnius dussumieri,䱛/石首魚科,fish,2,0,55,True
+NEW,fish-122,雞蛋䱛,雞蛋䱛,Collichthys lucidus,䱛/石首魚科,fish,2,0,60,True
+NEW,fish-123,紅牙䱛,丁友,Otolithes ruber,䱛/石首魚科,fish,3,0,95,True
+NEW,fish-124,鮸魚,米魚,Miichthys miiuy,䱛/石首魚科,fish,3,0,110,True
+NEW,fish-125,黃唇魚,金錢鮸,Bahaba taipingensis,䱛/石首魚科,fish,5,0,0,True
+NEW,fish-126,中華烏塘鱧,黑咕咕,Bostrychus sinensis,鱸科,fish,2,0,65,True
+NEW,fish-127,花尾胡椒鯛,花雞,Plectorhinchus cinctus,鱸科,fish,3,0,100,True
+NEW,fish-128,火點,火點,Scorpaena onaria,鰍/鮋科,fish,3,2,85,True
+NEW,fish-129,石狗公,石狗公,Sebastiscus marmoratus,鰍/鮋科,fish,3,2,90,True
+NEW,fish-130,深水石狗公,白斑菖鮋,Sebastiscus albofasciatus,鰍/鮋科,fish,4,2,140,True
+NEW,fish-131,真池魚,巴浪,Trachurus japonicus,鰺科,fish,2,0,45,True
+NEW,fish-132,紅瓜,甲鰺,Alepes djedaba,鰺科,fish,2,0,50,True
+NEW,fish-133,脂眼凹肩鰺,鬼池魚,Selar crumenophthalmus,鰺科,fish,2,0,48,True
+NEW,fish-134,六帶鰺,木棉,Caranx sexfasciatus,鰺科,fish,3,0,70,True
+NEW,fish-135,浪花鰺,GT,Caranx ignobilis,鰺科,fish,5,0,200,True
+fish-124,fish-136,青鱗小沙丁,青鱗沙甸,,鯖科,fish,1,0,25,False
+fish-126,fish-137,印度鯖,鯖魚,Rastrelliger kanagurta,鯖科,fish,2,0,55,False
+fish-127,fish-138,日本鯖,鯖魚,Scomber japonicus,鯖科,fish,2,0,50,False
+fish-125,fish-139,花鰹,花煙,Euthynnus affinis,鯖科,fish,2,0,55,False
+fish-123,fish-140,藍圓鰺,池仔,Decapterus maruadsi,鰺科/洄游類,fish,1,0,30,False
+fish-117,fish-141,銀腹鯧鰺,鯧鰺,Leiognathus equula,鰺科/洄游類,fish,1,0,35,False
+fish-110,fish-142,印度鯖,鯖魚,Rastrelliger kanagurta,鰺科/洄游類,fish,2,0,55,False
+fish-111,fish-143,大眼竹筴魚,大眼竹筴,,鰺科/洄游類,fish,2,0,45,False
+fish-113,fish-144,橙鰭銀腹鯧鰺,黃腳鯧鰺,Photopectoralis bindus,鰺科/洄游類,fish,2,0,55,False
+fish-115,fish-145,細鱗竹筴魚,細鱗竹筴,Alepes apercna,鰺科/洄游類,fish,2,0,45,False
+fish-116,fish-146,金鰭鰺,金鰭瓜,Gnathanodon speciosus,鰺科/洄游類,fish,2,0,60,False
+fish-119,fish-147,馬拉巴鰺,白瓜,Platycaranx malabaricus,鰺科/洄游類,fish,2,0,45,False
+fish-120,fish-148,黃尾擬鰺,黃尾瓜,,鰺科/洄游類,fish,2,0,45,False
+fish-121,fish-149,黃尾竹筴魚,竹筴,Trachurus novaezelandiae,鰺科/洄游類,fish,2,0,50,False
+fish-122,fish-150,黃條鰺,黃條瓜,Selaroides leptolepis,鰺科/洄游類,fish,2,0,50,False
+fish-112,fish-151,大眼竹筴魚王,竹筴王,Selar crumenophthalmus,鰺科/洄游類,fish,3,0,70,False
+fish-114,fish-152,紫胸馬加鰆,馬加鰆,Rhinomuraena quaesita,鰺科/洄游類,fish,3,0,90,False
+fish-118,fish-153,長尾吞拿,吞拿,Thunnus tonggol,鰺科/洄游類,fish,3,0,110,False

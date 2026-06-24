@@ -40,10 +40,14 @@ class SupabaseCatchRemoteDataSource implements CatchRemoteDataSource {
       'user_id': userId,
       'species_id': _toNullableUuid(entry.speciesId),
       'species_name': entry.speciesName,
-      'photo_url': entry.photoPath,
+      'photo_url': null,
+      'local_photo_name': entry.photoPath,
       'latitude': entry.latitude,
       'longitude': entry.longitude,
       'caught_at': entry.caughtAt.toIso8601String(),
+      'length_cm': entry.lengthCm,
+      'weight_kg': entry.weightKg,
+      'notes': entry.notes,
       'checkpoint_count': entry.checkpoints.length,
       'checkpoint_path': entry.checkpoints.map((e) => e.toMap()).toList(),
       'sync_status': 'synced',
@@ -67,8 +71,8 @@ class CatchSyncService {
     String? Function()? currentUserId,
   })  : _remote = remote,
         _isConfigured = isConfigured ?? (() => SupabaseConfig.isConfigured),
-        _currentUserId =
-            currentUserId ?? (() => Supabase.instance.client.auth.currentUser?.id);
+        _currentUserId = currentUserId ??
+            (() => Supabase.instance.client.auth.currentUser?.id);
 
   final CatchRemoteDataSource _remote;
   final bool Function() _isConfigured;

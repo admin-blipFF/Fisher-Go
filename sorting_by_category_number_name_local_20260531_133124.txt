@@ -1,0 +1,171 @@
+FisherGO 分類重排序（顯示：數字 / 魚名 / 本地俗名）
+規則：魚類 -> 體形 -> 稀有程度(高到低) -> 編號(小到大)
+註：本地俗名目前按檔名可識別標記抽取，未標記者顯示「—」。
+
+
+[其他魚類 / 圓筒膨脹型]
+新序號 | 數字 | 魚名 | 本地俗名
+001 | #040 | Pufferfish | —
+
+[其他魚類 / 標準紡錘型]
+新序號 | 數字 | 魚名 | 本地俗名
+002 | #004 | Russell Snapper | —
+003 | #005 | Mangrove Red Snapper | —
+004 | #006 | Johns Snapper | —
+005 | #012 | Spotted Scat | —
+006 | #015 | Japanese Seabass | —
+007 | #016 | Barramundi | —
+008 | #017 | Fourfinger Threadfin | —
+009 | #018 | Largehead Hairtail | —
+010 | #019 | Bartail Flathead | —
+011 | #020 | Bigeye Flathead | —
+012 | #022 | Bombay Duck | —
+013 | #023 | Japanese Threadfin Bream | —
+014 | #024 | Golden Threadfin Bream | —
+015 | #025 | Yellow Croaker | —
+016 | #026 | Big Head Croaker | —
+017 | #027 | Reeves Croaker | —
+018 | #028 | Ponyfish | —
+019 | #029 | Orangefin Ponyfish | —
+020 | #034 | Indian Mackerel | —
+021 | #035 | Narrow Barred Spanish Mackerel | —
+022 | #036 | Kawakawa | —
+023 | #037 | Longtail Tuna | —
+024 | #038 | Black Pomfret | —
+025 | #039 | Silver Pomfret | —
+026 | #044 | Stingray | —
+027 | #045 | White Spotted Bamboo Shark | —
+028 | #047 | Unicorn Leatherjacket | —
+029 | #049 | Moray Eel | —
+030 | #050 | Conger Eel | —
+031 | #056 | Egg Wrasse | —
+032 | #057 | Mouse Wrasse | —
+033 | #058 | Silver Sillago | —
+034 | #059 | Goatfish | —
+035 | #060 | Grunt | —
+036 | #061 | Small Banded Grunter | —
+037 | #062 | Silver Biddy | —
+038 | #063 | Anchovy | —
+039 | #064 | Sardinella | —
+040 | #065 | Barracuda | —
+041 | #067 | Halfbeak | —
+042 | #070 | Mojarra | —
+043 | #071 | Goby | —
+044 | #072 | Mudskipper | —
+045 | #074 | Cardinalfish | —
+046 | #080 | Remora | —
+047 | #081 | Flame Snapper | —
+048 | #083 | Red Devil Rockfish | —
+049 | #088 | Flagfish | —
+050 | #090 | Yellow Nail | —
+051 | #094 | Spotted Sweetlips | —
+052 | #095 | Star Snapper | —
+053 | #097 | Spotted Sillago | —
+054 | #098 | Rockfish | —
+055 | #099 | Goatfish | wrasp
+056 | #100 | Croaker | gwak
+057 | #101 | Icon | —
+058 | #102 | Icon | —
+059 | #103 | Icon | —
+060 | #104 | 104 | —
+061 | #105 | Icon | —
+062 | #106 | Icon | —
+063 | #107 | 107 | —
+064 | #108 | Icon | —
+065 | #109 | 109 | —
+066 | #110 | 110 | —
+067 | #111 | 111 | —
+068 | #112 | 112 | —
+069 | #113 | 113 | —
+070 | #114 | 114 | —
+071 | #115 | 115 | —
+072 | #116 | 116 | —
+073 | #117 | 117 | —
+074 | #118 | 118 | —
+075 | #119 | 119 | —
+076 | #120 | 120 | —
+077 | #121 | 121 | —
+078 | #122 | 122 | —
+079 | #123 | 123 | —
+080 | #124 | 124 | —
+081 | #125 | 125 | —
+
+[其他魚類 / 細長流線型]
+新序號 | 數字 | 魚名 | 本地俗名
+082 | #066 | Needlefish | —
+
+[洄游掠食魚類 / 標準紡錘型]
+新序號 | 數字 | 魚名 | 本地俗名
+083 | #030 | Golden Trevally | —
+084 | #031 | Malabar Trevally | —
+085 | #032 | Yellowtail Scad | —
+086 | #033 | Queenfish | —
+087 | #055 | Small Scad | —
+088 | #096 | Yellowstripe Trevally | —
+
+[礁棲魚類 / 圓筒膨脹型]
+新序號 | 數字 | 魚名 | 本地俗名
+089 | #079 | Boxfish | —
+
+[礁棲魚類 / 扇形棘鰭型]
+新序號 | 數字 | 魚名 | 本地俗名
+090 | #041 | Lionfish | —
+091 | #042 | Stonefish | —
+092 | #043 | Scorpionfish | —
+
+[礁棲魚類 / 標準紡錘型]
+新序號 | 數字 | 魚名 | 本地俗名
+093 | #078 | Triggerfish | —
+094 | #046 | Orangespotted Filefish | —
+095 | #073 | Thread Sail Filefish | —
+096 | #077 | Parrotfish | —
+
+[礁棲魚類 / 粗壯紡錘型]
+新序號 | 數字 | 魚名 | 本地俗名
+097 | #007 | Orange Spotted Grouper | —
+098 | #008 | Malabar Grouper | —
+099 | #009 | Hong Kong Grouper | —
+100 | #010 | Leopard Coral Grouper | —
+101 | #089 | Blackline Grouper | —
+102 | #091 | Sesame Grouper | —
+103 | #092 | Flower Head Grouper | —
+104 | #093 | Giant Grouper | —
+
+[礁棲魚類 / 高身側扁型]
+新序號 | 數字 | 魚名 | 本地俗名
+105 | #075 | Butterflyfish | —
+106 | #076 | Damselfish | —
+
+[近岸底層魚類 / 扁平貼底型]
+新序號 | 數字 | 魚名 | 本地俗名
+107 | #048 | Flatfish | —
+
+[近岸底層魚類 / 標準紡錘型]
+新序號 | 數字 | 魚名 | 本地俗名
+108 | #069 | Sea Catfish | —
+109 | #013 | Grey Mullet | —
+110 | #014 | Large Scale Mullet | —
+111 | #021 | Lizardfish | —
+
+[近岸底層魚類 / 細長流線型]
+新序號 | 數字 | 魚名 | 本地俗名
+112 | #068 | Eeltail Catfish | —
+
+[近岸草食魚類 / 高身側扁型]
+新序號 | 數字 | 魚名 | 本地俗名
+113 | #011 | Rabbitfish | —
+
+[鯛科魚類 / 高身側扁型]
+新序號 | 數字 | 魚名 | 本地俗名
+114 | #001 | Yellowfin Seabream | —
+115 | #002 | Black Seabream | —
+116 | #003 | Goldlined Seabream | —
+117 | #051 | Red Seabream | —
+118 | #052 | Sand Seabream | —
+119 | #053 | Oil Seabream | —
+120 | #054 | Threadfin Seabream | —
+121 | #082 | Tooth Spotted Seabream | —
+122 | #084 | Black Sand Seabream | —
+123 | #085 | White Seabream | —
+124 | #086 | Red Seabream | aka
+125 | #087 | Gold Thread Seabream | —

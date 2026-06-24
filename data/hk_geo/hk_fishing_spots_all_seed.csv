@@ -1,0 +1,285 @@
+﻿id,name,clean_name,type,is_island,district,radius_meters,lat,lon,geo_display,source
+pier_001,中環九號碼頭  中西,中環九號碼頭 中西,pier,false,區,50,,,,TLB-1-c1.pdf
+pier_002,中環十號碼頭  中西,中環十號碼頭 中西,pier,false,區,50,,,,TLB-1-c1.pdf
+pier_003,糖水道碼頭  東,糖水道碼頭 東,pier,false,區,50,,,,TLB-1-c1.pdf
+pier_004,長洲公眾碼頭,長洲公眾碼頭,pier,false,離島,50,,,,TLB-1-c1.pdf
+pier_005,芝麻灣碼頭,芝麻灣碼頭,pier,false,離島,50,,,,TLB-1-c1.pdf
+pier_006,蘆荻灣碼頭,蘆荻灣碼頭,pier,false,離島,50,,,,TLB-1-c1.pdf
+pier_007,鹿洲村碼頭,鹿洲村碼頭,pier,false,離島,50,,,,TLB-1-c1.pdf
+pier_008,坪洲公眾碼頭,坪洲公眾碼頭,pier,false,離島,50,,,,TLB-1-c1.pdf
+pier_009,蒲台公眾碼頭,蒲台公眾碼頭,pier,false,離島,50,,,,TLB-1-c1.pdf
+pier_010,西灣碼頭,西灣碼頭,pier,false,離島,50,,,,TLB-1-c1.pdf
+pier_011,沙螺灣碼頭,沙螺灣碼頭,pier,false,離島,50,,,,TLB-1-c1.pdf
+pier_012,索罟灣二號碼頭,索罟灣二號碼頭,pier,false,離島,50,,,,TLB-1-c1.pdf
+pier_013,索罟灣公眾碼頭,索罟灣公眾碼頭,pier,false,離島,50,,,,TLB-1-c1.pdf
+pier_014,大利島碼頭,大利島碼頭,pier,false,離島,50,,,,TLB-1-c1.pdf
+pier_015,大澳公眾碼頭,大澳公眾碼頭,pier,false,離島,50,,,,TLB-1-c1.pdf
+pier_016,大水坑碼頭,大水坑碼頭,pier,false,離島,50,,,,TLB-1-c1.pdf
+pier_017,東涌發展碼頭  (公眾 ),東涌發展碼頭,pier,false,離島,50,,,,TLB-1-c1.pdf
+pier_018,東涌公眾碼頭,東涌公眾碼頭,pier,false,離島,50,,,,TLB-1-c1.pdf
+pier_019,榕樹灣發展碼頭,榕樹灣發展碼頭,pier,false,離島,50,,,,TLB-1-c1.pdf
+pier_020,榕樹灣公眾碼頭,榕樹灣公眾碼頭,pier,false,離島,50,,,,TLB-1-c1.pdf
+pier_021,青衣公眾碼頭,青衣公眾碼頭,pier,false,葵青,50,,,,TLB-1-c1.pdf
+pier_022,觀塘公眾碼頭,觀塘公眾碼頭,pier,false,觀塘,50,,,,TLB-1-c1.pdf
+pier_023,鴨洲公眾碼頭  北,鴨洲公眾碼頭 北,pier,false,區,50,,,,TLB-1-c1.pdf
+pier_024,吉澳洲碼頭  北,吉澳洲碼頭 北,pier,false,區,50,,,,TLB-1-c1.pdf
+pier_025,沙頭角公眾碼頭  北,沙頭角公眾碼頭 北,pier,false,區,50,,,,TLB-1-c1.pdf
+pier_026,大廟灣公眾碼頭,大廟灣公眾碼頭,pier,false,西貢,50,,,,TLB-1-c1.pdf
+pier_027,北丫碼頭,北丫碼頭,pier,false,西貢,50,,,,TLB-1-c1.pdf
+pier_028,白沙灣第二碼頭,白沙灣第二碼頭,pier,false,西貢,50,,,,TLB-1-c1.pdf
+pier_029,布袋澳二號碼頭,布袋澳二號碼頭,pier,false,西貢,50,,,,TLB-1-c1.pdf
+pier_030,西貢新公眾碼頭,西貢新公眾碼頭,pier,false,西貢,50,,,,TLB-1-c1.pdf
+pier_031,西貢公眾碼頭,西貢公眾碼頭,pier,false,西貢,50,,,,TLB-1-c1.pdf
+pier_032,大頭洲碼頭,大頭洲碼頭,pier,false,西貢,50,,,,TLB-1-c1.pdf
+pier_033,調景嶺碼頭,調景嶺碼頭,pier,false,西貢,50,,,,TLB-1-c1.pdf
+pier_034,早禾坑碼頭,早禾坑碼頭,pier,false,西貢,50,,,,TLB-1-c1.pdf
+pier_035,東龍洲北碼頭,東龍洲北碼頭,pier,false,西貢,50,,,,TLB-1-c1.pdf
+pier_036,東龍洲公眾碼頭,東龍洲公眾碼頭,pier,false,西貢,50,,,,TLB-1-c1.pdf
+pier_037,鹽田仔碼頭,鹽田仔碼頭,pier,false,西貢,50,,,,TLB-1-c1.pdf
+pier_038,馬料水渡輪碼頭,馬料水渡輪碼頭,pier,false,沙田,50,,,,TLB-1-c1.pdf
+pier_039,烏溪沙碼頭,烏溪沙碼頭,pier,false,沙田,50,,,,TLB-1-c1.pdf
+pier_040,赤柱卜公碼頭  南,赤柱卜公碼頭 南,pier,false,區,50,,,,TLB-1-c1.pdf
+pier_041,聖士提反灣 (南 )碼頭  南,聖士提反灣 碼頭 南,pier,false,區,50,,,,TLB-1-c1.pdf
+pier_042,大潭灣碼頭  南,大潭灣碼頭 南,pier,false,區,50,,,,TLB-1-c1.pdf
+pier_043,高流灣公眾碼頭,高流灣公眾碼頭,pier,false,大埔,50,,,,TLB-1-c1.pdf
+pier_044,荔枝莊碼頭,荔枝莊碼頭,pier,false,大埔,50,,,,TLB-1-c1.pdf
+pier_045,三門仔村碼頭,三門仔村碼頭,pier,false,大埔,50,,,,TLB-1-c1.pdf
+pier_046,大美督一號碼頭,大美督一號碼頭,pier,false,大埔,50,,,,TLB-1-c1.pdf
+pier_047,大埔鐵路碼頭,大埔鐵路碼頭,pier,false,大埔,50,,,,TLB-1-c1.pdf
+pier_048,塔門碼頭,塔門碼頭,pier,false,大埔,50,,,,TLB-1-c1.pdf
+pier_049,東平洲公眾碼頭,東平洲公眾碼頭,pier,false,大埔,50,,,,TLB-1-c1.pdf
+pier_050,黃石公眾碼頭,黃石公眾碼頭,pier,false,大埔,50,,,,TLB-1-c1.pdf
+pier_051,深井 釣魚灣碼頭,深井 釣魚灣碼頭,pier,false,荃灣,50,,,,TLB-1-c1.pdf
+pier_052,深井公眾碼頭,深井公眾碼頭,pier,false,荃灣,50,,,,TLB-1-c1.pdf
+pier_053,大排咀碼頭,大排咀碼頭,pier,false,荃灣,50,,,,TLB-1-c1.pdf
+pier_054,荃灣渡輪碼頭 (西鐵 ),荃灣渡輪碼頭,pier,false,荃灣,50,,,,TLB-1-c1.pdf
+pier_055,油柑頭碼頭,油柑頭碼頭,pier,false,荃灣,50,,,,TLB-1-c1.pdf
+pier_056,嘉道理碼頭,嘉道理碼頭,pier,false,屯門,50,,,,TLB-1-c1.pdf
+pier_057,九龍公眾碼頭,九龍公眾碼頭,pier,false,油尖旺,50,,,,TLB-1-c1.pdf
+island_058,"A Chau (, Centre Island)",A Chau,island,true,Tai Po,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_059,Adamasta Rock (),Adamasta Rock,island,true,Islands,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_060,Ap Chau Mei Pak Tun Pai (),Ap Chau Mei Pak Tun Pai,island,true,North,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_061,Ap Chau Pak Tun Pai (),Ap Chau Pak Tun Pai,island,true,North,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_062,"Ap Chau (, Robinson Island)",Ap Chau,island,true,North,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_063,"Ap Lei Chau (, Aberdeen Island)",Ap Lei Chau,island,true,Southern,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_064,Ap Lei Pai (),Ap Lei Pai,island,true,Southern,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_065,Ap Lo Chun (),Ap Lo Chun,island,true,North,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_066,Ap Tan Pai (),Ap Tan Pai,island,true,North,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_067,Ap Tau Pai (),Ap Tau Pai,island,true,North,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_068,"Bay Islet (, See Chau)",Bay Islet,island,true,Sai Kung,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_069,Breaker Reef (),Breaker Reef,island,true,Tai Po,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_070,Bun Bei Chau (),Bun Bei Chau,island,true,Sai Kung,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_071,Bun Sha Pai (),Bun Sha Pai,island,true,Tai Po,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_072,Cha Kwo Chau (),Cha Kwo Chau,island,true,Islands,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_073,Cha Yue Pai (),Cha Yue Pai,island,true,Sai Kung,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_074,Cham Pai (),Cham Pai,island,true,Tai Po,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_075,Cham Tau Chau (),Cham Tau Chau,island,true,Sai Kung,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_076,Chap Mo Chau (),Chap Mo Chau,island,true,North,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_077,Chau Tsai Kok (),Chau Tsai Kok,island,true,Tai Po,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_078,Chau Tsai (),Chau Tsai,island,true,Sai Kung,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_079,Che Lei Pai (),Che Lei Pai,island,true,Tai Po,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_080,"Chek Chau (, Port Island)",Chek Chau,island,true,Tai Po,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_081,Chek Lap Kok (),Chek Lap Kok,island,true,Islands – now assimilated with Lam Chau into the airport platform and connected to Lantau Island by two bridges,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_082,Cheung Chau (),Cheung Chau,island,true,Islands,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_083,Cheung Shek Tsui (),Cheung Shek Tsui,island,true,North,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_084,Cheung Sok (),Cheung Sok,island,true,Tsuen Wan,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_085,Cheung Tsui Chau (),Cheung Tsui Chau,island,true,Sai Kung,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_086,"Ching Chau (, distinct from Steep Island)",Ching Chau,island,true,Sai Kung,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_087,Conic Island (),Conic Island,island,true,Sai Kung,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_088,Douglas Rock (),Douglas Rock,island,true,Islands,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_089,"Flat Island (, Ngan Chau)",Flat Island,island,true,Tai Po,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_090,"Fo Shek Chau (, Basalt Island)",Fo Shek Chau,island,true,Sai Kung,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_091,Fo Siu Pai (),Fo Siu Pai,island,true,Sai Kung,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_092,Fu Wong Chau (),Fu Wong Chau,island,true,North,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_093,Fun Chau (),Fun Chau,island,true,North,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_094,Green Island (),Green Island,island,true,Central & Western,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_095,Ha So Pai (),Ha So Pai,island,true,Islands,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_096,Hau Tsz Kok Pai (),Hau Tsz Kok Pai,island,true,Tai Po,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_097,Hei Ling Chau (),Hei Ling Chau,island,true,Islands,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_098,Hin Pai (),Hin Pai,island,true,Tai Po,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_099,Hok Tsai Pai (),Hok Tsai Pai,island,true,Sai Kung,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_100,Hong Kong Island (),Hong Kong Island,island,true,,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_101,Hung Pai (),Hung Pai,island,true,North,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_102,Kai Chau (),Kai Chau,island,true,Sai Kung,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_103,"Kat O (, Crooked Island)",Kat O,island,true,North,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_104,Kau Pei Chau (),Kau Pei Chau,island,true,Southern,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_105,Kau Sai Chau (),Kau Sai Chau,island,true,Sai Kung,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_106,Kau Yi Chau (),Kau Yi Chau,island,true,Islands,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_107,Kiu Tau (),Kiu Tau,island,true,Sai Kung,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_108,"Kiu Tsui Chau (, Sharp Island)",Kiu Tsui Chau,island,true,Sai Kung,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_109,Ko Pai (),Ko Pai,island,true,North,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_110,Kok Tai Pai (),Kok Tai Pai,island,true,North,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_111,Kong Tau Pai (),Kong Tau Pai,island,true,Sai Kung,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_112,Kowloon Rock (),Kowloon Rock,island,true,Kowloon City,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_113,Kung Chau (),Kung Chau,island,true,Tai Po,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_114,Kwun Cham Wan (),Kwun Cham Wan,island,true,Sai Kung,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_115,Kwun Tsai (),Kwun Tsai,island,true,Sai Kung,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_116,Lak Lei Tsai (),Lak Lei Tsai,island,true,Sai Kung,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_117,Lamma Island (),Lamma Island,island,true,Islands,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_118,Lan Shuen Pei (),Lan Shuen Pei,island,true,North,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_119,Lan Tau Pai (),Lan Tau Pai,island,true,Sai Kung,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_120,Lantau Island (),Lantau Island,island,true,Islands,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_121,Lap Sap Chau (),Lap Sap Chau,island,true,Sai Kung,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_122,Little Green Island (),Little Green Island,island,true,Central & Western,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_123,Lo Chau (),Lo Chau,island,true,Southern,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_124,Lo Chi Pai (),Lo Chi Pai,island,true,North,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_125,Lo Fu Tiu Pai (),Lo Fu Tiu Pai,island,true,Sai Kung,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_126,Lo Shue Pai (),Lo Shue Pai,island,true,Eastern,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_127,Loaf Rock (),Loaf Rock,island,true,Islands,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_128,"Luk Chau (), formerly George I.","Luk Chau , formerly George I",island,true,Islands,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_129,Lung Kwu Chau (),Lung Kwu Chau,island,true,Tuen Mun,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_130,Lung Shan Pai (),Lung Shan Pai,island,true,Southern,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_131,Lung Shuen Pai (),Lung Shuen Pai,island,true,Sai Kung,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_132,Lut Chau (),Lut Chau,island,true,Yuen Long,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_133,Ma Shi Chau (),Ma Shi Chau,island,true,Tai Po,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_134,Ma Tsai Pai (),Ma Tsai Pai,island,true,Sai Kung,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_135,Ma Wan (),Ma Wan,island,true,Tsuen Wan,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_136,Ma Yan Pai (),Ma Yan Pai,island,true,Tai Po,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_137,"Magazine Island (, Fo Yeuk Chau)",Magazine Island,island,true,Southern,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_138,Mei Pai (),Mei Pai,island,true,Islands,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_139,Middle Island (),Middle Island,island,true,Southern,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_140,Mong Chau Tsai (),Mong Chau Tsai,island,true,Sai Kung,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_141,"Moon Island (, Mo Chau)",Moon Island,island,true,Tai Po,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_142,Muk Yue Chau (),Muk Yue Chau,island,true,Sai Kung,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_143,Nam Fung Chau (),Nam Fung Chau,island,true,Sai Kung,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_144,Ng Fan Chau (),Ng Fan Chau,island,true,Southern,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_145,Nga Ying Chau (),Nga Ying Chau,island,true,Sai Kung Southeast to Ching Chau (),250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_146,Nga Ying Pai (),Nga Ying Pai,island,true,Sai Kung,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_147,Ngam Hau Shek (),Ngam Hau Shek,island,true,Tsuen Wan,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_148,Ngan Chau (),Ngan Chau,island,true,Islands,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_149,Ngau Shi Pui (),Ngau Shi Pui,island,true,Sai Kung,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_150,Ngau Tau Pai (),Ngau Tau Pai,island,true,Sai Kung,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_151,"Ngo Mei Chau (, Crescent Island)",Ngo Mei Chau,island,true,North,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_152,Ninepin Group (),Ninepin Group,island,true,Sai Kung,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_153,North Ninepin Island (),North Ninepin Island,island,true,,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_154,Sai Chau Mei (),Sai Chau Mei,island,true,,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_155,Shue Long Chau (),Shue Long Chau,island,true,,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_156,Tai Chau (),Tai Chau,island,true,,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_157,Tai Chau Mei (),Tai Chau Mei,island,true,,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_158,Tuen Chau Chai (),Tuen Chau Chai,island,true,,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_159,Pak Chau (),Pak Chau,island,true,Tuen Mun,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_160,Pak Ka Chau (),Pak Ka Chau,island,true,North,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_161,Pak Ma Tsui Pai (),Pak Ma Tsui Pai,island,true,Sai Kung,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_162,Pak Pai (),Pak Pai,island,true,Sai Kung,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_163,"Pak Sha Chau (, Round Island)",Pak Sha Chau,island,true,North,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_164,Pat Ka Chau (),Pat Ka Chau,island,true,North,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_165,Peaked Hill (),Peaked Hill,island,true,Islands,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_166,Peng Chau (),Peng Chau,island,true,Islands,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_167,Pearl Island (),Pearl Island,island,true,Tuen Mun,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_168,Pin Chau (),Pin Chau,island,true,Sai Kung,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_169,Ping Chau (),Ping Chau,island,true,Tai Po,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_170,Ping Min Chau (),Ping Min Chau,island,true,Sai Kung,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_171,Po Pin Chau (),Po Pin Chau,island,true,Sai Kung,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_172,Po Toi Islands (),Po Toi Islands,island,true,Islands,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_173,Castle Rock (),Castle Rock,island,true,,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_174,"Beaufort Island (, Lo Chau)",Beaufort Island,island,true,,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_175,"Mat Chau (), an islet off Po Toi Island","Mat Chau , an islet off Po Toi Island",island,true,,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_176,"Mat Chau Pai (), an islet off Mat Chau","Mat Chau Pai , an islet off Mat Chau",island,true,,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_177,Po Toi Island (),Po Toi Island,island,true,,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_178,Sai Pai (),Sai Pai,island,true,,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_179,San Pai (),San Pai,island,true,,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_180,Sung Kong (),Sung Kong,island,true,,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_181,Tai Pai (),Tai Pai,island,true,,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_182,Waglan Island (),Waglan Island,island,true,,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_183,Po Yue Pai (),Po Yue Pai,island,true,Sai Kung,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_184,Pun Shan Shek (),Pun Shan Shek,island,true,Tsuen Wan,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_185,Pyramid Rock (),Pyramid Rock,island,true,Sai Kung,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_186,Round Island (),Round Island,island,true,Southern,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_187,Sai Ap Chau (),Sai Ap Chau,island,true,North,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_188,Sam Pai (),Sam Pai,island,true,Sai Kung,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_189,Sam Pui Chau (),Sam Pui Chau,island,true,Tai Po,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_190,Sha Chau (),Sha Chau,island,true,Tuen Mun,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_191,Sha Pai (),Sha Pai,island,true,North,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_192,"Sha Tong Hau (, Bluff Island)",Sha Tong Hau,island,true,Sai Kung,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_193,Sham Shui Pai (),Sham Shui Pai,island,true,Islands,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_194,Shau Kei Pai (),Shau Kei Pai,island,true,North,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_195,Shek Chau (),Shek Chau,island,true,Sai Kung,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_196,Shek Kwu Chau (),Shek Kwu Chau,island,true,Islands,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_197,Shek Ngau Chau (),Shek Ngau Chau,island,true,Tai Po,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_198,Shelter Island (),Shelter Island,island,true,Sai Kung,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_199,Sheung Pai (),Sheung Pai,island,true,North,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_200,Shui Cham Tsui Pai (),Shui Cham Tsui Pai,island,true,North,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_201,Shui Pai (),Shui Pai,island,true,Islands,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_202,Siu Kau Yi Chau (),Siu Kau Yi Chau,island,true,Islands,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_203,Siu Nim Chau (),Siu Nim Chau,island,true,North,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_204,Siu Tsan Chau (),Siu Tsan Chau,island,true,Sai Kung,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_205,Soko Islands (),Soko Islands,island,true,Islands,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_206,Cheung Muk Tau (),Cheung Muk Tau,island,true,,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_207,Ma Chau (),Ma Chau,island,true,,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_208,Siu A Chau (),Siu A Chau,island,true,,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_209,Tai A Chau (),Tai A Chau,island,true,,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_210,Tau Lo Chau (),Tau Lo Chau,island,true,,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_211,Wan Hau Chau (),Wan Hau Chau,island,true,,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_212,Wu Yeung Chau Pai (),Wu Yeung Chau Pai,island,true,,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_213,Yuen Chau (),Yuen Chau,island,true,,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_214,Yuen Kong Chau (),Yuen Kong Chau,island,true,,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_215,"Steep Island (, Ching Chau)",Steep Island,island,true,Sai Kung,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_216,Sunshine Island (),Sunshine Island,island,true,Islands,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_217,Ta Ho Pai (),Ta Ho Pai,island,true,North,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_218,Tai Lei (),Tai Lei,island,true,Islands,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_219,Tai Nim Chau (),Tai Nim Chau,island,true,North,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_220,Tai O (),Tai O,island,true,Islands,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_221,Tai Tau Chau (Sai Kung District) (),Tai Tau Chau,island,true,Sai Kung,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_222,Tai Tsan Chau (),Tai Tsan Chau,island,true,Sai Kung,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_223,Tang Chau (),Tang Chau,island,true,Tai Po,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_224,Tang Lung Chau (),Tang Lung Chau,island,true,Tsuen Wan,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_225,"Tap Mun Chau (, Grass Island)",Tap Mun Chau,island,true,Tai Po,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_226,Tau Chau (),Tau Chau,island,true,Southern,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_227,The Brothers (),The Brothers,island,true,Tuen Mun,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_228,Siu Mo To (),Siu Mo To,island,true,,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_229,Tai Mo To (),Tai Mo To,island,true,,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_230,Tsz Kan Chau (),Tsz Kan Chau,island,true,,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_231,Tit Cham Chau (),Tit Cham Chau,island,true,Sai Kung,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_232,Tit Shue Pai (),Tit Shue Pai,island,true,Tai Po,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_233,"Tiu Chung Chau (, Jin Island)",Tiu Chung Chau,island,true,Sai Kung,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_234,Tiu Chung Pai (),Tiu Chung Pai,island,true,Sai Kung,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_235,Tong Hau Pai (),Tong Hau Pai,island,true,Sai Kung,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_236,Tong Yan Pai (),Tong Yan Pai,island,true,Southern,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_237,Town Island (),Town Island,island,true,Sai Kung,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_238,Trio Island (),Trio Island,island,true,Sai Kung,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_239,Tsim Chau Group,Tsim Chau Group,island,true,Sai Kung,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_240,Tsim Chau (),Tsim Chau,island,true,,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_241,"Tsing Chau (, Table Island)",Tsing Chau,island,true,North,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_242,Tsing Yi Island (),Tsing Yi Island,island,true,Kwai Tsing,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_243,Tsui Pai (),Tsui Pai,island,true,Islands,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_244,Tuen Tau Chau (),Tuen Tau Chau,island,true,Sai Kung,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_245,Tung Lung Chau (),Tung Lung Chau,island,true,Sai Kung,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_246,Tung Sam Chau (),Tung Sam Chau,island,true,Sai Kung,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_247,Wai Chau Pai (),Wai Chau Pai,island,true,Tai Po,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_248,Wai Kap Pai (),Wai Kap Pai,island,true,Sai Kung,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_249,Wang Chau (),Wang Chau,island,true,Sai Kung,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_250,Wang Pai (),Wang Pai,island,true,Sai Kung,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_251,Wo Sheung Chau (),Wo Sheung Chau,island,true,Sai Kung,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_252,Wong Mau Chau (),Wong Mau Chau,island,true,Sai Kung,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_253,Wong Nai Chau Tsai (),Wong Nai Chau Tsai,island,true,Sai Kung,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_254,Wong Nai Chau (),Wong Nai Chau,island,true,North,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_255,"Wong Wan Chau (, Double Island)",Wong Wan Chau,island,true,North,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_256,Wong Wan Pai (),Wong Wan Pai,island,true,Sai Kung,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_257,Wong Yi Chau (),Wong Yi Chau,island,true,Sai Kung,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_258,Wu Chau (),Wu Chau,island,true,North,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_259,Wu Pai (),Wu Pai,island,true,North,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_260,Wu Ying Pai (),Wu Ying Pai,island,true,Islands,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_261,Yan Chau (),Yan Chau,island,true,North,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_262,Yau Lung Kok (),Yau Lung Kok,island,true,Sai Kung,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_263,Yeung Chau (),Yeung Chau,island,true,North,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_264,"Yeung Chau (), Sheep Island","Yeung Chau , Sheep Island",island,true,Sai Kung,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_265,Yi Long Pai (),Yi Long Pai,island,true,Islands,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_266,Yi Pai (),Yi Pai,island,true,Sai Kung,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_267,Yim Tin Tsai (),Yim Tin Tsai,island,true,Tai Po,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_268,Channel Rock,Channel Rock,island,true,Kowloon City – now a part of the Kai Tak former airport runway,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_269,"Fat Tong Chau (, Junk Island)",Fat Tong Chau,island,true,"now a part of Tseung Kwan O, Sai Kung as a result of land reclamation",250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_270,Hoi Sham Island,Hoi Sham Island,island,true,Kowloon City (also To Kwa Wan Island) – now part of Hoi Sham Park in To Kwa Wan as a result of reclamation,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_271,Kellett Island,Kellett Island,island,true,"now part of Causeway Bay as a result of gradual land reclamation, Eastern",250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_272,La Ka Chau (),La Ka Chau,island,true,,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_273,Lam Chau,Lam Chau,island,true,Islands – now assimilated with Chek Lap Kok into the airport platform and connected to Lantau by two bridges,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_274,"Leung Shuen Wan (, High Island), Sai Kung","Leung Shuen Wan , Sai Kung",island,true,connected to the mainland to form the High Island Reservoir,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_275,Mong Chau,Mong Chau,island,true,"an island off the hill of Lai King, buried under the Terminal 2 of the Container Terminal",250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_276,Mouse Island,Mouse Island,island,true,"an island in Sam Shing, Tuen Mun and now a part of Mouse Island Children's Playground",250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_277,Rumsey Rock,Rumsey Rock,island,true,now a part of shore between Tsim Sha Tsui East and Hung Hom,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_278,Stonecutters Island,Stonecutters Island,island,true,"a former island, now part of the Kowloon Peninsula, following land reclamation",250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_279,"Tsing Chau, or Pillar Island","Tsing Chau, or Pillar Island",island,true,"absorbed into reclaimed land of Gin Drinkers Bay or Lap Sap Wan. It is at Kwai Chung, next to Tsing Yi Bridge",250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_280,Tung Tau Chau (),Tung Tau Chau,island,true,connected to the mainland to form the Plover Cove Reservoir,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_281,Yuen Chau Tsai (),Yuen Chau Tsai,island,true,,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_282,Un Chau,Un Chau,island,true,,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_283,Careening Island,Careening Island,island,true,,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong
+island_284,New Wing of Hong Kong Convention and Exhibition Centre,New Wing of Hong Kong Convention and Exhibition Centre,island,true,,250,,,,Wikipedia raw: List_of_islands_and_peninsulas_of_Hong_Kong

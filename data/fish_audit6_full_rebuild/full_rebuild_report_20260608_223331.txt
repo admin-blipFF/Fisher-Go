@@ -1,0 +1,8 @@
+PDF=C:\Users\s0829\fishergo\data\fish_audit6_full_rebuild\fishergo_icon_vs_realphoto_full_rebuild_20260608_223331.pdf
+CSV=C:\Users\s0829\fishergo\data\fish_audit6_full_rebuild\full_rebuild_audit_20260608_223331.csv
+MISSING_LOW_CONF=C:\Users\s0829\fishergo\data\fish_audit6_full_rebuild\reports\missing_or_low_confidence_20260608_223331.csv
+TOTAL=125
+DOWNLOADED=101
+HIGH_CONF=86
+MEDIUM_CONF=15
+MISSING_OR_FAILED=24

@@ -1,8 +1,17 @@
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class SupabaseConfig {
-  static String get url => _envValue('SUPABASE_URL');
-  static String get anonKey => _envValue('SUPABASE_ANON_KEY');
+  static const String _urlFromDefine = String.fromEnvironment('SUPABASE_URL');
+  static const String _anonKeyFromDefine = String.fromEnvironment(
+    'SUPABASE_ANON_KEY',
+  );
+
+  static String get url =>
+      _urlFromDefine.isNotEmpty ? _urlFromDefine : _envValue('SUPABASE_URL');
+
+  static String get anonKey => _anonKeyFromDefine.isNotEmpty
+      ? _anonKeyFromDefine
+      : _envValue('SUPABASE_ANON_KEY');
 
   static String _envValue(String key) {
     try {

@@ -1,0 +1,172 @@
+﻿status,id,name_zh,name_en,lat,lon,distance_km,class,type,reason,seed_lat,seed_lon
+accepted,I001,丫洲,A Chau,22.4392668,114.2222517,0.015,place,islet,,,
+accepted,I002,鴉洲,A Chau,22.5277135,114.2108398,0.007,place,islet,,,
+accepted,I003,北長洲石,Adamasta Rock,22.2236093,114.0230818,0.0,natural,reef,,,
+accepted,I004,鴨洲尾白墩排,Ap Chau Mei Pak Tun Pai,22.5495795,114.2697607,0.001,place,islet,,,
+accepted,I005,鴨洲白墩排,Ap Chau Pak Tun Pai,22.5505375,114.267447,0.003,place,islet,,,
+accepted,I007,鴨脷洲,Ap Lei Chau,22.2399354,114.1545244,0.094,boundary,administrative,,,
+accepted,I009,鴨籮春,Ap Lo Chun,22.5524605,114.2648762,0.005,place,islet,,,
+accepted,I010,鴨蛋排,Ap Tan Pai,22.5530943,114.2655155,0.0,natural,reef,,,
+accepted,I011,鴨兜排,Ap Tau Pai,22.5358285,114.2723331,0.01,place,islet,,,
+accepted,I012,匙洲,Bay Islet,22.3357668,114.3340652,0.017,place,islet,,,
+accepted,I013,打浪排,Breaker Reef,22.461372,114.4202898,0.018,natural,reef,,,
+accepted,I014,崩鼻洲,Bun Bei Chau,22.3364806,114.3677559,0.015,place,islet,,,
+accepted,I015,崩紗排,Bun Sha Pai,22.4592739,114.2874203,0.016,place,islet,,,
+accepted,I016,茶果洲,Cha Kwo Chau,22.2147878,113.9459523,0.014,place,islet,,,
+accepted,I017,炸魚排,Cha Yue Pai,22.3802759,114.2955196,0.001,place,islet,,,
+accepted,I018,杉排,Cham Pai,22.490175,114.3652851,0.018,place,islet,,,
+accepted,I019,沉排,Cham Pai,22.3237159,114.3298323,0.006,place,islet,,,
+accepted,I020,枕頭洲,Cham Tau Chau,22.3791527,114.2889098,0.033,place,islet,,,
+accepted,I021,執毛洲,Chap Mo Chau,22.514341,114.2946646,0.007,place,islet,,,
+accepted,I022,洲仔角,Chau Tsai Kok,22.4716835,114.3573514,0.004,place,islet,,,
+accepted,I023,洲仔,Chau Tsai,22.3534064,114.3506028,0.007,place,islet,,,
+accepted,I024,扯里排,Che Lei Pai,22.4636296,114.2909172,0.035,place,islet,,,
+accepted,I026,赤鱲角,Chek Lap Kok,22.3152422,113.9358616,1.109,boundary,administrative,,,
+accepted,I027,長洲,Cheung Chau,22.208822,114.0295672,0.035,place,suburb,,,
+accepted,I029,長索,Cheung Sok,22.3347302,114.0237523,0.021,place,islet,,,
+accepted,I030,長咀洲,Cheung Tsui Chau,22.4130681,114.4061639,0.007,place,islet,,,
+accepted,I033,德己利士礁,Douglas Rock,22.2911769,114.0690264,0.002,natural,reef,,,
+accepted,I034,銀洲,Flat Island,22.4787701,114.3312512,0.009,place,islet,,,
+accepted,I036,火燒排,Fo Siu Pai,22.2761013,114.359238,0.003,place,island,,,
+accepted,I037,虎王洲,Fu Wong Chau,22.5202377,114.2861033,0.077,place,islet,,,
+accepted,I038,墳洲,Fun Chau,22.5334849,114.2761824,0.073,place,islet,,,
+accepted,I040,蝦鬚排,Ha So Pai,22.2241444,114.0159729,0.017,place,islet,,,
+accepted,I041,孝子角排,Hau Tsz Kok Pai,22.4774837,114.3534283,0.372,natural,reef,,,
+accepted,I042,喜靈洲,Hei Ling Chau,22.2514077,114.0389871,0.187,place,suburb,,,
+accepted,I043,蜆排,Hin Pai,22.4831853,114.3328234,0.001,place,islet,,,
+accepted,I045,香港島,Hong Kong Island,22.2534634,114.190975,1.007,boundary,administrative,,,
+accepted,I046,紅排,Hung Pai,22.5099218,114.290775,0.019,place,islet,,,
+accepted,I047,雞洲,Kai Chau,22.366917,114.3245033,0.007,place,islet,,,
+accepted,I049,狗脾洲,Kau Pei Chau,22.2057074,114.2592449,0.167,place,islet,,,
+accepted,I051,交椅洲,Kau Yi Chau,22.284527,114.0764858,0.062,place,islet,,,
+accepted,I052,橋頭,Kiu Tau,22.4810872,114.1553601,0.128,place,locality,,,
+accepted,I054,高排,Ko Pai,22.5311178,114.2920517,0.002,place,islet,,,
+accepted,I055,角大排,Kok Tai Pai,22.5145449,114.3005188,0.009,place,islet,,,
+accepted,I056,光頭排,Kong Tau Pai,22.3389386,114.3751036,0.014,place,islet,,,
+accepted,I057,九龍石,Kowloon Rock,22.3164458,114.1988698,0.002,place,islet,,,
+accepted,I058,弓洲,Kung Chau,22.483614,114.3706343,0.083,place,islet,,,
+accepted,I059,罐杉環,Kwun Cham Wan,22.374158,114.301381,0.04,place,islet,,,
+accepted,I060,觀仔,Kwun Tsai,22.2650464,114.2797167,0.012,place,islet,,,
+accepted,I061,癩痢仔,Lak Lei Tsai,22.3038292,114.3167792,0.031,place,islet,,,
+accepted,I064,爛頭排,Lan Tau Pai,22.4057873,114.3877507,0.012,place,islet,,,
+accepted,I066,垃圾洲,Lap Sap Chau,22.3862407,114.2822923,0.017,place,islet,,,
+accepted,I068,羅洲,Lo Chau,22.2069508,114.2228023,0.007,place,islet,,,
+accepted,I069,鷀鸕排,Lo Chi Pai,22.3644273,114.2996845,0.006,place,islet,,,
+accepted,I070,老虎吊排,Lo Fu Tiu Pai,22.3630708,114.3253372,0.001,place,islet,,,
+accepted,I072,饅頭排,Loaf Rock,22.2087992,114.0369247,0.006,place,islet,,,
+accepted,I075,龍山排,Lung Shan Pai,22.2408139,114.1432474,0.003,place,islet,,,
+accepted,I076,龍船排,Lung Shuen Pai,22.3066333,114.3670152,0.006,place,islet,,,
+accepted,I077,甩洲,Lut Chau,22.4768947,114.0329586,0.12,place,locality,,,
+accepted,I079,孖仔排,Ma Tsai Pai,22.3228632,114.3272727,0.003,place,islet,,,
+accepted,I082,火藥洲,Magazine Island,22.2433652,114.1390773,0.048,place,islet,,,
+accepted,I083,尾排,Mei Pai,22.1990917,113.9815009,0.099,place,islet,,,
+accepted,I085,芒洲仔,Mong Chau Tsai,22.3713941,114.3012844,0.013,place,islet,,,
+accepted,I089,五分洲,Ng Fan Chau,22.2258865,114.2575888,0.021,place,islet,,,
+accepted,I090,牙鷹洲,Nga Ying Chau,22.3888449,114.3159205,0.001,place,islet,,,
+accepted,I091,牙鷹排,Nga Ying Pai,22.2426614,114.2807001,0.001,place,islet,,,
+accepted,I092,岩口石,Ngam Hau Shek,22.3296433,114.0587666,0.01,place,islet,,,
+accepted,I094,牛頭排,Ngau Tau Pai,22.3221323,114.3017347,0.015,place,islet,,,
+accepted,I097,"白洲, Tree Island",Pak Chau,22.3562651,113.8746893,0.017,place,islet,,,
+accepted,I098,筆架洲,Pak Ka Chau,22.5328314,114.2884218,0.003,place,islet,,,
+accepted,I099,白馬咀排,Pak Ma Tsui Pai,22.3475171,114.2743543,0.002,natural,reef,,,
+accepted,I100,白排,Pak Pai,22.3077078,114.3096715,0.004,place,islet,,,
+accepted,I103,雞翼角,Peaked Hill,22.2162627,113.8368221,0.019,place,islet,,,
+accepted,I105,龍珠島,Pearl Island,22.3654743,113.989753,0.023,place,islet,,,
+accepted,I106,扁洲,Pin Chau,22.3264663,114.3685127,0.005,place,islet,,,
+accepted,I107,平洲,Ping Chau,22.5455581,114.4283418,0.346,place,island,,,
+accepted,I108,平面洲,Ping Min Chau,22.3118819,114.3186306,0.008,place,islet,,,
+accepted,I110,蒲苔群島,Po Toi Islands,22.1757113,114.27601,1.162,place,suburb,,,
+accepted,I111,蒲魚排,Po Yue Pai,22.5461832,114.2956369,0.014,place,islet,,,
+accepted,I112,半山石,Pun Shan Shek,22.3217287,114.0681188,0.001,place,islet,,,
+accepted,I113,尖柱石,Pyramid Rock,22.3221181,114.3660044,0.005,place,islet,,,
+accepted,I115,細鴨洲,Sai Ap Chau,22.55155,114.2612219,0.04,place,islet,,,
+accepted,I116,三排,Sam Pai,22.3115783,114.372619,0.001,place,islet,,,
+accepted,I117,三杯酒,Sam Pui Chau,22.4327292,114.2719976,0.013,place,islet,,,
+accepted,I119,沙排,Sha Pai,22.524841,114.2885613,0.001,place,islet,,,
+accepted,I121,深水排,Sham Shui Pai,22.20543,114.0465791,0.001,place,islet,,,
+accepted,I122,筲箕排,Shau Kei Pai,22.5231883,114.2924684,0.0,natural,reef,,,
+accepted,I123,石洲,Shek Chau,22.1734329,113.907155,0.01,place,islet,,,
+accepted,I125,石牛洲,Shek Ngau Chau,22.4663511,114.4276462,0.058,place,islet,,,
+accepted,I127,雙排,Sheung Pai,22.5483028,114.2626485,0.015,place,islet,,,
+accepted,I128,水浸咀排,Shui Cham Tsui Pai,22.5319501,114.2273411,0.034,place,islet,,,
+accepted,I129,水排,Shui Pai,22.2124015,113.9901578,0.366,place,islet,,,
+accepted,I130,小交椅洲,Siu Kau Yi Chau,22.2886783,114.05912,0.008,place,islet,,,
+accepted,I131,小稔洲,Siu Nim Chau,22.5384192,114.267399,0.0,place,islet,,,
+accepted,I132,小鏟洲,Siu Tsan Chau,22.3763858,114.2880863,0.02,place,islet,,,
+accepted,I136,打蠔排,Ta Ho Pai,22.5174434,114.3054827,0.005,natural,reef,,,
+accepted,I137,大洲,Tai Chau,22.2568111,114.3502808,0.053,place,island,,,
+accepted,I138,大利,Tai Lei,22.2894183,114.0328421,0.018,place,locality,,,
+accepted,I139,大稔洲,Tai Nim Chau,22.5421496,114.265615,0.012,place,islet,,,
+accepted,I141,大排,Tai Pai,22.3120602,114.3704851,0.027,place,islet,,,
+accepted,I144,大鏟洲,Tai Tsan Chau,22.375644,114.2899328,0.019,place,islet,,,
+accepted,I145,燈洲,Tang Chau,22.4464492,114.2578151,0.011,place,islet,,,
+accepted,I148,頭洲,Tau Chau,22.2244923,114.1918241,0.005,place,islet,,,
+accepted,I150,鐵蔘洲,Tit Cham Chau,22.2633439,114.2766259,0.038,place,locality,,,
+accepted,I153,吊鐘排,Tiu Chung Pai,22.3259066,114.3201152,0.002,place,islet,,,
+accepted,I154,塘口排,Tong Hau Pai,22.3415901,114.3469955,0.001,place,islet,,,
+accepted,I155,劏人排,Tong Yan Pai,22.2111109,114.2122597,0.044,place,locality,,,
+accepted,I157,大癩痢,Trio Island,22.3010525,114.3199529,0.047,place,islet,,,
+accepted,I161,咀排,Tsui Pai,22.216574,113.9801195,0.011,place,islet,,,
+accepted,I162,斷頭洲,Tuen Tau Chau,22.3710022,114.2956963,0.023,place,islet,,,
+accepted,I164,棟心洲,Tung Sam Chau,22.3256589,114.368326,0.022,place,islet,,,
+accepted,I166,桅夾排,Wai Kap Pai,22.3312363,114.3452056,0.001,place,islet,,,
+accepted,I168,橫排,Wang Pai,22.2758968,114.3602841,0.001,place,islet,,,
+accepted,I172,黃泥洲,Wong Nai Chau,22.5420063,114.3116732,0.004,place,islet,,,
+accepted,I173,往灣洲,Wong Wan Chau,22.5152413,114.3133066,0.474,place,island,,,
+accepted,I174,往灣排,Wong Wan Pai,22.327289,114.3135948,0.0,natural,reef,,,
+accepted,I175,黃宜洲,Wong Yi Chau,22.3861123,114.3166622,0.354,place,islet,,,
+accepted,I176,烏洲,Wu Chau,22.5012597,114.304469,0.007,place,islet,,,
+accepted,I177,烏排,Wu Pai,22.5260606,114.2842923,0.006,place,islet,,,
+accepted,I178,湖洋洲排,Wu Yeung Chau Pai,22.518225,114.290156,0.032,natural,reef,,,
+accepted,I179,烏蠅排,Wu Ying Pai,22.3031161,114.0357318,0.02,place,islet,,,
+accepted,I180,印洲,Yan Chau,22.526253,114.2878304,0.006,place,islet,,,
+accepted,I181,游龍角,Yau Lung Kok,22.373627,114.2956651,0.017,place,islet,,,
+accepted,I182,洋洲,Yeung Chau,22.5396292,114.3072896,0.027,place,islet,,,
+accepted,I183,羊洲,Yeung Chau,22.3802579,114.2818232,0.043,place,islet,,,
+accepted,I184,二浪排,Yi Long Pai,22.2124015,113.9901578,0.007,place,islet,,,
+accepted,I185,二排,Yi Pai,22.311942,114.3717315,0.014,place,islet,,,
+accepted,I186,鹽田仔,Yim Tin Tsai,22.4524066,114.2138917,0.258,place,island,,,
+accepted,I187,圓崗洲,Yuen Kong Chau,22.3256692,114.3669638,0.009,place,islet,,,
+accepted,I189,Chau Tsai,Chau Tsai,22.3534064,114.3506028,0.007,place,islet,,,
+accepted,I190,佛堂洲,Fat Tong Chau,22.2782748,114.2681091,0.16,place,locality,,,
+accepted,I192,Kellett Island,Kellett Island,22.2845018,114.1824371,0.029,place,locality,,,
+accepted,I194,Lam Chau,Lam Chau,22.2107252,113.9036353,0.222,place,islet,,,
+accepted,I197,Mouse Island,Mouse Island,22.3830335,113.975588,0.013,place,locality,,,
+accepted,I198,Nga Ying Chau,Nga Ying Chau,22.3888449,114.3159205,0.001,place,islet,,,
+accepted,I200,Stonecutters Island,Stonecutters Island,22.3219132,114.1383171,0.301,place,suburb,,,
+accepted,I201,Tsing Chau,Tsing Chau,22.5325825,114.2804494,0.006,place,islet,,,
+accepted,I202,東頭洲,Tung Tau Chau,22.4564581,114.2583046,0.022,place,locality,,,
+accepted,I203,元洲仔,Yuen Chau Tsai,22.4457681,114.1785585,0.018,place,locality,,,
+accepted,I204,Un Chau,Un Chau,22.3318832,114.1634006,0.149,place,neighbourhood,,,
+skipped,I025,赤洲,Chek Chau,,,,,,FAR_OR_BAD_TYPE 46.261 natural/reef,22.500412797,114.358922082
+skipped,I028,長石咀,Cheung Shek Tsui,,,,,,FAR_OR_BAD_TYPE 3.532 place/islet,22.554402221,114.294154807
+skipped,I044,殼仔排,Hok Tsai Pai,,,,,,FAR_OR_BAD_TYPE 31.344 landuse/residential,22.271544109,114.350668282
+skipped,I048,吉澳,Kat O,,,,,,FAR_OR_BAD_TYPE 26.345 place/neighbourhood,22.542029884,114.295233151
+skipped,I053,橋咀洲,Kiu Tsui Chau,,,,,,FAR_OR_BAD_TYPE 13.826 highway/bus_stop,22.364925748,114.29427701
+skipped,I063,爛樹排,Lan Shuen Pei,,,,,,NO_MATCH,22.530404715,114.272797734
+skipped,I065,大嶼山,Lantau Island,,,,,,FAR_OR_BAD_TYPE 1.831 place/island,22.258765687,113.9327004
+skipped,I071,老鼠排,Lo Shue Pai,,,,,,FAR_OR_BAD_TYPE 4.544 place/locality,22.275100708,114.242388382
+skipped,I081,媽印排,Ma Yan Pai,,,,,,FAR_OR_BAD_TYPE 9.443 natural/reef,22.526304321,114.287803122
+skipped,I086,磨洲,Moon Island,,,,,,FAR_OR_BAD_TYPE 26.37 landuse/residential,22.479876989,114.333864003
+skipped,I087,木魚洲,Muk Yue Chau,,,,,,NO_MATCH,22.388933797,114.311145343
+skipped,I093,牛屎砵,Ngau Shi Pui,,,,,,FAR_OR_BAD_TYPE 17.827 place/islet,22.454451842,114.229842447
+skipped,I095,娥眉洲,Ngo Mei Chau,,,,,,NO_MATCH,22.527077092,114.315992895
+skipped,I101,白沙洲,Pak Sha Chau,,,,,,FAR_OR_BAD_TYPE 19.092 place/islet,22.541349892,114.330492069
+skipped,I102,筆架洲,Pat Ka Chau,,,,,,FAR_OR_BAD_TYPE 2.599 place/islet,22.532805732,114.288440167
+skipped,I114,銀洲,Round Island,,,,,,FAR_OR_BAD_TYPE 6.931 place/islet,22.478732729,114.3311711
+skipped,I120,沙塘口山,Sha Tong Hau,,,,,,FAR_OR_BAD_TYPE 10.613 tourism/camp_site,22.320625307,114.350729009
+skipped,I140,大澳,Tai O,,,,,,FAR_OR_BAD_TYPE 0.363 place/town,22.256955011,113.861814138
+skipped,I149,磨刀洲,The Brothers,,,,,,FAR_OR_BAD_TYPE 40.449 place/locality,22.479876989,114.333864003
+skipped,I151,鐵樹排,Tit Shue Pai,,,,,,FAR_OR_BAD_TYPE 25.355 natural/reef,22.319849682,114.163458984
+skipped,I152,吊鐘洲,Tiu Chung Chau,,,,,,NO_MATCH,22.333790933,114.324342457
+skipped,I158,Tsim Chau Group,Tsim Chau Group,,,,,,NO_MATCH,22.401722314,114.386325749
+skipped,I165,灣仔排,Wai Chau Pai,,,,,,FAR_OR_BAD_TYPE 20.639 leisure/sports_centre,22.490056536,114.365409733
+skipped,I171,黃泥洲仔,Wong Nai Chau Tsai,,,,,,NO_MATCH,22.384253102,114.314588057
+skipped,I188,Channel Rock,Channel Rock,,,,,,FAR_OR_BAD_TYPE 22.693 place/locality,22.216967506,114.016279989
+skipped,I191,Hoi Sham Island,Hoi Sham Island,,,,,,FAR_OR_BAD_TYPE 4.485 landuse/residential,22.315028603,114.19174344
+skipped,I193,勒加洲,La Ka Chau,,,,,,FAR_OR_BAD_TYPE 25.82 place/islet,22.485774766,114.051858483
+skipped,I195,糧船灣洲,Leung Shuen Wan,,,,,,FAR_OR_BAD_TYPE 17.931 leisure/sports_centre,22.35323925,114.354769265
+skipped,I196,Mong Chau,Mong Chau,,,,,,FAR_OR_BAD_TYPE 14.737 highway/bus_stop,22.371278019,114.301263502
+skipped,I199,Rumsey Rock,Rumsey Rock,,,,,,FAR_OR_BAD_TYPE 18.693 historic/monument,22.223611623,114.023081361
+skipped,I205,Careening Island,Careening Island,,,,,,FAR_OR_BAD_TYPE 22.911 place/locality,22.314648029,114.366007934
+skipped,I206,Hong Kong Convention and Exhibition Centre,Hong Kong Convention and Exhibition Centre,,,,,,FAR_OR_BAD_TYPE 0.062 amenity/exhibition_centre,22.283178259,114.17307059

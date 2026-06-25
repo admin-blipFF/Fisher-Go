@@ -682,65 +682,66 @@ class _GameHomeScreenState extends State<GameHomeScreen>
       ),
     );
 
-    return Scaffold(
-      body: Stack(children: [
-        FlutterMap(
-          mapController: _mapController,
-          options: MapOptions(
-            initialCenter: _hkTerritoryCenter,
-            initialZoom: 13,
-            interactionOptions: const InteractionOptions(
-              flags: InteractiveFlag.all,
-            ),
-            onPositionChanged: (pos, hasGesture) {
-              if (hasGesture) {
-                setState(() => _zoom = pos.zoom.clamp(0.6, 3.4));
-              }
-            },
+    final mapWorld = _GameWorldMapShell(
+      child: FlutterMap(
+        mapController: _mapController,
+        options: MapOptions(
+          initialCenter: _hkTerritoryCenter,
+          initialZoom: 13,
+          interactionOptions: const InteractionOptions(
+            flags: InteractiveFlag.all,
           ),
-          children: [
-            // 底層地圖 tile
-            TileLayer(
-              urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-              tileProvider: NetworkTileProvider(silenceExceptions: true),
-              evictErrorTileStrategy: EvictErrorTileStrategy.dispose,
-              errorTileCallback: (_, __, ___) {},
-              userAgentPackageName: 'com.fishergo.app',
-            ),
-            // 釣點範圍圈
-            CircleLayer(
-              circles: [
-                if (_hasLiveLocation && _playerAccuracyMeters != null)
-                  CircleMarker(
-                    point: _playerLatLng,
-                    radius: _playerAccuracyMeters!,
-                    useRadiusInMeter: true,
-                    color: Colors.cyanAccent.withValues(alpha: 0.14),
-                    borderColor: Colors.cyanAccent.withValues(alpha: 0.7),
-                    borderStrokeWidth: 1.2,
-                  ),
+          onPositionChanged: (pos, hasGesture) {
+            if (hasGesture) {
+              setState(() => _zoom = pos.zoom.clamp(0.6, 3.4));
+            }
+          },
+        ),
+        children: [
+          TileLayer(
+            urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+            tileProvider: NetworkTileProvider(silenceExceptions: true),
+            evictErrorTileStrategy: EvictErrorTileStrategy.dispose,
+            errorTileCallback: (_, __, ___) {},
+            userAgentPackageName: 'com.fishergo.app',
+          ),
+          CircleLayer(
+            circles: [
+              if (_hasLiveLocation && _playerAccuracyMeters != null)
                 CircleMarker(
                   point: _playerLatLng,
-                  radius: _spotDisplayRadiusMeters,
+                  radius: _playerAccuracyMeters!,
                   useRadiusInMeter: true,
-                  color: Colors.cyanAccent.withValues(alpha: 0.05),
-                  borderColor: Colors.cyanAccent.withValues(alpha: 0.35),
-                  borderStrokeWidth: 1,
+                  color: Colors.cyanAccent.withValues(alpha: 0.14),
+                  borderColor: Colors.cyanAccent.withValues(alpha: 0.7),
+                  borderStrokeWidth: 1.2,
                 ),
-                ..._nearbySpots.map((spot) => CircleMarker(
-                      point: LatLng(spot.lat, spot.lng),
-                      radius: 80,
-                      useRadiusInMeter: true,
-                      color: _rarityColor(spot.rarity).withValues(alpha: 0.15),
-                      borderColor: _rarityColor(spot.rarity),
-                      borderStrokeWidth: 1.5,
-                    )),
-              ],
-            ),
-            // 標記層
-            MarkerLayer(markers: [...markers, centerMarker]),
-          ],
-        ),
+              CircleMarker(
+                point: _playerLatLng,
+                radius: _spotDisplayRadiusMeters,
+                useRadiusInMeter: true,
+                color: Colors.white.withValues(alpha: 0.08),
+                borderColor: Colors.white.withValues(alpha: 0.45),
+                borderStrokeWidth: 1,
+              ),
+              ..._nearbySpots.map((spot) => CircleMarker(
+                    point: LatLng(spot.lat, spot.lng),
+                    radius: 80,
+                    useRadiusInMeter: true,
+                    color: _rarityColor(spot.rarity).withValues(alpha: 0.15),
+                    borderColor: _rarityColor(spot.rarity),
+                    borderStrokeWidth: 1.5,
+                  )),
+            ],
+          ),
+          MarkerLayer(markers: [...markers, centerMarker]),
+        ],
+      ),
+    );
+
+    return Scaffold(
+      body: Stack(children: [
+        mapWorld,
         // 雷達格柵疊加（遊戲感）
         IgnorePointer(
           child: CustomPaint(
@@ -756,6 +757,8 @@ class _GameHomeScreenState extends State<GameHomeScreen>
             spotCount: visibleSpots.length,
             autoEnabled: _autoMode,
             onToggleAuto: () => setState(() => _autoMode = !_autoMode),
+            leadingLabel: 'Fisher Lv. 1',
+            subtitleLabel: '探索水域',
           ),
         ),
         Positioned(
@@ -3317,6 +3320,134 @@ class _RadarGridPainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter old) => false;
 }
 
+class _GameWorldMapShell extends StatelessWidget {
+  const _GameWorldMapShell({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        const DecoratedBox(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Color(0xFF52D7DE),
+                Color(0xFF88E6B4),
+                Color(0xFF58C783),
+              ],
+            ),
+          ),
+        ),
+        Positioned.fill(
+          top: -80,
+          child: Transform(
+            alignment: Alignment.topCenter,
+            transform: Matrix4.identity()
+              ..setEntry(3, 2, 0.0012)
+              ..rotateX(0.82)
+              ..scaleByDouble(1.22, 1.12, 1, 1),
+            child: ClipRect(
+              child: Opacity(
+                opacity: 0.74,
+                child: ColorFiltered(
+                  colorFilter: ColorFilter.mode(
+                    const Color(0xFF8FF8CE).withValues(alpha: 0.5),
+                    BlendMode.screen,
+                  ),
+                  child: child,
+                ),
+              ),
+            ),
+          ),
+        ),
+        IgnorePointer(
+          child: CustomPaint(
+            painter: _GameWorldAtmospherePainter(),
+            size: Size.infinite,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _GameWorldAtmospherePainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final seaPaint = Paint()
+      ..shader = const LinearGradient(
+        colors: [Color(0xAA3CCEE8), Color(0x886EE8D0)],
+      ).createShader(Rect.fromLTWH(0, 0, size.width, size.height * 0.28));
+    final seaPath = Path()
+      ..moveTo(0, 0)
+      ..lineTo(size.width, 0)
+      ..lineTo(size.width, size.height * 0.2)
+      ..quadraticBezierTo(
+        size.width * 0.55,
+        size.height * 0.31,
+        0,
+        size.height * 0.23,
+      )
+      ..close();
+    canvas.drawPath(seaPath, seaPaint);
+
+    final roadPaint = Paint()
+      ..color = const Color(0xAA496D84)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 14
+      ..strokeCap = StrokeCap.round;
+    final roadHighlight = Paint()
+      ..color = Colors.white.withValues(alpha: 0.26)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3
+      ..strokeCap = StrokeCap.round;
+
+    final roadPaths = [
+      Path()
+        ..moveTo(size.width * -0.1, size.height * 0.72)
+        ..quadraticBezierTo(
+          size.width * 0.4,
+          size.height * 0.52,
+          size.width * 1.1,
+          size.height * 0.62,
+        ),
+      Path()
+        ..moveTo(size.width * 0.1, size.height * 1.05)
+        ..quadraticBezierTo(
+          size.width * 0.52,
+          size.height * 0.62,
+          size.width * 0.82,
+          size.height * 0.18,
+        ),
+    ];
+
+    for (final path in roadPaths) {
+      canvas.drawPath(path, roadPaint);
+      canvas.drawPath(path, roadHighlight);
+    }
+
+    final center = Offset(size.width / 2, size.height * 0.56);
+    final outerRingPaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2
+      ..color = Colors.white.withValues(alpha: 0.2);
+    final innerRingPaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2
+      ..color = Colors.white.withValues(alpha: 0.55);
+    canvas.drawCircle(center, 130, outerRingPaint);
+    canvas.drawCircle(center, 72, innerRingPaint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
 class _PlayerAvatar extends StatelessWidget {
   const _PlayerAvatar({required this.equipped, required this.isLiveLocation});
 
@@ -3456,19 +3587,30 @@ class _MapZoomControls extends StatelessWidget {
       return GestureDetector(
         onTap: onTap,
         child: Container(
-          width: 38,
-          height: 38,
-          margin: const EdgeInsets.only(bottom: 7),
+          width: 44,
+          height: 44,
+          margin: const EdgeInsets.only(bottom: 8),
           decoration: BoxDecoration(
-            color: Colors.black.withValues(alpha: 0.62),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.18)),
+            shape: BoxShape.circle,
+            gradient: const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Colors.white, Color(0xFFE3F4FF)],
+            ),
             boxShadow: const [
               BoxShadow(
-                  color: Colors.black38, blurRadius: 10, offset: Offset(0, 4)),
+                color: Colors.black38,
+                blurRadius: 12,
+                offset: Offset(0, 6),
+              ),
+              BoxShadow(
+                color: Colors.white70,
+                blurRadius: 2,
+                offset: Offset(-1, -1),
+              ),
             ],
           ),
-          child: Icon(icon, color: Colors.white, size: 21),
+          child: Icon(icon, color: Color(0xFF126B82), size: 24),
         ),
       );
     }
@@ -3479,16 +3621,33 @@ class _MapZoomControls extends StatelessWidget {
       GestureDetector(
         onTap: onReset,
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+          width: 44,
+          height: 44,
+          alignment: Alignment.center,
           decoration: BoxDecoration(
-            color: Colors.black.withValues(alpha: 0.62),
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.18)),
+            shape: BoxShape.circle,
+            gradient: const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Colors.white, Color(0xFFE3F4FF)],
+            ),
+            boxShadow: const [
+              BoxShadow(
+                color: Colors.black38,
+                blurRadius: 12,
+                offset: Offset(0, 6),
+              ),
+              BoxShadow(
+                color: Colors.white70,
+                blurRadius: 2,
+                offset: Offset(-1, -1),
+              ),
+            ],
           ),
           child: Text(
             '${zoom.toStringAsFixed(1)}x',
             style: const TextStyle(
-              color: Colors.cyanAccent,
+              color: Color(0xFF126B82),
               fontSize: 11,
               fontWeight: FontWeight.bold,
             ),
@@ -3567,11 +3726,15 @@ class _TopStatusBar extends StatelessWidget {
     required this.spotCount,
     required this.autoEnabled,
     required this.onToggleAuto,
+    required this.leadingLabel,
+    required this.subtitleLabel,
   });
 
   final int spotCount;
   final bool autoEnabled;
   final VoidCallback onToggleAuto;
+  final String leadingLabel;
+  final String subtitleLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -3585,11 +3748,50 @@ class _TopStatusBar extends StatelessWidget {
           ),
           child: Row(
             children: [
-              const Icon(Icons.radar, color: Colors.cyanAccent, size: 18),
-              const SizedBox(width: 8),
-              Text(
-                '附近 $spotCount 個釣點',
-                style: const TextStyle(color: Colors.white, fontSize: 13),
+              Container(
+                width: 34,
+                height: 34,
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [Color(0xFFFFFFFF), Color(0xFFE3F4FF)],
+                  ),
+                ),
+                child: const Icon(
+                  Icons.directions_boat_filled,
+                  color: Color(0xFF126B82),
+                  size: 19,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      leadingLabel,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const SizedBox(height: 1),
+                    Text(
+                      '$subtitleLabel · 附近 $spotCount 個釣點',
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: Colors.white70,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),

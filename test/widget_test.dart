@@ -34,7 +34,9 @@ void main() {
     await tester.pump(const Duration(milliseconds: 200));
     await tester.pump(const Duration(seconds: 3));
 
-    expect(find.text('附近 0 個釣點'), findsOneWidget);
+    expect(find.text('Fisher Lv. 1'), findsOneWidget);
+    expect(find.textContaining('探索水域'), findsOneWidget);
+    expect(find.textContaining('附近'), findsOneWidget);
     expect(find.text('圖鑑'), findsOneWidget);
     expect(find.text('背包'), findsOneWidget);
     expect(find.text('上魚獲'), findsOneWidget);

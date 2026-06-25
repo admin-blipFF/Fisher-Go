@@ -42,8 +42,6 @@ class GameHomeScreen extends StatefulWidget {
 
 class _GameHomeScreenState extends State<GameHomeScreen>
     with TickerProviderStateMixin {
-  // 真實地圖控制
-  final MapController _mapController = MapController();
   // HK 地圖中心（無 GPS 權限時 fallback）
   static const _hkTerritoryCenter = LatLng(22.3600, 114.1350);
 
@@ -344,7 +342,6 @@ class _GameHomeScreenState extends State<GameHomeScreen>
       _playerLatLng = LatLng(firstSpot.lat, firstSpot.lng);
       _hasLiveLocation = true;
     });
-    _mapController.move(LatLng(firstSpot.lat, firstSpot.lng), 15);
     _openMinigame();
   }
 
@@ -386,7 +383,6 @@ class _GameHomeScreenState extends State<GameHomeScreen>
       _hasLiveLocation = true;
       _isTutorialFishing = true;
     });
-    _mapController.move(const LatLng(22.291001, 114.236315), 16);
     _openMinigame();
   }
 
@@ -518,7 +514,6 @@ class _GameHomeScreenState extends State<GameHomeScreen>
       _playerLatLng = LatLng(nextSpot.lat, nextSpot.lng);
       _hasLiveLocation = true;
     });
-    _mapController.move(LatLng(nextSpot.lat, nextSpot.lng), 15);
     _openMinigame();
   }
 
@@ -551,7 +546,6 @@ class _GameHomeScreenState extends State<GameHomeScreen>
   }
 
   void _resetMapView() {
-    _mapController.move(_playerLatLng, 15);
     setState(() => _zoom = 1.0);
   }
 
@@ -588,7 +582,6 @@ class _GameHomeScreenState extends State<GameHomeScreen>
             ? position.accuracy.clamp(15, 2500).toDouble()
             : null;
       });
-      _mapController.move(latLng, 15);
       await _refreshBoatSpotState();
     } catch (_) {
       // 測試環境、拒絕定位、瀏覽器未支援時保留香港中心 fallback。
@@ -635,7 +628,28 @@ class _GameHomeScreenState extends State<GameHomeScreen>
 
   void _setZoom(double z) {
     setState(() => _zoom = z.clamp(0.6, 3.4));
-    _mapController.move(_mapController.camera.center, _zoom);
+  }
+
+  void _openPanoramaMap() {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) => _PanoramaMapSheet(
+        spots: _visibleSpots,
+        playerLatLng: _playerLatLng,
+        hasLiveLocation: _hasLiveLocation,
+        playerAccuracyMeters: _playerAccuracyMeters,
+        equipped: _equipped,
+        spotDisplayRadiusMeters: _spotDisplayRadiusMeters,
+        rarityColor: _rarityColor,
+        onSpotSelected: (spot) {
+          Navigator.of(sheetContext).pop();
+          if (!mounted) return;
+          setState(() => _selectedSpot = spot);
+        },
+      ),
+    );
   }
 
   @override
@@ -652,96 +666,19 @@ class _GameHomeScreenState extends State<GameHomeScreen>
                 ? a
                 : b);
 
-    final markers = visibleSpots.map((spot) {
-      return Marker(
-        point: LatLng(spot.lat, spot.lng),
-        width: 118,
-        height: 106,
-        // Align the map coordinate with the 44px circular icon center, not the
-        // center of the whole icon+label widget. Otherwise every fishing spot
-        // looks visually shifted away from its real lat/lng.
-        alignment: const Alignment(0, -0.58),
-        child: GestureDetector(
-          onTap: () => setState(() => _selectedSpot = spot),
-          child: _SpotMarker(spot: spot),
-        ),
-      );
-    }).toList();
-
-    // 玩家位置：GPS 授權後使用真實位置；未授權則 fallback 到香港中心。
-    final centerMarker = Marker(
-      point: _playerLatLng,
-      width: 60,
-      height: 60,
-      alignment: Alignment.center,
-      child: IgnorePointer(
-        child: _PlayerAvatar(
-          equipped: _equipped,
-          isLiveLocation: _hasLiveLocation,
-        ),
-      ),
-    );
-
-    final mapWorld = _GameWorldMapShell(
-      child: FlutterMap(
-        mapController: _mapController,
-        options: MapOptions(
-          initialCenter: _hkTerritoryCenter,
-          initialZoom: 13,
-          interactionOptions: const InteractionOptions(
-            flags: InteractiveFlag.all,
-          ),
-          onPositionChanged: (pos, hasGesture) {
-            if (hasGesture) {
-              setState(() => _zoom = pos.zoom.clamp(0.6, 3.4));
-            }
-          },
-        ),
-        children: [
-          TileLayer(
-            urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-            tileProvider: NetworkTileProvider(silenceExceptions: true),
-            evictErrorTileStrategy: EvictErrorTileStrategy.dispose,
-            errorTileCallback: (_, __, ___) {},
-            userAgentPackageName: 'com.fishergo.app',
-          ),
-          CircleLayer(
-            circles: [
-              if (_hasLiveLocation && _playerAccuracyMeters != null)
-                CircleMarker(
-                  point: _playerLatLng,
-                  radius: _playerAccuracyMeters!,
-                  useRadiusInMeter: true,
-                  color: Colors.cyanAccent.withValues(alpha: 0.14),
-                  borderColor: Colors.cyanAccent.withValues(alpha: 0.7),
-                  borderStrokeWidth: 1.2,
-                ),
-              CircleMarker(
-                point: _playerLatLng,
-                radius: _spotDisplayRadiusMeters,
-                useRadiusInMeter: true,
-                color: Colors.white.withValues(alpha: 0.08),
-                borderColor: Colors.white.withValues(alpha: 0.45),
-                borderStrokeWidth: 1,
-              ),
-              ..._nearbySpots.map((spot) => CircleMarker(
-                    point: LatLng(spot.lat, spot.lng),
-                    radius: 80,
-                    useRadiusInMeter: true,
-                    color: _rarityColor(spot.rarity).withValues(alpha: 0.15),
-                    borderColor: _rarityColor(spot.rarity),
-                    borderStrokeWidth: 1.5,
-                  )),
-            ],
-          ),
-          MarkerLayer(markers: [...markers, centerMarker]),
-        ],
-      ),
-    );
+    const mapWorld = _GameWorldMapShell();
 
     return Scaffold(
       body: Stack(children: [
         mapWorld,
+        Center(
+          child: IgnorePointer(
+            child: _PlayerAvatar(
+              equipped: _equipped,
+              isLiveLocation: _hasLiveLocation,
+            ),
+          ),
+        ),
         // 雷達格柵疊加（遊戲感）
         IgnorePointer(
           child: CustomPaint(
@@ -770,6 +707,11 @@ class _GameHomeScreenState extends State<GameHomeScreen>
             onZoomOut: () => _setZoom(_zoom / 1.2),
             onReset: _resetMapView,
           ),
+        ),
+        Positioned(
+          left: 12,
+          top: MediaQuery.of(context).padding.top + 202,
+          child: _PanoramaMapButton(onTap: _openPanoramaMap),
         ),
         Positioned(
           right: 12,
@@ -3321,9 +3263,7 @@ class _RadarGridPainter extends CustomPainter {
 }
 
 class _GameWorldMapShell extends StatelessWidget {
-  const _GameWorldMapShell({required this.child});
-
-  final Widget child;
+  const _GameWorldMapShell();
 
   @override
   Widget build(BuildContext context) {
@@ -3343,28 +3283,6 @@ class _GameWorldMapShell extends StatelessWidget {
             ),
           ),
         ),
-        Positioned.fill(
-          top: -80,
-          child: Transform(
-            alignment: Alignment.topCenter,
-            transform: Matrix4.identity()
-              ..setEntry(3, 2, 0.0012)
-              ..rotateX(0.82)
-              ..scaleByDouble(1.22, 1.12, 1, 1),
-            child: ClipRect(
-              child: Opacity(
-                opacity: 0.74,
-                child: ColorFiltered(
-                  colorFilter: ColorFilter.mode(
-                    const Color(0xFF8FF8CE).withValues(alpha: 0.5),
-                    BlendMode.screen,
-                  ),
-                  child: child,
-                ),
-              ),
-            ),
-          ),
-        ),
         IgnorePointer(
           child: CustomPaint(
             painter: _GameWorldAtmospherePainter(),
@@ -3372,6 +3290,217 @@ class _GameWorldMapShell extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _PanoramaMapButton extends StatelessWidget {
+  const _PanoramaMapButton({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Tooltip(
+      message: '全景地圖',
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          width: 44,
+          height: 44,
+          decoration: const BoxDecoration(
+            shape: BoxShape.circle,
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Colors.white, Color(0xFFE3F4FF)],
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black38,
+                blurRadius: 12,
+                offset: Offset(0, 6),
+              ),
+              BoxShadow(
+                color: Colors.white70,
+                blurRadius: 2,
+                offset: Offset(-1, -1),
+              ),
+            ],
+          ),
+          child: const Icon(Icons.map, color: Color(0xFF126B82), size: 23),
+        ),
+      ),
+    );
+  }
+}
+
+class _PanoramaMapSheet extends StatelessWidget {
+  const _PanoramaMapSheet({
+    required this.spots,
+    required this.playerLatLng,
+    required this.hasLiveLocation,
+    required this.playerAccuracyMeters,
+    required this.equipped,
+    required this.spotDisplayRadiusMeters,
+    required this.rarityColor,
+    required this.onSpotSelected,
+  });
+
+  final List<_SpotDemo> spots;
+  final LatLng playerLatLng;
+  final bool hasLiveLocation;
+  final double? playerAccuracyMeters;
+  final Map<String, String> equipped;
+  final double spotDisplayRadiusMeters;
+  final Color Function(int rarity) rarityColor;
+  final void Function(_SpotDemo spot) onSpotSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final padding = MediaQuery.of(context).padding;
+    final mapController = MapController();
+    final markers = [
+      ...spots.map(
+        (spot) => Marker(
+          point: LatLng(spot.lat, spot.lng),
+          width: 118,
+          height: 106,
+          alignment: const Alignment(0, -0.58),
+          child: GestureDetector(
+            onTap: () => onSpotSelected(spot),
+            child: _SpotMarker(spot: spot),
+          ),
+        ),
+      ),
+      Marker(
+        point: playerLatLng,
+        width: 60,
+        height: 60,
+        alignment: Alignment.center,
+        child: IgnorePointer(
+          child: _PlayerAvatar(
+            equipped: equipped,
+            isLiveLocation: hasLiveLocation,
+          ),
+        ),
+      ),
+    ];
+
+    return Container(
+      height: MediaQuery.of(context).size.height,
+      decoration: const BoxDecoration(color: Color(0xFF0F2630)),
+      child: Stack(
+        children: [
+          FlutterMap(
+            mapController: mapController,
+            options: MapOptions(
+              initialCenter: playerLatLng,
+              initialZoom: 13,
+              interactionOptions: const InteractionOptions(
+                flags: InteractiveFlag.all,
+              ),
+            ),
+            children: [
+              TileLayer(
+                urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                tileProvider: NetworkTileProvider(silenceExceptions: true),
+                evictErrorTileStrategy: EvictErrorTileStrategy.dispose,
+                errorTileCallback: (_, __, ___) {},
+                userAgentPackageName: 'com.fishergo.app',
+              ),
+              CircleLayer(
+                circles: [
+                  if (hasLiveLocation && playerAccuracyMeters != null)
+                    CircleMarker(
+                      point: playerLatLng,
+                      radius: playerAccuracyMeters!,
+                      useRadiusInMeter: true,
+                      color: Colors.cyanAccent.withValues(alpha: 0.14),
+                      borderColor: Colors.cyanAccent.withValues(alpha: 0.7),
+                      borderStrokeWidth: 1.2,
+                    ),
+                  CircleMarker(
+                    point: playerLatLng,
+                    radius: spotDisplayRadiusMeters,
+                    useRadiusInMeter: true,
+                    color: Colors.cyanAccent.withValues(alpha: 0.05),
+                    borderColor: Colors.cyanAccent.withValues(alpha: 0.35),
+                    borderStrokeWidth: 1,
+                  ),
+                  ...spots.map((spot) => CircleMarker(
+                        point: LatLng(spot.lat, spot.lng),
+                        radius: 80,
+                        useRadiusInMeter: true,
+                        color: rarityColor(spot.rarity).withValues(alpha: 0.15),
+                        borderColor: rarityColor(spot.rarity),
+                        borderStrokeWidth: 1.5,
+                      )),
+                ],
+              ),
+              MarkerLayer(markers: markers),
+            ],
+          ),
+          Positioned(
+            top: padding.top + 12,
+            left: 12,
+            right: 12,
+            child: Row(
+              children: [
+                GestureDetector(
+                  onTap: () => Navigator.of(context).pop(),
+                  child: Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.62),
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.22),
+                      ),
+                    ),
+                    child: const Icon(Icons.close, color: Colors.white),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 14, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.62),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.16),
+                      ),
+                    ),
+                    child: const Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          '全景地圖',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        SizedBox(height: 2),
+                        Text(
+                          '拖動畫面找釣點，點選圖標查看詳情',
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(color: Colors.white70, fontSize: 11),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

@@ -41,5 +41,11 @@ void main() {
     expect(find.text('背包'), findsOneWidget);
     expect(find.text('上魚獲'), findsOneWidget);
     expect(find.text('排行'), findsOneWidget);
+    expect(find.byTooltip('全景地圖'), findsOneWidget);
+
+    await tester.tap(find.byTooltip('全景地圖'));
+    await tester.pump(const Duration(milliseconds: 500));
+
+    expect(find.text('全景地圖'), findsOneWidget);
   });
 }

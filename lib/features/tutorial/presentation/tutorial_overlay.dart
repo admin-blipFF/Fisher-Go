@@ -27,6 +27,7 @@ class _TutorialOverlayState extends State<TutorialOverlay> {
 
   int _currentStep = 0;
   final bool _forceFishingDone = false;
+  bool _isCompleting = false;
 
   // Tutorial fish constants
   static const String _tutorialFishId = 'fish-010';
@@ -37,12 +38,20 @@ class _TutorialOverlayState extends State<TutorialOverlay> {
   }
 
   Future<void> _onComplete() async {
+    if (_isCompleting) return;
+
+    setState(() => _isCompleting = true);
     await TutorialService.markCompleted();
+    if (!mounted) return;
     widget.onComplete();
   }
 
   Future<void> _onSkip() async {
+    if (_isCompleting) return;
+
+    setState(() => _isCompleting = true);
     await TutorialService.markCompleted();
+    if (!mounted) return;
     widget.onComplete();
   }
 
@@ -66,7 +75,7 @@ class _TutorialOverlayState extends State<TutorialOverlay> {
             top: MediaQuery.of(context).padding.top + 8,
             right: 16,
             child: TextButton(
-              onPressed: _onSkip,
+              onPressed: _isCompleting ? null : _onSkip,
               style: TextButton.styleFrom(
                 foregroundColor: Colors.white70,
                 backgroundColor: Colors.white.withValues(alpha: 0.08),
@@ -154,7 +163,7 @@ class _TutorialOverlayState extends State<TutorialOverlay> {
             )
           else
             FilledButton(
-              onPressed: _onComplete,
+              onPressed: _isCompleting ? null : _onComplete,
               style: FilledButton.styleFrom(
                 backgroundColor: Colors.teal,
                 padding:

@@ -1,9 +1,12 @@
+import 'dart:async';
 import 'dart:io';
 
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive/hive.dart';
 
 import 'package:fishergo/core/tutorial/tutorial_service.dart';
+import 'package:fishergo/features/tutorial/presentation/tutorial_overlay.dart';
 
 void main() {
   late Directory tempDir;
@@ -15,9 +18,12 @@ void main() {
   });
 
   tearDownAll(() async {
-    await Hive.close();
     if (tempDir.existsSync()) {
-      tempDir.deleteSync(recursive: true);
+      try {
+        tempDir.deleteSync(recursive: true);
+      } on FileSystemException {
+        // Hive can keep a file handle briefly after widget tests on Windows.
+      }
     }
   });
 
@@ -68,6 +74,46 @@ void main() {
       await TutorialService.reset();
       final result = await TutorialService.isCompleted();
       expect(result, false);
+    });
+
+    testWidgets('skip tutorial completes once and persists completion',
+        (tester) async {
+      var completionCount = 0;
+      final completion = Completer<void>();
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: TutorialOverlay(
+            onStartFishing: () {},
+            onComplete: () {
+              completionCount++;
+              if (!completion.isCompleted) {
+                completion.complete();
+              }
+            },
+          ),
+        ),
+      );
+
+      final skipButton = find.widgetWithText(TextButton, '略過');
+
+      await tester.tap(skipButton);
+      await tester.pump();
+
+      expect(tester.widget<TextButton>(skipButton).onPressed, isNull);
+
+      await tester.tap(skipButton, warnIfMissed: false);
+      for (var i = 0; i < 50 && !completion.isCompleted; i++) {
+        await tester.runAsync(
+          () => Future<void>.delayed(const Duration(milliseconds: 10)),
+        );
+        await tester.pump();
+      }
+
+      expect(completionCount, 1);
+      expect(await TutorialService.isCompleted(), true);
+
+      await tester.pumpWidget(const SizedBox.shrink());
     });
   });
 }

@@ -666,7 +666,10 @@ class _GameHomeScreenState extends State<GameHomeScreen>
                 ? a
                 : b);
 
-    const mapWorld = _GameWorldMapShell();
+    final mapWorld = _GameWorldMapShell(
+      spotCount: visibleSpots.length,
+      hasLiveLocation: _hasLiveLocation,
+    );
 
     return Scaffold(
       body: Stack(children: [
@@ -3263,7 +3266,13 @@ class _RadarGridPainter extends CustomPainter {
 }
 
 class _GameWorldMapShell extends StatelessWidget {
-  const _GameWorldMapShell();
+  const _GameWorldMapShell({
+    required this.spotCount,
+    required this.hasLiveLocation,
+  });
+
+  final int spotCount;
+  final bool hasLiveLocation;
 
   @override
   Widget build(BuildContext context) {
@@ -3285,7 +3294,10 @@ class _GameWorldMapShell extends StatelessWidget {
         ),
         IgnorePointer(
           child: CustomPaint(
-            painter: _GameWorldAtmospherePainter(),
+            painter: _GameWorldAtmospherePainter(
+              spotCount: spotCount,
+              hasLiveLocation: hasLiveLocation,
+            ),
             size: Size.infinite,
           ),
         ),
@@ -3506,75 +3518,305 @@ class _PanoramaMapSheet extends StatelessWidget {
 }
 
 class _GameWorldAtmospherePainter extends CustomPainter {
+  const _GameWorldAtmospherePainter({
+    required this.spotCount,
+    required this.hasLiveLocation,
+  });
+
+  final int spotCount;
+  final bool hasLiveLocation;
+
   @override
   void paint(Canvas canvas, Size size) {
-    final seaPaint = Paint()
+    final horizonY = size.height * 0.22;
+    final vanishing = Offset(size.width * 0.5, horizonY);
+
+    final skyPaint = Paint()
       ..shader = const LinearGradient(
-        colors: [Color(0xAA3CCEE8), Color(0x886EE8D0)],
-      ).createShader(Rect.fromLTWH(0, 0, size.width, size.height * 0.28));
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [Color(0xFF60D9E8), Color(0xFF9CF1D3)],
+      ).createShader(Rect.fromLTWH(0, 0, size.width, horizonY + 80));
+    canvas.drawRect(Rect.fromLTWH(0, 0, size.width, horizonY + 80), skyPaint);
+
+    final waterPaint = Paint()
+      ..shader = const LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [Color(0xFF35C8E2), Color(0xFF7CEBD7)],
+      ).createShader(Rect.fromLTWH(0, 0, size.width, size.height * 0.42));
     final seaPath = Path()
       ..moveTo(0, 0)
       ..lineTo(size.width, 0)
-      ..lineTo(size.width, size.height * 0.2)
+      ..lineTo(size.width, size.height * 0.24)
       ..quadraticBezierTo(
-        size.width * 0.55,
-        size.height * 0.31,
+        size.width * 0.58,
+        size.height * 0.35,
         0,
-        size.height * 0.23,
+        size.height * 0.27,
       )
       ..close();
-    canvas.drawPath(seaPath, seaPaint);
+    canvas.drawPath(seaPath, waterPaint);
 
-    final roadPaint = Paint()
-      ..color = const Color(0xAA496D84)
+    final landPaint = Paint()
+      ..shader = const LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [Color(0xFFB8F3A6), Color(0xFF6BD488), Color(0xFF46BE75)],
+      ).createShader(Rect.fromLTWH(0, horizonY, size.width, size.height));
+    final landPath = Path()
+      ..moveTo(size.width * -0.08, size.height * 0.3)
+      ..quadraticBezierTo(
+        size.width * 0.5,
+        size.height * 0.19,
+        size.width * 1.08,
+        size.height * 0.3,
+      )
+      ..lineTo(size.width * 1.16, size.height)
+      ..lineTo(size.width * -0.16, size.height)
+      ..close();
+    canvas.drawPath(landPath, landPaint);
+
+    final coastlinePaint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.42)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 14
+      ..strokeWidth = 3;
+    canvas.drawPath(
+      Path()
+        ..moveTo(size.width * -0.04, size.height * 0.3)
+        ..quadraticBezierTo(
+          size.width * 0.5,
+          size.height * 0.2,
+          size.width * 1.04,
+          size.height * 0.3,
+        ),
+      coastlinePaint,
+    );
+
+    _drawLandmarks(canvas, size, horizonY);
+    _drawWaterChannels(canvas, size);
+    _drawPerspectiveGrid(canvas, size, vanishing);
+    _drawRoads(canvas, size);
+    _drawFishingBeacons(canvas, size);
+    _drawPlayerRings(canvas, size);
+  }
+
+  void _drawLandmarks(Canvas canvas, Size size, double horizonY) {
+    final bridgePaint = Paint()
+      ..color = const Color(0xFF2D6F87).withValues(alpha: 0.42)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 4
+      ..strokeCap = StrokeCap.round;
+    final deckY = horizonY + 16;
+    canvas.drawLine(
+      Offset(size.width * 0.64, deckY),
+      Offset(size.width * 0.98, deckY - 12),
+      bridgePaint,
+    );
+    for (final x in [0.69, 0.83, 0.94]) {
+      canvas.drawLine(
+        Offset(size.width * x, deckY + 1),
+        Offset(size.width * x, deckY - 34),
+        bridgePaint,
+      );
+    }
+
+    final islandPaint = Paint()
+      ..color = const Color(0xFF3B9C83).withValues(alpha: 0.36);
+    canvas.drawOval(
+      Rect.fromCenter(
+        center: Offset(size.width * 0.2, horizonY + 20),
+        width: size.width * 0.28,
+        height: 22,
+      ),
+      islandPaint,
+    );
+  }
+
+  void _drawWaterChannels(Canvas canvas, Size size) {
+    final channelPaint = Paint()
+      ..color = const Color(0xFF43CFE2).withValues(alpha: 0.45)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 32
+      ..strokeCap = StrokeCap.round;
+    final foamPaint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.24)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3
+      ..strokeCap = StrokeCap.round;
+    final channel = Path()
+      ..moveTo(size.width * -0.08, size.height * 0.54)
+      ..cubicTo(
+        size.width * 0.18,
+        size.height * 0.43,
+        size.width * 0.42,
+        size.height * 0.48,
+        size.width * 0.67,
+        size.height * 0.36,
+      )
+      ..quadraticBezierTo(
+        size.width * 0.84,
+        size.height * 0.29,
+        size.width * 1.1,
+        size.height * 0.33,
+      );
+    canvas.drawPath(channel, channelPaint);
+    canvas.drawPath(channel, foamPaint);
+  }
+
+  void _drawPerspectiveGrid(Canvas canvas, Size size, Offset vanishing) {
+    final gridPaint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.14)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1;
+
+    for (var i = 0; i < 8; i++) {
+      final t = i / 7;
+      final left = Offset(size.width * (0.02 + 0.28 * t), size.height);
+      final right = Offset(size.width * (0.98 - 0.28 * t), size.height);
+      canvas.drawLine(left, vanishing, gridPaint);
+      canvas.drawLine(right, vanishing, gridPaint);
+    }
+
+    for (var i = 0; i < 8; i++) {
+      final y = size.height * (0.34 + i * 0.085);
+      final inset = (y - size.height * 0.34) * 0.22;
+      canvas.drawLine(
+        Offset(inset, y),
+        Offset(size.width - inset, y),
+        gridPaint,
+      );
+    }
+  }
+
+  void _drawRoads(Canvas canvas, Size size) {
+    final roadPaint = Paint()
+      ..color = const Color(0xFF5C7890).withValues(alpha: 0.78)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 16
+      ..strokeCap = StrokeCap.round;
+    final roadEdge = Paint()
+      ..color = const Color(0xFF36566D).withValues(alpha: 0.72)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 21
       ..strokeCap = StrokeCap.round;
     final roadHighlight = Paint()
-      ..color = Colors.white.withValues(alpha: 0.26)
+      ..color = Colors.white.withValues(alpha: 0.36)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 3
       ..strokeCap = StrokeCap.round;
 
-    final roadPaths = [
+    final roads = [
       Path()
-        ..moveTo(size.width * -0.1, size.height * 0.72)
-        ..quadraticBezierTo(
-          size.width * 0.4,
-          size.height * 0.52,
-          size.width * 1.1,
+        ..moveTo(size.width * -0.12, size.height * 0.76)
+        ..cubicTo(
+          size.width * 0.2,
           size.height * 0.62,
+          size.width * 0.52,
+          size.height * 0.65,
+          size.width * 1.12,
+          size.height * 0.52,
         ),
       Path()
         ..moveTo(size.width * 0.1, size.height * 1.05)
-        ..quadraticBezierTo(
+        ..cubicTo(
+          size.width * 0.22,
+          size.height * 0.82,
+          size.width * 0.43,
+          size.height * 0.66,
           size.width * 0.52,
-          size.height * 0.62,
+          size.height * 0.5,
+        )
+        ..quadraticBezierTo(
+          size.width * 0.62,
+          size.height * 0.32,
           size.width * 0.82,
           size.height * 0.18,
         ),
+      Path()
+        ..moveTo(size.width * 0.0, size.height * 0.46)
+        ..quadraticBezierTo(
+          size.width * 0.3,
+          size.height * 0.38,
+          size.width * 0.66,
+          size.height * 0.42,
+        ),
     ];
 
-    for (final path in roadPaths) {
+    for (final path in roads) {
+      canvas.drawPath(path, roadEdge);
       canvas.drawPath(path, roadPaint);
       canvas.drawPath(path, roadHighlight);
     }
+  }
 
+  void _drawFishingBeacons(Canvas canvas, Size size) {
+    final count = spotCount.clamp(3, 7);
+    final anchors = [
+      Offset(size.width * 0.28, size.height * 0.43),
+      Offset(size.width * 0.72, size.height * 0.39),
+      Offset(size.width * 0.62, size.height * 0.57),
+      Offset(size.width * 0.36, size.height * 0.63),
+      Offset(size.width * 0.78, size.height * 0.7),
+      Offset(size.width * 0.18, size.height * 0.72),
+      Offset(size.width * 0.52, size.height * 0.35),
+    ];
+    for (var i = 0; i < count; i++) {
+      final p = anchors[i];
+      final beamPaint = Paint()
+        ..shader = RadialGradient(
+          colors: [
+            const Color(0xFFFFE66B).withValues(alpha: 0.42),
+            const Color(0xFFFFE66B).withValues(alpha: 0),
+          ],
+        ).createShader(Rect.fromCircle(center: p, radius: 34));
+      canvas.drawCircle(p, 34, beamPaint);
+      final mastPaint = Paint()
+        ..color = const Color(0xFFFFE66B).withValues(alpha: 0.72)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2;
+      canvas.drawLine(p.translate(0, -34), p.translate(0, 12), mastPaint);
+      final basePaint = Paint()
+        ..color = const Color(0xFFFFF2A0)
+        ..style = PaintingStyle.fill;
+      canvas.drawCircle(p, 7, basePaint);
+      canvas.drawCircle(
+        p,
+        12,
+        Paint()
+          ..color = const Color(0xFF126B82)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 3,
+      );
+    }
+  }
+
+  void _drawPlayerRings(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height * 0.56);
     final outerRingPaint = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2
-      ..color = Colors.white.withValues(alpha: 0.2);
+      ..color = Colors.white.withValues(alpha: hasLiveLocation ? 0.24 : 0.16);
     final innerRingPaint = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2
-      ..color = Colors.white.withValues(alpha: 0.55);
+      ..color = Colors.white.withValues(alpha: hasLiveLocation ? 0.62 : 0.38);
+    final glowPaint = Paint()
+      ..shader = RadialGradient(
+        colors: [
+          Colors.white.withValues(alpha: 0.22),
+          Colors.white.withValues(alpha: 0),
+        ],
+      ).createShader(Rect.fromCircle(center: center, radius: 150));
+    canvas.drawCircle(center, 150, glowPaint);
     canvas.drawCircle(center, 130, outerRingPaint);
     canvas.drawCircle(center, 72, innerRingPaint);
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant _GameWorldAtmospherePainter oldDelegate) =>
+      oldDelegate.spotCount != spotCount ||
+      oldDelegate.hasLiveLocation != hasLiveLocation;
 }
 
 class _PlayerAvatar extends StatelessWidget {

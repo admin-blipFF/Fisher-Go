@@ -41,6 +41,11 @@ class _TutorialOverlayState extends State<TutorialOverlay> {
     widget.onComplete();
   }
 
+  Future<void> _onSkip() async {
+    await TutorialService.markCompleted();
+    widget.onComplete();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -55,6 +60,24 @@ class _TutorialOverlayState extends State<TutorialOverlay> {
             child: _StepIndicator(
               current: _currentStep,
               total: _totalSteps,
+            ),
+          ),
+          Positioned(
+            top: MediaQuery.of(context).padding.top + 8,
+            right: 16,
+            child: TextButton(
+              onPressed: _onSkip,
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.white70,
+                backgroundColor: Colors.white.withValues(alpha: 0.08),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(999),
+                  side: BorderSide(color: Colors.white.withValues(alpha: 0.18)),
+                ),
+              ),
+              child: const Text('略過'),
             ),
           ),
           // Content card
@@ -101,7 +124,7 @@ class _TutorialOverlayState extends State<TutorialOverlay> {
   }
 
   Widget _buildNavButtons() {
-    // Step 2 is NOT skippable — no Back/Next there
+    // Step 2 has no Back/Next navigation; the top-right Skip remains available.
     if (_currentStep == 2) return const SizedBox.shrink();
 
     return Padding(

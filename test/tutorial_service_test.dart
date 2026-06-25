@@ -40,6 +40,15 @@ void main() {
       expect(result, true);
     });
 
+    test('skip tutorial uses the same completed state as finishing tutorial',
+        () async {
+      await TutorialService.markCompleted();
+
+      final result = await TutorialService.isCompleted();
+
+      expect(result, true);
+    });
+
     test('reset clears tutorial completion', () async {
       await TutorialService.markCompleted();
       await TutorialService.reset();

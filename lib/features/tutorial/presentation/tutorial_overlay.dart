@@ -6,7 +6,7 @@ import '../../../core/tutorial/tutorial_service.dart';
 ///
 /// Step 0: Welcome
 /// Step 1: GPS instruction
-/// Step 2: Forced fishing (not skippable) — button triggers fish-010 catch
+/// Step 2: Forced fishing — button triggers fish-010 catch
 /// Step 3: Completion
 class TutorialOverlay extends StatefulWidget {
   const TutorialOverlay({
@@ -316,7 +316,7 @@ class _ForceFishingStep extends StatelessWidget {
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 24),
-        // Forced fishing button — NOT skippable
+        // Forced fishing button. The top-right Skip remains available.
         FilledButton.icon(
           onPressed: onTap,
           style: FilledButton.styleFrom(
@@ -331,7 +331,7 @@ class _ForceFishingStep extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         const Text(
-          '此步驟無法跳過，失敗會重試至成功',
+          '可立即體驗第一桿，或按右上角略過教學',
           style: TextStyle(color: Colors.orangeAccent, fontSize: 12),
         ),
       ] else ...[

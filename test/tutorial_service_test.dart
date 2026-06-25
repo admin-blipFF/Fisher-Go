@@ -19,10 +19,15 @@ void main() {
 
   tearDownAll(() async {
     if (tempDir.existsSync()) {
-      try {
-        tempDir.deleteSync(recursive: true);
-      } on FileSystemException {
-        // Hive can keep a file handle briefly after widget tests on Windows.
+      for (var attempt = 0; attempt < 3; attempt++) {
+        try {
+          tempDir.deleteSync(recursive: true);
+          break;
+        } on FileSystemException {
+          // Hive can keep a file handle briefly after widget tests on Windows.
+          if (attempt == 2) break;
+          await Future<void>.delayed(const Duration(milliseconds: 50));
+        }
       }
     }
   });

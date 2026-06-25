@@ -58,7 +58,7 @@ class _TutorialOverlayState extends State<TutorialOverlay> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black87,
+      backgroundColor: Colors.black54,
       body: Stack(
         children: [
           // Step indicator

@@ -3577,6 +3577,7 @@ class _GameWorldAtmospherePainter extends CustomPainter {
       ..close();
     canvas.drawPath(landPath, landPaint);
 
+    _drawIsometricTiles(canvas, size);
     final coastlinePaint = Paint()
       ..color = Colors.white.withValues(alpha: 0.42)
       ..style = PaintingStyle.stroke
@@ -3597,8 +3598,45 @@ class _GameWorldAtmospherePainter extends CustomPainter {
     _drawWaterChannels(canvas, size);
     _drawPerspectiveGrid(canvas, size, vanishing);
     _drawRoads(canvas, size);
+    _drawMapProps(canvas, size);
     _drawFishingBeacons(canvas, size);
     _drawPlayerRings(canvas, size);
+  }
+
+  void _drawIsometricTiles(Canvas canvas, Size size) {
+    final tilePaints = [
+      Paint()..color = const Color(0xFFA7EE8C).withValues(alpha: 0.78),
+      Paint()..color = const Color(0xFF84DF81).withValues(alpha: 0.78),
+      Paint()..color = const Color(0xFFC5F6A2).withValues(alpha: 0.72),
+    ];
+    final edgePaint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.28)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1;
+
+    final centerX = size.width * 0.5;
+    final startY = size.height * 0.34;
+    final tileW = size.width * 0.28;
+    final tileH = size.height * 0.07;
+
+    for (var row = 0; row < 8; row++) {
+      final rowScale = 0.62 + row * 0.075;
+      for (var col = -4; col <= 4; col++) {
+        final x = centerX + (col * tileW * 0.72 * rowScale);
+        final y = startY + row * tileH * 0.86;
+        final w = tileW * rowScale;
+        final h = tileH * rowScale;
+        final path = Path()
+          ..moveTo(x, y - h * 0.5)
+          ..lineTo(x + w * 0.5, y)
+          ..lineTo(x, y + h * 0.5)
+          ..lineTo(x - w * 0.5, y)
+          ..close();
+        canvas.drawPath(
+            path, tilePaints[(row + col.abs()) % tilePaints.length]);
+        canvas.drawPath(path, edgePaint);
+      }
+    }
   }
 
   void _drawLandmarks(Canvas canvas, Size size, double horizonY) {
@@ -3691,17 +3729,17 @@ class _GameWorldAtmospherePainter extends CustomPainter {
 
   void _drawRoads(Canvas canvas, Size size) {
     final roadPaint = Paint()
-      ..color = const Color(0xFF5C7890).withValues(alpha: 0.78)
+      ..color = const Color(0xFFFFE9A6).withValues(alpha: 0.94)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 16
+      ..strokeWidth = 18
       ..strokeCap = StrokeCap.round;
     final roadEdge = Paint()
-      ..color = const Color(0xFF36566D).withValues(alpha: 0.72)
+      ..color = const Color(0xFF44A574).withValues(alpha: 0.82)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 21
+      ..strokeWidth = 25
       ..strokeCap = StrokeCap.round;
     final roadHighlight = Paint()
-      ..color = Colors.white.withValues(alpha: 0.36)
+      ..color = Colors.white.withValues(alpha: 0.72)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 3
       ..strokeCap = StrokeCap.round;
@@ -3750,6 +3788,53 @@ class _GameWorldAtmospherePainter extends CustomPainter {
     }
   }
 
+  void _drawMapProps(Canvas canvas, Size size) {
+    final treeAnchors = [
+      Offset(size.width * 0.18, size.height * 0.48),
+      Offset(size.width * 0.3, size.height * 0.56),
+      Offset(size.width * 0.76, size.height * 0.48),
+      Offset(size.width * 0.68, size.height * 0.68),
+      Offset(size.width * 0.23, size.height * 0.72),
+      Offset(size.width * 0.84, size.height * 0.62),
+    ];
+    for (final p in treeAnchors) {
+      _drawTree(canvas, p, size.width * 0.022);
+    }
+
+    final pierPaint = Paint()
+      ..color = const Color(0xFFB98454)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 6
+      ..strokeCap = StrokeCap.round;
+    canvas.drawLine(
+      Offset(size.width * 0.08, size.height * 0.34),
+      Offset(size.width * 0.22, size.height * 0.42),
+      pierPaint,
+    );
+    canvas.drawLine(
+      Offset(size.width * 0.16, size.height * 0.36),
+      Offset(size.width * 0.23, size.height * 0.34),
+      pierPaint..strokeWidth = 4,
+    );
+  }
+
+  void _drawTree(Canvas canvas, Offset base, double scale) {
+    final trunkPaint = Paint()..color = const Color(0xFF7A5B35);
+    final crownPaint = Paint()..color = const Color(0xFF1FAF62);
+    final lightPaint = Paint()..color = const Color(0xFF75E889);
+    canvas.drawRect(
+      Rect.fromCenter(
+        center: base.translate(0, scale * 1.4),
+        width: scale * 0.7,
+        height: scale * 2.2,
+      ),
+      trunkPaint,
+    );
+    canvas.drawCircle(base, scale * 1.65, crownPaint);
+    canvas.drawCircle(
+        base.translate(-scale * 0.45, -scale * 0.35), scale * 0.65, lightPaint);
+  }
+
   void _drawFishingBeacons(Canvas canvas, Size size) {
     final count = spotCount.clamp(3, 7);
     final anchors = [
@@ -3766,16 +3851,16 @@ class _GameWorldAtmospherePainter extends CustomPainter {
       final beamPaint = Paint()
         ..shader = RadialGradient(
           colors: [
-            const Color(0xFFFFE66B).withValues(alpha: 0.42),
+            const Color(0xFFFFF36D).withValues(alpha: 0.68),
             const Color(0xFFFFE66B).withValues(alpha: 0),
           ],
         ).createShader(Rect.fromCircle(center: p, radius: 34));
-      canvas.drawCircle(p, 34, beamPaint);
+      canvas.drawCircle(p, 40, beamPaint);
       final mastPaint = Paint()
-        ..color = const Color(0xFFFFE66B).withValues(alpha: 0.72)
+        ..color = const Color(0xFFFFF36D).withValues(alpha: 0.92)
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 2;
-      canvas.drawLine(p.translate(0, -34), p.translate(0, 12), mastPaint);
+        ..strokeWidth = 3;
+      canvas.drawLine(p.translate(0, -42), p.translate(0, 14), mastPaint);
       final basePaint = Paint()
         ..color = const Color(0xFFFFF2A0)
         ..style = PaintingStyle.fill;

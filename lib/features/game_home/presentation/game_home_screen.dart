@@ -168,9 +168,9 @@ class _GameHomeScreenState extends State<GameHomeScreen>
 
   Future<void> _runStartupGate() async {
     if (!mounted || _isStartupGateOpen) return;
-    final shouldAsk = await _shouldAskIdentityChoice();
+    final shouldAskIdentity = await _shouldAskIdentityChoice();
     if (!mounted) return;
-    if (shouldAsk) {
+    if (shouldAskIdentity) {
       setState(() => _isStartupGateOpen = true);
       await _showIdentityChoiceDialog();
       if (!mounted) return;

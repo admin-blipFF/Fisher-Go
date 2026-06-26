@@ -45,7 +45,6 @@ class _GameHomeScreenState extends State<GameHomeScreen>
   // HK 地圖中心（無 GPS 權限時 fallback）
   static const _hkTerritoryCenter = LatLng(22.3600, 114.1350);
 
-  double _zoom = 1.0;
   bool _autoMode = false;
   LatLng _playerLatLng = _hkTerritoryCenter;
   bool _hasLiveLocation = false;
@@ -545,10 +544,6 @@ class _GameHomeScreenState extends State<GameHomeScreen>
     });
   }
 
-  void _resetMapView() {
-    setState(() => _zoom = 1.0);
-  }
-
   Future<void> _loadPlayerLocation() async {
     if (_isLocating) return;
     if (mounted) {
@@ -626,10 +621,6 @@ class _GameHomeScreenState extends State<GameHomeScreen>
         false,
       );
 
-  void _setZoom(double z) {
-    setState(() => _zoom = z.clamp(0.6, 3.4));
-  }
-
   void _openPanoramaMap() {
     showModalBottomSheet<void>(
       context: context,
@@ -703,17 +694,7 @@ class _GameHomeScreenState extends State<GameHomeScreen>
         ),
         Positioned(
           left: 12,
-          top: MediaQuery.of(context).padding.top + 62,
-          child: _MapZoomControls(
-            zoom: _zoom,
-            onZoomIn: () => _setZoom(_zoom * 1.2),
-            onZoomOut: () => _setZoom(_zoom / 1.2),
-            onReset: _resetMapView,
-          ),
-        ),
-        Positioned(
-          left: 12,
-          top: MediaQuery.of(context).padding.top + 202,
+          top: MediaQuery.of(context).padding.top + 66,
           child: _PanoramaMapButton(onTap: _openPanoramaMap),
         ),
         Positioned(
@@ -3279,15 +3260,21 @@ class _GameWorldMapShell extends StatelessWidget {
     return Stack(
       fit: StackFit.expand,
       children: [
-        const DecoratedBox(
+        Image.asset(
+          'assets/maps/fishergo_overworld_imagegen_v3.png',
+          fit: BoxFit.cover,
+          alignment: Alignment.center,
+          filterQuality: FilterQuality.high,
+        ),
+        DecoratedBox(
           decoration: BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
               colors: [
-                Color(0xFF52D7DE),
-                Color(0xFF88E6B4),
-                Color(0xFF58C783),
+                const Color(0xFF063642).withValues(alpha: 0.06),
+                Colors.transparent,
+                const Color(0xFF042B28).withValues(alpha: 0.16),
               ],
             ),
           ),
@@ -3409,8 +3396,13 @@ class _PanoramaMapSheet extends StatelessWidget {
             options: MapOptions(
               initialCenter: playerLatLng,
               initialZoom: 13,
+              minZoom: 11,
+              maxZoom: 16.5,
               interactionOptions: const InteractionOptions(
-                flags: InteractiveFlag.all,
+                flags: InteractiveFlag.drag |
+                    InteractiveFlag.pinchZoom |
+                    InteractiveFlag.doubleTapZoom,
+                pinchZoomThreshold: 0.4,
               ),
             ),
             children: [
@@ -3528,110 +3520,17 @@ class _GameWorldAtmospherePainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final horizonY = size.height * 0.22;
-    final vanishing = Offset(size.width * 0.5, horizonY);
-
-    final skyPaint = Paint()
-      ..shader = const LinearGradient(
+    final depthShade = Paint()
+      ..shader = LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
-        colors: [Color(0xFF60D9E8), Color(0xFF9CF1D3)],
-      ).createShader(Rect.fromLTWH(0, 0, size.width, horizonY + 80));
-    canvas.drawRect(Rect.fromLTWH(0, 0, size.width, horizonY + 80), skyPaint);
-
-    final waterPaint = Paint()
-      ..shader = const LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [Color(0xFF35C8E2), Color(0xFF7CEBD7)],
-      ).createShader(Rect.fromLTWH(0, 0, size.width, size.height * 0.42));
-    final seaPath = Path()
-      ..moveTo(0, 0)
-      ..lineTo(size.width, 0)
-      ..lineTo(size.width, size.height * 0.24)
-      ..quadraticBezierTo(
-        size.width * 0.58,
-        size.height * 0.35,
-        0,
-        size.height * 0.27,
-      )
-      ..close();
-    canvas.drawPath(seaPath, waterPaint);
-    _drawWaterDetail(canvas, size, horizonY);
-
-    final landPaint = Paint()
-      ..shader = const LinearGradient(
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-        colors: [Color(0xFFB8F3A6), Color(0xFF6BD488), Color(0xFF46BE75)],
-      ).createShader(Rect.fromLTWH(0, horizonY, size.width, size.height));
-    final landPath = Path()
-      ..moveTo(size.width * -0.08, size.height * 0.3)
-      ..quadraticBezierTo(
-        size.width * 0.34,
-        size.height * 0.18,
-        size.width * 0.72,
-        size.height * 0.27,
-      )
-      ..quadraticBezierTo(
-        size.width * 0.92,
-        size.height * 0.32,
-        size.width * 1.08,
-        size.height * 0.27,
-      )
-      ..lineTo(size.width * 1.16, size.height)
-      ..lineTo(size.width * -0.16, size.height)
-      ..close();
-    canvas.drawPath(
-      landPath.shift(const Offset(0, 12)),
-      Paint()..color = const Color(0xFF0C4E57).withValues(alpha: 0.16),
-    );
-    canvas.drawPath(landPath, landPaint);
-
-    _drawIsometricTiles(canvas, size);
-    final coastlinePaint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.42)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 3;
-    final sandPaint = Paint()
-      ..color = const Color(0xFFF6DC92).withValues(alpha: 0.55)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 20
-      ..strokeCap = StrokeCap.round;
-    final coastline = Path()
-      ..moveTo(size.width * -0.04, size.height * 0.3)
-      ..quadraticBezierTo(
-        size.width * 0.34,
-        size.height * 0.2,
-        size.width * 0.72,
-        size.height * 0.28,
-      )
-      ..quadraticBezierTo(
-        size.width * 0.92,
-        size.height * 0.33,
-        size.width * 1.04,
-        size.height * 0.28,
-      );
-    canvas.drawPath(
-      coastline,
-      Paint()
-        ..color = const Color(0xFF056C7A).withValues(alpha: 0.28)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 34
-        ..strokeCap = StrokeCap.round,
-    );
-    canvas.drawPath(coastline, sandPaint);
-    canvas.drawPath(
-      coastline,
-      coastlinePaint,
-    );
-
-    _drawLandmarks(canvas, size, horizonY);
-    _drawWaterChannels(canvas, size);
-    _drawPerspectiveGrid(canvas, size, vanishing);
-    _drawRoads(canvas, size);
-    _drawMapProps(canvas, size);
-    _drawRockyFishingEdges(canvas, size);
+        colors: [
+          const Color(0xFF022F3F).withValues(alpha: 0.03),
+          Colors.transparent,
+          const Color(0xFF021D1F).withValues(alpha: 0.2),
+        ],
+      ).createShader(Offset.zero & size);
+    canvas.drawRect(Offset.zero & size, depthShade);
     _drawFishingBeacons(canvas, size);
     _drawPlayerRings(canvas, size);
   }
@@ -4292,96 +4191,6 @@ class _SpotMarker extends StatelessWidget {
           child: const Text('NEW',
               style: TextStyle(color: Colors.white, fontSize: 8)),
         ),
-    ]);
-  }
-}
-
-class _MapZoomControls extends StatelessWidget {
-  const _MapZoomControls({
-    required this.zoom,
-    required this.onZoomIn,
-    required this.onZoomOut,
-    required this.onReset,
-  });
-
-  final double zoom;
-  final VoidCallback onZoomIn;
-  final VoidCallback onZoomOut;
-  final VoidCallback onReset;
-
-  @override
-  Widget build(BuildContext context) {
-    Widget btn(IconData icon, VoidCallback onTap) {
-      return GestureDetector(
-        onTap: onTap,
-        child: Container(
-          width: 44,
-          height: 44,
-          margin: const EdgeInsets.only(bottom: 8),
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            gradient: const LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [Colors.white, Color(0xFFE3F4FF)],
-            ),
-            boxShadow: const [
-              BoxShadow(
-                color: Colors.black38,
-                blurRadius: 12,
-                offset: Offset(0, 6),
-              ),
-              BoxShadow(
-                color: Colors.white70,
-                blurRadius: 2,
-                offset: Offset(-1, -1),
-              ),
-            ],
-          ),
-          child: Icon(icon, color: Color(0xFF126B82), size: 24),
-        ),
-      );
-    }
-
-    return Column(mainAxisSize: MainAxisSize.min, children: [
-      btn(Icons.add, onZoomIn),
-      btn(Icons.remove, onZoomOut),
-      GestureDetector(
-        onTap: onReset,
-        child: Container(
-          width: 44,
-          height: 44,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            gradient: const LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [Colors.white, Color(0xFFE3F4FF)],
-            ),
-            boxShadow: const [
-              BoxShadow(
-                color: Colors.black38,
-                blurRadius: 12,
-                offset: Offset(0, 6),
-              ),
-              BoxShadow(
-                color: Colors.white70,
-                blurRadius: 2,
-                offset: Offset(-1, -1),
-              ),
-            ],
-          ),
-          child: Text(
-            '${zoom.toStringAsFixed(1)}x',
-            style: const TextStyle(
-              color: Color(0xFF126B82),
-              fontSize: 11,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-      ),
     ]);
   }
 }

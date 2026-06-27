@@ -23,6 +23,7 @@ import '../domain/fishing_biome_rules.dart';
 import '../domain/fishing_event_rules.dart';
 import '../domain/fishing_spawn_rules.dart';
 import '../domain/fishing_strike_rules.dart';
+import '../domain/terrain_data_source.dart';
 import '../../navigation/game_screen.dart';
 import '../../profile/data/player_progress_service.dart';
 import '../../profile/data/profile_wallet_service.dart';
@@ -3524,14 +3525,10 @@ class _PanoramaMapSheet extends StatelessWidget {
   }
 }
 
-enum _TerrainKind { water, shore, land, road, pier, fishingNode }
+class _RenderedTerrainTile {
+  const _RenderedTerrainTile(this.data, this.center, this.size);
 
-class _TerrainTile {
-  const _TerrainTile(this.kind, this.row, this.col, this.center, this.size);
-
-  final _TerrainKind kind;
-  final int row;
-  final int col;
+  final TerrainTile data;
   final Offset center;
   final Size size;
 }
@@ -3544,6 +3541,7 @@ class _HybridTerrainMapPainter extends CustomPainter {
 
   final LatLng playerLatLng;
   final List<_SpotDemo> spots;
+  static const _terrainDataSource = LocalTerrainDataSource();
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -3555,63 +3553,41 @@ class _HybridTerrainMapPainter extends CustomPainter {
     _drawFishingDataNodes(canvas, size);
   }
 
-  List<_TerrainTile> _buildTiles(Size size) {
-    final tiles = <_TerrainTile>[];
+  List<_RenderedTerrainTile> _buildTiles(Size size) {
+    final tiles = <_RenderedTerrainTile>[];
     final tileW = size.width * 0.22;
     final tileH = size.height * 0.055;
     final origin = Offset(size.width * 0.5, size.height * 0.29);
     const rows = 15;
     const cols = 11;
-    final seed = playerLatLng.latitude * 0.37 + playerLatLng.longitude * 0.19;
+    final terrainTiles = _terrainDataSource.buildTiles(
+      playerLatLng: playerLatLng,
+      rows: rows,
+      cols: cols,
+    );
 
-    for (var row = 0; row < rows; row++) {
+    for (final tile in terrainTiles) {
+      final row = tile.row;
+      final col = tile.col;
       final rowScale = 0.66 + row * 0.034;
-      for (var col = 0; col < cols; col++) {
-        final centeredCol = col - (cols - 1) / 2;
-        final x = origin.dx +
-            centeredCol * tileW * rowScale * 0.68 +
-            (row.isOdd ? tileW * rowScale * 0.34 : 0);
-        final y = origin.dy + row * tileH * 0.78;
-        if (x < -tileW || x > size.width + tileW || y > size.height + tileH) {
-          continue;
-        }
-        final kind = _classifyTerrain(row, col, rows, cols, seed);
-        tiles.add(_TerrainTile(
-          kind,
-          row,
-          col,
-          Offset(x, y),
-          Size(tileW * rowScale, tileH * rowScale),
-        ));
+      final centeredCol = col - (cols - 1) / 2;
+      final x = origin.dx +
+          centeredCol * tileW * rowScale * 0.68 +
+          (row.isOdd ? tileW * rowScale * 0.34 : 0);
+      final y = origin.dy + row * tileH * 0.78;
+      if (x < -tileW || x > size.width + tileW || y > size.height + tileH) {
+        continue;
       }
+      tiles.add(_RenderedTerrainTile(
+        tile,
+        Offset(x, y),
+        Size(tileW * rowScale, tileH * rowScale),
+      ));
     }
     return tiles;
   }
 
-  _TerrainKind _classifyTerrain(
-    int row,
-    int col,
-    int rows,
-    int cols,
-    double seed,
-  ) {
-    final coastLine = 3.2 + math.sin((col + seed) * 0.8) * 1.15;
-    final roadCenter = (cols * 0.72 + math.sin((row + seed) * 0.55) * 1.25);
-    final leftPier = row >= 5 && row <= 7 && col == 1;
-    final lowerPier = row >= 10 && row <= 12 && col == 7;
-    final fishingNode = (row == 5 && col == 3) ||
-        (row == 7 && col == 6) ||
-        (row == 10 && col == 2);
-
-    if (leftPier || lowerPier) return _TerrainKind.pier;
-    if (fishingNode) return _TerrainKind.fishingNode;
-    if ((col - roadCenter).abs() < 0.7 && row > 2) return _TerrainKind.road;
-    if (row < coastLine) return _TerrainKind.water;
-    if ((row - coastLine).abs() < 1.1) return _TerrainKind.shore;
-    return _TerrainKind.land;
-  }
-
-  void _drawTile(Canvas canvas, _TerrainTile tile) {
+  void _drawTile(Canvas canvas, _RenderedTerrainTile tile) {
     final path = _diamond(tile);
     canvas.drawPath(
       path.shift(Offset(0, tile.size.height * 0.16)),
@@ -3619,7 +3595,8 @@ class _HybridTerrainMapPainter extends CustomPainter {
     );
 
     final basePaint = Paint()
-      ..shader = _terrainGradient(tile.kind).createShader(path.getBounds());
+      ..shader =
+          _terrainGradient(tile.data.kind).createShader(path.getBounds());
     canvas.drawPath(path, basePaint);
     canvas.drawPath(
       path,
@@ -3629,50 +3606,50 @@ class _HybridTerrainMapPainter extends CustomPainter {
         ..strokeWidth = 0.9,
     );
 
-    switch (tile.kind) {
-      case _TerrainKind.water:
+    switch (tile.data.kind) {
+      case TerrainKind.water:
         _drawWaterTexture(canvas, tile);
-      case _TerrainKind.shore:
+      case TerrainKind.shore:
         _drawShoreTexture(canvas, tile);
-      case _TerrainKind.land:
+      case TerrainKind.land:
         _drawLandTexture(canvas, tile);
-      case _TerrainKind.road:
+      case TerrainKind.road:
         _drawRoadTileTexture(canvas, tile);
-      case _TerrainKind.pier:
+      case TerrainKind.pier:
         _drawPierTexture(canvas, tile);
-      case _TerrainKind.fishingNode:
+      case TerrainKind.fishingNode:
         _drawFishingNodeTexture(canvas, tile);
     }
   }
 
-  LinearGradient _terrainGradient(_TerrainKind kind) {
+  LinearGradient _terrainGradient(TerrainKind kind) {
     switch (kind) {
-      case _TerrainKind.water:
+      case TerrainKind.water:
         return LinearGradient(colors: [
           const Color(0xFF1BC6D5).withValues(alpha: 0.42),
           const Color(0xFF038FB0).withValues(alpha: 0.5),
         ]);
-      case _TerrainKind.shore:
+      case TerrainKind.shore:
         return LinearGradient(colors: [
           const Color(0xFFECCB83).withValues(alpha: 0.45),
           const Color(0xFF84D7B3).withValues(alpha: 0.36),
         ]);
-      case _TerrainKind.land:
+      case TerrainKind.land:
         return LinearGradient(colors: [
           const Color(0xFF66C96B).withValues(alpha: 0.34),
           const Color(0xFF2D9F59).withValues(alpha: 0.36),
         ]);
-      case _TerrainKind.road:
+      case TerrainKind.road:
         return LinearGradient(colors: [
           const Color(0xFFE7D8A6).withValues(alpha: 0.66),
           const Color(0xFFBBA06A).withValues(alpha: 0.52),
         ]);
-      case _TerrainKind.pier:
+      case TerrainKind.pier:
         return LinearGradient(colors: [
           const Color(0xFFC88E55).withValues(alpha: 0.72),
           const Color(0xFF8D5E35).withValues(alpha: 0.64),
         ]);
-      case _TerrainKind.fishingNode:
+      case TerrainKind.fishingNode:
         return LinearGradient(colors: [
           const Color(0xFFFFE66B).withValues(alpha: 0.52),
           const Color(0xFF21D6C0).withValues(alpha: 0.34),
@@ -3680,7 +3657,7 @@ class _HybridTerrainMapPainter extends CustomPainter {
     }
   }
 
-  Path _diamond(_TerrainTile tile) {
+  Path _diamond(_RenderedTerrainTile tile) {
     final w = tile.size.width;
     final h = tile.size.height;
     final p = tile.center;
@@ -3692,7 +3669,7 @@ class _HybridTerrainMapPainter extends CustomPainter {
       ..close();
   }
 
-  void _drawWaterTexture(Canvas canvas, _TerrainTile tile) {
+  void _drawWaterTexture(Canvas canvas, _RenderedTerrainTile tile) {
     final paint = Paint()
       ..color = Colors.white.withValues(alpha: 0.22)
       ..style = PaintingStyle.stroke
@@ -3712,7 +3689,7 @@ class _HybridTerrainMapPainter extends CustomPainter {
     }
   }
 
-  void _drawShoreTexture(Canvas canvas, _TerrainTile tile) {
+  void _drawShoreTexture(Canvas canvas, _RenderedTerrainTile tile) {
     final foamPaint = Paint()
       ..color = Colors.white.withValues(alpha: 0.28)
       ..style = PaintingStyle.stroke
@@ -3733,7 +3710,7 @@ class _HybridTerrainMapPainter extends CustomPainter {
     }
   }
 
-  void _drawLandTexture(Canvas canvas, _TerrainTile tile) {
+  void _drawLandTexture(Canvas canvas, _RenderedTerrainTile tile) {
     final paint = Paint()
       ..color = const Color(0xFFB7F47A).withValues(alpha: 0.24)
       ..strokeWidth = 1
@@ -3749,7 +3726,7 @@ class _HybridTerrainMapPainter extends CustomPainter {
     }
   }
 
-  void _drawRoadTileTexture(Canvas canvas, _TerrainTile tile) {
+  void _drawRoadTileTexture(Canvas canvas, _RenderedTerrainTile tile) {
     final edge = Paint()
       ..color = const Color(0xFF244F55).withValues(alpha: 0.44)
       ..style = PaintingStyle.stroke
@@ -3766,7 +3743,7 @@ class _HybridTerrainMapPainter extends CustomPainter {
     canvas.drawLine(a, b, center);
   }
 
-  void _drawPierTexture(Canvas canvas, _TerrainTile tile) {
+  void _drawPierTexture(Canvas canvas, _RenderedTerrainTile tile) {
     final paint = Paint()
       ..color = const Color(0xFFFFD39B).withValues(alpha: 0.42)
       ..strokeWidth = 1.3
@@ -3781,7 +3758,7 @@ class _HybridTerrainMapPainter extends CustomPainter {
     }
   }
 
-  void _drawFishingNodeTexture(Canvas canvas, _TerrainTile tile) {
+  void _drawFishingNodeTexture(Canvas canvas, _RenderedTerrainTile tile) {
     final center = tile.center;
     canvas.drawCircle(
       center,
@@ -3828,20 +3805,10 @@ class _HybridTerrainMapPainter extends CustomPainter {
   }
 
   void _drawFishingDataNodes(Canvas canvas, Size size) {
-    final points = spots.isEmpty
-        ? const [
-            Offset(0.18, 0.42),
-            Offset(0.36, 0.36),
-            Offset(0.66, 0.47),
-            Offset(0.76, 0.62),
-          ]
-        : spots.take(6).map((spot) {
-            final dx =
-                ((spot.lng - 113.8) / (114.55 - 113.8)).clamp(0.12, 0.88);
-            final dy =
-                (1 - ((spot.lat - 22.15) / (22.58 - 22.15))).clamp(0.22, 0.82);
-            return Offset(dx.toDouble(), dy.toDouble());
-          }).toList();
+    final points = _terrainDataSource.projectFishingNodes([
+      for (final spot in spots)
+        TerrainFishingSpot(lat: spot.lat, lng: spot.lng),
+    ]);
 
     for (final normalized in points) {
       final p = Offset(size.width * normalized.dx, size.height * normalized.dy);

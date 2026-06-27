@@ -1,0 +1,160 @@
+{
+  "schemaVersion": 1,
+  "name": "FisherGo Hong Kong terrain MVP",
+  "features": [
+    {
+      "kind": "water",
+      "name": "汲水門至青衣海面",
+      "lat": 22.342,
+      "lng": 114.073,
+      "radiusMeters": 6800
+    },
+    {
+      "kind": "land",
+      "name": "青衣西岸",
+      "lat": 22.354,
+      "lng": 114.097,
+      "radiusMeters": 2700
+    },
+    {
+      "kind": "land",
+      "name": "馬灣",
+      "lat": 22.351,
+      "lng": 114.061,
+      "radiusMeters": 2300
+    },
+    {
+      "kind": "road",
+      "name": "青馬大橋",
+      "lat": 22.3517,
+      "lng": 114.0743,
+      "radiusMeters": 1050
+    },
+    {
+      "kind": "pier",
+      "name": "馬灣碼頭",
+      "lat": 22.3526,
+      "lng": 114.0623,
+      "radiusMeters": 520
+    },
+    {
+      "kind": "fishingNode",
+      "name": "青馬橋底石駁",
+      "lat": 22.3479,
+      "lng": 114.0718,
+      "radiusMeters": 620
+    },
+    {
+      "kind": "water",
+      "name": "東涌機場跑道尾外海",
+      "lat": 22.291,
+      "lng": 113.936,
+      "radiusMeters": 7200
+    },
+    {
+      "kind": "land",
+      "name": "赤鱲角跑道",
+      "lat": 22.305,
+      "lng": 113.929,
+      "radiusMeters": 4300
+    },
+    {
+      "kind": "road",
+      "name": "機場跑道尾道路",
+      "lat": 22.298,
+      "lng": 113.929,
+      "radiusMeters": 900
+    },
+    {
+      "kind": "fishingNode",
+      "name": "跑道尾立魚位",
+      "lat": 22.286,
+      "lng": 113.942,
+      "radiusMeters": 780
+    },
+    {
+      "kind": "water",
+      "name": "三門仔大埔內海",
+      "lat": 22.462,
+      "lng": 114.215,
+      "radiusMeters": 5600
+    },
+    {
+      "kind": "land",
+      "name": "三門仔岸邊",
+      "lat": 22.458,
+      "lng": 114.221,
+      "radiusMeters": 2300
+    },
+    {
+      "kind": "pier",
+      "name": "三門仔碼頭",
+      "lat": 22.459,
+      "lng": 114.216,
+      "radiusMeters": 520
+    },
+    {
+      "kind": "fishingNode",
+      "name": "三門仔烏頭位",
+      "lat": 22.461,
+      "lng": 114.211,
+      "radiusMeters": 680
+    },
+    {
+      "kind": "water",
+      "name": "東水赤立雞魚帶",
+      "lat": 22.31,
+      "lng": 114.34,
+      "radiusMeters": 8600
+    },
+    {
+      "kind": "land",
+      "name": "東水礁石群",
+      "lat": 22.303,
+      "lng": 114.326,
+      "radiusMeters": 2200
+    },
+    {
+      "kind": "pier",
+      "name": "東水礁位",
+      "lat": 22.304,
+      "lng": 114.331,
+      "radiusMeters": 460
+    },
+    {
+      "kind": "fishingNode",
+      "name": "東水池仔赤立雞魚位",
+      "lat": 22.302,
+      "lng": 114.335,
+      "radiusMeters": 750
+    },
+    {
+      "kind": "water",
+      "name": "離島外海",
+      "lat": 22.245,
+      "lng": 114.02,
+      "radiusMeters": 10400
+    },
+    {
+      "kind": "land",
+      "name": "長洲及附近離島",
+      "lat": 22.209,
+      "lng": 114.029,
+      "radiusMeters": 3600
+    },
+    {
+      "kind": "pier",
+      "name": "長洲碼頭",
+      "lat": 22.208,
+      "lng": 114.029,
+      "radiusMeters": 540
+    },
+    {
+      "kind": "fishingNode",
+      "name": "離島岩位",
+      "lat": 22.216,
+      "lng": 114.037,
+      "radiusMeters": 780
+    }
+  ]
+}

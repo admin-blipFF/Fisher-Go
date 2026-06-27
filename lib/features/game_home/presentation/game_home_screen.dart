@@ -57,6 +57,7 @@ class _GameHomeScreenState extends State<GameHomeScreen>
   bool _showAnnouncementRedDot = false;
   bool _isStartupGateOpen = false;
   bool _isAdmin = false;
+  TerrainDataSource _terrainDataSource = const LocalTerrainDataSource();
   bool _isTutorialFishing = false;
   Map<String, double> _fishBoosts = const {};
   bool _isAtBoatSpot = false;
@@ -153,7 +154,21 @@ class _GameHomeScreenState extends State<GameHomeScreen>
       duration: const Duration(milliseconds: 2400),
     )..repeat();
     _fishingController.addListener(_onFishingTick);
+    unawaited(_loadTerrainDataset());
     unawaited(_loadPlayerLocation());
+  }
+
+  Future<void> _loadTerrainDataset() async {
+    try {
+      final source =
+          await rootBundle.loadString('assets/maps/hk_terrain_mvp.json');
+      final dataset = GeoTerrainDataset.fromJson(source);
+      if (!mounted) return;
+      setState(() => _terrainDataSource = GeoTerrainDataSource(dataset));
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _terrainDataSource = const LocalTerrainDataSource());
+    }
   }
 
   @override
@@ -663,6 +678,7 @@ class _GameHomeScreenState extends State<GameHomeScreen>
       hasLiveLocation: _hasLiveLocation,
       playerLatLng: _playerLatLng,
       spots: visibleSpots,
+      terrainDataSource: _terrainDataSource,
     );
 
     return Scaffold(
@@ -3255,12 +3271,14 @@ class _GameWorldMapShell extends StatelessWidget {
     required this.hasLiveLocation,
     required this.playerLatLng,
     required this.spots,
+    required this.terrainDataSource,
   });
 
   final int spotCount;
   final bool hasLiveLocation;
   final LatLng playerLatLng;
   final List<_SpotDemo> spots;
+  final TerrainDataSource terrainDataSource;
 
   @override
   Widget build(BuildContext context) {
@@ -3291,6 +3309,7 @@ class _GameWorldMapShell extends StatelessWidget {
             painter: _HybridTerrainMapPainter(
               playerLatLng: playerLatLng,
               spots: spots,
+              terrainDataSource: terrainDataSource,
             ),
             size: Size.infinite,
           ),
@@ -3537,11 +3556,12 @@ class _HybridTerrainMapPainter extends CustomPainter {
   const _HybridTerrainMapPainter({
     required this.playerLatLng,
     required this.spots,
+    required this.terrainDataSource,
   });
 
   final LatLng playerLatLng;
   final List<_SpotDemo> spots;
-  static const _terrainDataSource = LocalTerrainDataSource();
+  final TerrainDataSource terrainDataSource;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -3560,7 +3580,7 @@ class _HybridTerrainMapPainter extends CustomPainter {
     final origin = Offset(size.width * 0.5, size.height * 0.29);
     const rows = 15;
     const cols = 11;
-    final terrainTiles = _terrainDataSource.buildTiles(
+    final terrainTiles = terrainDataSource.buildTiles(
       playerLatLng: playerLatLng,
       rows: rows,
       cols: cols,
@@ -3805,7 +3825,7 @@ class _HybridTerrainMapPainter extends CustomPainter {
   }
 
   void _drawFishingDataNodes(Canvas canvas, Size size) {
-    final points = _terrainDataSource.projectFishingNodes([
+    final points = terrainDataSource.projectFishingNodes([
       for (final spot in spots)
         TerrainFishingSpot(lat: spot.lat, lng: spot.lng),
     ]);
@@ -3832,7 +3852,9 @@ class _HybridTerrainMapPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _HybridTerrainMapPainter oldDelegate) =>
-      oldDelegate.playerLatLng != playerLatLng || oldDelegate.spots != spots;
+      oldDelegate.playerLatLng != playerLatLng ||
+      oldDelegate.spots != spots ||
+      oldDelegate.terrainDataSource != terrainDataSource;
 }
 
 class _GameWorldAtmospherePainter extends CustomPainter {

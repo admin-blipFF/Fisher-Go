@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:fishergo/features/game_home/domain/terrain_data_source.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:latlong2/latlong.dart';
@@ -56,6 +58,57 @@ void main() {
       expect(points, hasLength(4));
       expect(points.first.dx, 0.18);
       expect(points.first.dy, 0.42);
+    });
+  });
+
+  group('GeoTerrainDataSource', () {
+    test('parses bundled Hong Kong terrain vector data', () {
+      final json = File('assets/maps/hk_terrain_mvp.json').readAsStringSync();
+      final dataset = GeoTerrainDataset.fromJson(json);
+
+      expect(dataset.features, isNotEmpty);
+      expect(
+        dataset.features.map((feature) => feature.kind).toSet(),
+        containsAll({
+          TerrainKind.water,
+          TerrainKind.land,
+          TerrainKind.road,
+          TerrainKind.pier,
+          TerrainKind.fishingNode,
+        }),
+      );
+      expect(dataset.features.map((feature) => feature.name), contains('青馬大橋'));
+    });
+
+    test('classifies Tsing Ma area from real terrain features', () {
+      final json = File('assets/maps/hk_terrain_mvp.json').readAsStringSync();
+      final source = GeoTerrainDataSource(GeoTerrainDataset.fromJson(json));
+
+      final tiles = source.buildTiles(
+        playerLatLng: const LatLng(22.3517, 114.0743),
+        rows: 15,
+        cols: 11,
+      );
+      final kinds = tiles.map((tile) => tile.kind).toSet();
+
+      expect(kinds, contains(TerrainKind.water));
+      expect(kinds, contains(TerrainKind.land));
+      expect(kinds, contains(TerrainKind.road));
+      expect(kinds, contains(TerrainKind.pier));
+      expect(kinds, contains(TerrainKind.fishingNode));
+    });
+
+    test('uses dataset fishing nodes when visible spots are empty', () {
+      final json = File('assets/maps/hk_terrain_mvp.json').readAsStringSync();
+      final source = GeoTerrainDataSource(GeoTerrainDataset.fromJson(json));
+
+      final points = source.projectFishingNodes(const []);
+
+      expect(points.length, greaterThanOrEqualTo(4));
+      for (final point in points) {
+        expect(point.dx, inInclusiveRange(0.12, 0.88));
+        expect(point.dy, inInclusiveRange(0.22, 0.82));
+      }
     });
   });
 }

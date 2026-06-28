@@ -1,6 +1,7 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "name": "FisherGo Hong Kong terrain MVP",
+  "generatedFrom": "data/hk_geo/hk_fishing_spots_master_all_geocoded_gov.csv",
   "features": [
     {
       "kind": "water",
@@ -10,32 +11,11 @@
       "radiusMeters": 6800
     },
     {
-      "kind": "land",
-      "name": "青衣西岸",
-      "lat": 22.354,
-      "lng": 114.097,
-      "radiusMeters": 2700
-    },
-    {
-      "kind": "land",
-      "name": "馬灣",
-      "lat": 22.351,
-      "lng": 114.061,
-      "radiusMeters": 2300
-    },
-    {
       "kind": "road",
       "name": "青馬大橋",
       "lat": 22.3517,
       "lng": 114.0743,
       "radiusMeters": 1050
-    },
-    {
-      "kind": "pier",
-      "name": "馬灣碼頭",
-      "lat": 22.3526,
-      "lng": 114.0623,
-      "radiusMeters": 520
     },
     {
       "kind": "fishingNode",
@@ -80,20 +60,6 @@
       "radiusMeters": 5600
     },
     {
-      "kind": "land",
-      "name": "三門仔岸邊",
-      "lat": 22.458,
-      "lng": 114.221,
-      "radiusMeters": 2300
-    },
-    {
-      "kind": "pier",
-      "name": "三門仔碼頭",
-      "lat": 22.459,
-      "lng": 114.216,
-      "radiusMeters": 520
-    },
-    {
       "kind": "fishingNode",
       "name": "三門仔烏頭位",
       "lat": 22.461,
@@ -106,20 +72,6 @@
       "lat": 22.31,
       "lng": 114.34,
       "radiusMeters": 8600
-    },
-    {
-      "kind": "land",
-      "name": "東水礁石群",
-      "lat": 22.303,
-      "lng": 114.326,
-      "radiusMeters": 2200
-    },
-    {
-      "kind": "pier",
-      "name": "東水礁位",
-      "lat": 22.304,
-      "lng": 114.331,
-      "radiusMeters": 460
     },
     {
       "kind": "fishingNode",
@@ -136,25 +88,1810 @@
       "radiusMeters": 10400
     },
     {
-      "kind": "land",
-      "name": "長洲及附近離島",
-      "lat": 22.209,
-      "lng": 114.029,
-      "radiusMeters": 3600
-    },
-    {
-      "kind": "pier",
-      "name": "長洲碼頭",
-      "lat": 22.208,
-      "lng": 114.029,
-      "radiusMeters": 540
-    },
-    {
       "kind": "fishingNode",
       "name": "離島岩位",
       "lat": 22.216,
       "lng": 114.037,
       "radiusMeters": 780
+    },
+    {
+      "kind": "land",
+      "name": "Careening Island",
+      "lat": 22.314648029,
+      "lng": 114.366007934,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "Channel Rock",
+      "lat": 22.216967506,
+      "lng": 114.016279989,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "Chau Tsai",
+      "lat": 22.353406249,
+      "lng": 114.350672579,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "Hoi Sham Island",
+      "lat": 22.315028603,
+      "lng": 114.19174344,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "Hong Kong Convention and Exhibition Centre",
+      "lat": 22.283178259,
+      "lng": 114.17307059,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "Kellett Island",
+      "lat": 22.284456545,
+      "lng": 114.182711018,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "Lam Chau",
+      "lat": 22.212598846,
+      "lng": 113.902899165,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "Mong Chau",
+      "lat": 22.371278019,
+      "lng": 114.301263502,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "Mouse Island",
+      "lat": 22.382949509,
+      "lng": 113.975675792,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "Nga Ying Chau",
+      "lat": 22.388848476,
+      "lng": 114.315932667,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "Rumsey Rock",
+      "lat": 22.223611623,
+      "lng": 114.023081361,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "Stonecutters Island",
+      "lat": 22.321688575,
+      "lng": 114.135400083,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "Tsim Chau Group",
+      "lat": 22.401722314,
+      "lng": 114.386325749,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "Tsing Chau",
+      "lat": 22.532630486,
+      "lng": 114.280420374,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "Un Chau",
+      "lat": 22.331103276,
+      "lng": 114.164575876,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "三排",
+      "lat": 22.311587847,
+      "lng": 114.372622887,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "三杯酒",
+      "lat": 22.432633032,
+      "lng": 114.271924132,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "丫洲",
+      "lat": 22.439373328,
+      "lng": 114.222162427,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "九龍石",
+      "lat": 22.316445598,
+      "lng": 114.19884821,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "二排",
+      "lat": 22.312067541,
+      "lng": 114.371730657,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "二浪排",
+      "lat": 22.212460423,
+      "lng": 113.990157186,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "五分洲",
+      "lat": 22.225967138,
+      "lng": 114.25739977,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "交椅洲",
+      "lat": 22.28402343,
+      "lng": 114.076753415,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "伙頭墳洲",
+      "lat": 22.334065889,
+      "lng": 114.364141258,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "佛堂洲",
+      "lat": 22.278022378,
+      "lng": 114.269636062,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "元洲仔",
+      "lat": 22.445840704,
+      "lng": 114.178402157,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "光頭排",
+      "lat": 22.33892047,
+      "lng": 114.374971361,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "劏人排",
+      "lat": 22.211172785,
+      "lng": 114.212681214,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "勒加洲",
+      "lat": 22.485774766,
+      "lng": 114.051858483,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "北長洲石",
+      "lat": 22.223611623,
+      "lng": 114.023081361,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "匙洲",
+      "lat": 22.335632974,
+      "lng": 114.334148532,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "半山石",
+      "lat": 22.321720628,
+      "lng": 114.068107525,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "南丫島",
+      "lat": 22.207917056,
+      "lng": 114.123844109,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "南風洲",
+      "lat": 22.342342606,
+      "lng": 114.351823761,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "印洲",
+      "lat": 22.526304321,
+      "lng": 114.287803122,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "吉澳",
+      "lat": 22.542029884,
+      "lng": 114.295233151,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "吊鐘排",
+      "lat": 22.325892985,
+      "lng": 114.32011187,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "吊鐘洲",
+      "lat": 22.333790933,
+      "lng": 114.324342457,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "周公島",
+      "lat": 22.261068147,
+      "lng": 114.051564133,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "咀排",
+      "lat": 22.216476262,
+      "lng": 113.980103883,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "和尚洲",
+      "lat": 22.435700946,
+      "lng": 114.4019191,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "喜靈洲",
+      "lat": 22.253020239,
+      "lng": 114.038455042,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "圓崗洲",
+      "lat": 22.325745501,
+      "lng": 114.366935291,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "坪洲",
+      "lat": 22.286073372,
+      "lng": 114.039664602,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "垃圾洲",
+      "lat": 22.386155813,
+      "lng": 114.282156598,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "執毛洲",
+      "lat": 22.514334271,
+      "lng": 114.294597222,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "塔門",
+      "lat": 22.476931652,
+      "lng": 114.360834743,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "塘口排",
+      "lat": 22.34158015,
+      "lng": 114.346998195,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "墳洲",
+      "lat": 22.532859054,
+      "lng": 114.275958693,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "大利",
+      "lat": 22.28931861,
+      "lng": 114.032985174,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "大嶼山",
+      "lat": 22.258765687,
+      "lng": 113.9327004,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "大排",
+      "lat": 22.311933304,
+      "lng": 114.370711402,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "大洲",
+      "lat": 22.256598338,
+      "lng": 114.350746839,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "大澳",
+      "lat": 22.256955011,
+      "lng": 113.861814138,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "大癩痢",
+      "lat": 22.300698028,
+      "lng": 114.319697975,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "大稔洲",
+      "lat": 22.542075996,
+      "lng": 114.265699415,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "大鏟洲",
+      "lat": 22.375584737,
+      "lng": 114.290110717,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "大頭洲",
+      "lat": 22.37194313,
+      "lng": 114.32632454,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "娥眉洲",
+      "lat": 22.527077092,
+      "lng": 114.315992895,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "媽印排",
+      "lat": 22.526304321,
+      "lng": 114.287803122,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "孖仔排",
+      "lat": 22.322852255,
+      "lng": 114.327242812,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "孝子角排",
+      "lat": 22.480822864,
+      "lng": 114.353552023,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "小交椅洲",
+      "lat": 22.288707571,
+      "lng": 114.059186139,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "小稔洲",
+      "lat": 22.538417761,
+      "lng": 114.267398284,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "小鏟洲",
+      "lat": 22.376489303,
+      "lng": 114.287926719,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "小青洲",
+      "lat": 22.285632574,
+      "lng": 114.116818554,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "尖柱石",
+      "lat": 22.322143439,
+      "lng": 114.365969505,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "尾排",
+      "lat": 22.199047584,
+      "lng": 113.98054517,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "岩口石",
+      "lat": 22.329651896,
+      "lng": 114.058666502,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "崩紗排",
+      "lat": 22.459208694,
+      "lng": 114.287555323,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "崩鼻洲",
+      "lat": 22.336590131,
+      "lng": 114.367833336,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "平洲",
+      "lat": 22.543227921,
+      "lng": 114.430567283,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "平面洲",
+      "lat": 22.31180658,
+      "lng": 114.318641678,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "弓洲",
+      "lat": 22.483240591,
+      "lng": 114.371337778,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "往灣排",
+      "lat": 22.327289326,
+      "lng": 114.313590532,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "往灣洲",
+      "lat": 22.513013389,
+      "lng": 114.309369614,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "德己利士礁",
+      "lat": 22.2911617,
+      "lng": 114.069023945,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "扁洲",
+      "lat": 22.326502238,
+      "lng": 114.368489344,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "打浪排",
+      "lat": 22.461230186,
+      "lng": 114.420371668,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "打蠔排",
+      "lat": 22.517441376,
+      "lng": 114.305534545,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "扯里排",
+      "lat": 22.463893277,
+      "lng": 114.290726456,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "斷頭洲",
+      "lat": 22.370966296,
+      "lng": 114.295476348,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "木魚洲",
+      "lat": 22.388933797,
+      "lng": 114.311145343,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "杉排",
+      "lat": 22.490056536,
+      "lng": 114.365409733,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "東頭洲",
+      "lat": 22.45635355,
+      "lng": 114.258127277,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "東龍洲",
+      "lat": 22.248253819,
+      "lng": 114.289522987,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "枕頭洲",
+      "lat": 22.379333413,
+      "lng": 114.288657235,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "果洲群島",
+      "lat": 22.263020478,
+      "lng": 114.357769351,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "桅夾排",
+      "lat": 22.331242041,
+      "lng": 114.345209315,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "棟心洲",
+      "lat": 22.325662845,
+      "lng": 114.368109649,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "橋咀洲",
+      "lat": 22.364925748,
+      "lng": 114.29427701,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "橋頭",
+      "lat": 22.480710413,
+      "lng": 114.154184803,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "橫排",
+      "lat": 22.275886282,
+      "lng": 114.360289252,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "橫洲",
+      "lat": 22.451213444,
+      "lng": 114.018761004,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "殼仔排",
+      "lat": 22.271544109,
+      "lng": 114.350668282,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "水排",
+      "lat": 22.212194424,
+      "lng": 113.986607872,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "水浸咀排",
+      "lat": 22.531698735,
+      "lng": 114.227150069,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "沉排",
+      "lat": 22.323671583,
+      "lng": 114.329864375,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "沙塘口山",
+      "lat": 22.320625307,
+      "lng": 114.350729009,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "沙排",
+      "lat": 22.524849904,
+      "lng": 114.28856986,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "沙洲",
+      "lat": 22.345072291,
+      "lng": 113.889623061,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "洋洲",
+      "lat": 22.539835326,
+      "lng": 114.307159305,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "洲仔",
+      "lat": 22.353406249,
+      "lng": 114.350672579,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "洲仔角",
+      "lat": 22.471679948,
+      "lng": 114.357310429,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "深水排",
+      "lat": 22.205426247,
+      "lng": 114.046570555,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "游龍角",
+      "lat": 22.373774666,
+      "lng": 114.295643793,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "湖洋洲排",
+      "lat": 22.518491511,
+      "lng": 114.290032438,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "滘西洲",
+      "lat": 22.359582159,
+      "lng": 114.314078347,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "灣仔排",
+      "lat": 22.490056536,
+      "lng": 114.365409733,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "火燒排",
+      "lat": 22.276095199,
+      "lng": 114.359212498,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "火石洲",
+      "lat": 22.314648029,
+      "lng": 114.366007934,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "火藥洲",
+      "lat": 22.243321741,
+      "lng": 114.139545968,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "炸魚排",
+      "lat": 22.380276734,
+      "lng": 114.29551337,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "烏排",
+      "lat": 22.526062921,
+      "lng": 114.284235567,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "烏洲",
+      "lat": 22.501323033,
+      "lng": 114.304450582,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "烏蠅排",
+      "lat": 22.303092521,
+      "lng": 114.035542851,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "熨波洲",
+      "lat": 22.234475679,
+      "lng": 114.186108837,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "燈洲",
+      "lat": 22.446541213,
+      "lng": 114.257847329,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "燈籠洲",
+      "lat": 22.340076082,
+      "lng": 114.062734821,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "爛樹排",
+      "lat": 22.530404715,
+      "lng": 114.272797734,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "爛頭排",
+      "lat": 22.405739156,
+      "lng": 114.387642877,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "牙鷹排",
+      "lat": 22.24266069,
+      "lng": 114.28069091,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "牙鷹洲",
+      "lat": 22.388848476,
+      "lng": 114.315932667,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "牛尾洲",
+      "lat": 22.327176217,
+      "lng": 114.296769075,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "牛屎砵",
+      "lat": 22.454451842,
+      "lng": 114.229842447,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "牛頭排",
+      "lat": 22.322205741,
+      "lng": 114.3016179,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "狗脾洲",
+      "lat": 22.204608039,
+      "lng": 114.260345479,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "甩洲",
+      "lat": 22.476892194,
+      "lng": 114.034123417,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "癩痢仔",
+      "lat": 22.303590227,
+      "lng": 114.316935033,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "白排",
+      "lat": 22.307696196,
+      "lng": 114.309708798,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "白沙洲",
+      "lat": 22.541349892,
+      "lng": 114.330492069,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "白洲, Tree Island",
+      "lat": 22.356378144,
+      "lng": 113.874571232,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "白馬咀排",
+      "lat": 22.347501001,
+      "lng": 114.27434179,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "石洲",
+      "lat": 22.173467209,
+      "lng": 113.907241211,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "石牛洲",
+      "lat": 22.465914349,
+      "lng": 114.427958395,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "石鼓洲",
+      "lat": 22.195760687,
+      "lng": 113.988424034,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "破邊洲",
+      "lat": 22.358431204,
+      "lng": 114.378396965,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "磨刀洲",
+      "lat": 22.479876989,
+      "lng": 114.333864003,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "磨洲",
+      "lat": 22.479876989,
+      "lng": 114.333864003,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "筆架洲",
+      "lat": 22.532805732,
+      "lng": 114.288440167,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "筲箕排",
+      "lat": 22.523185567,
+      "lng": 114.292466293,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "糧船灣洲",
+      "lat": 22.35323925,
+      "lng": 114.354769265,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "紅排",
+      "lat": 22.509830977,
+      "lng": 114.290618257,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "索罟群島",
+      "lat": 22.174929579,
+      "lng": 113.912386968,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "細鴨洲",
+      "lat": 22.551695528,
+      "lng": 114.261573668,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "罐杉環",
+      "lat": 22.374158961,
+      "lng": 114.30099419,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "羅洲",
+      "lat": 22.206925787,
+      "lng": 114.222863261,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "羊洲",
+      "lat": 22.380467034,
+      "lng": 114.281472603,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "老虎吊排",
+      "lat": 22.36306705,
+      "lng": 114.32532475,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "老鼠排",
+      "lat": 22.275100708,
+      "lng": 114.242388382,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "芒洲仔",
+      "lat": 22.371278019,
+      "lng": 114.301263502,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "茶果洲",
+      "lat": 22.214842171,
+      "lng": 113.946073385,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "蒲苔群島",
+      "lat": 22.180357588,
+      "lng": 114.265906562,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "蒲魚排",
+      "lat": 22.546273907,
+      "lng": 114.295547867,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "虎王洲",
+      "lat": 22.519667879,
+      "lng": 114.286534238,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "蜆排",
+      "lat": 22.483183127,
+      "lng": 114.33281826,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "蝦鬚排",
+      "lat": 22.224056148,
+      "lng": 114.015835449,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "觀仔",
+      "lat": 22.264967081,
+      "lng": 114.279640122,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "角大排",
+      "lat": 22.514465281,
+      "lng": 114.300526239,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "赤洲",
+      "lat": 22.500412797,
+      "lng": 114.358922082,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "赤鱲角",
+      "lat": 22.306651328,
+      "lng": 113.930385098,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "銀洲",
+      "lat": 22.478732729,
+      "lng": 114.3311711,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "鐵樹排",
+      "lat": 22.319849682,
+      "lng": 114.163458984,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "鐵蔘洲",
+      "lat": 22.263668621,
+      "lng": 114.276505391,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "長咀洲",
+      "lat": 22.413028681,
+      "lng": 114.406107454,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "長洲",
+      "lat": 22.209123291,
+      "lng": 114.029478658,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "長石咀",
+      "lat": 22.554402221,
+      "lng": 114.294154807,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "長索",
+      "lat": 22.334914555,
+      "lng": 114.023716789,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "雙排",
+      "lat": 22.548353662,
+      "lng": 114.262786865,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "雞洲",
+      "lat": 22.366978044,
+      "lng": 114.324474484,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "雞翼角",
+      "lat": 22.216420455,
+      "lng": 113.836755853,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "青洲",
+      "lat": 22.38956402,
+      "lng": 114.313427989,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "青衣島",
+      "lat": 22.351759434,
+      "lng": 114.106480164,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "頭洲",
+      "lat": 22.224451182,
+      "lng": 114.191830835,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "飯甑洲",
+      "lat": 22.363832778,
+      "lng": 114.391414798,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "饅頭排",
+      "lat": 22.20875059,
+      "lng": 114.036946753,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "香港島",
+      "lat": 22.26075398,
+      "lng": 114.196782682,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "馬屎洲",
+      "lat": 22.454451842,
+      "lng": 114.229842447,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "馬灣",
+      "lat": 22.349573577,
+      "lng": 114.059038034,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "高排",
+      "lat": 22.531132585,
+      "lng": 114.292035477,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "鴉洲",
+      "lat": 22.52775673,
+      "lng": 114.210886311,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "鴨兜排",
+      "lat": 22.535769063,
+      "lng": 114.272257064,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "鴨洲",
+      "lat": 22.551962208,
+      "lng": 114.269254329,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "鴨洲尾白墩排",
+      "lat": 22.549586947,
+      "lng": 114.269748568,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "鴨洲白墩排",
+      "lat": 22.550563531,
+      "lng": 114.267454818,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "鴨籮春",
+      "lat": 22.552461357,
+      "lng": 114.264831068,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "鴨脷排",
+      "lat": 22.231224087,
+      "lng": 114.160597921,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "鴨脷洲",
+      "lat": 22.240434767,
+      "lng": 114.155261574,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "鴨蛋排",
+      "lat": 22.553093106,
+      "lng": 114.265512024,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "鷀鸕排",
+      "lat": 22.364443072,
+      "lng": 114.299742813,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "鹽田仔",
+      "lat": 22.450789507,
+      "lng": 114.215695889,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "鹿洲",
+      "lat": 22.224807749,
+      "lng": 114.13508912,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "黃宜洲",
+      "lat": 22.388819177,
+      "lng": 114.318476856,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "黃泥洲",
+      "lat": 22.541998919,
+      "lng": 114.311633199,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "黃泥洲仔",
+      "lat": 22.384253102,
+      "lng": 114.314588057,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "黃茅洲",
+      "lat": 22.448353028,
+      "lng": 114.394993383,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "龍山排",
+      "lat": 22.240839111,
+      "lng": 114.143252234,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "龍珠島",
+      "lat": 22.36526662,
+      "lng": 113.989750275,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "龍船排",
+      "lat": 22.306609586,
+      "lng": 114.36706466,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "land",
+      "name": "龍鼓洲",
+      "lat": 22.376261323,
+      "lng": 113.883364241,
+      "radiusMeters": 1000
+    },
+    {
+      "kind": "pier",
+      "name": "三門仔村碼頭",
+      "lat": 22.455476881,
+      "lng": 114.213239195,
+      "radiusMeters": 420
+    },
+    {
+      "kind": "pier",
+      "name": "中環九號碼頭",
+      "lat": 22.286059998,
+      "lng": 114.162570004,
+      "radiusMeters": 420
+    },
+    {
+      "kind": "pier",
+      "name": "中環十號碼頭",
+      "lat": 22.285370343,
+      "lng": 114.162900169,
+      "radiusMeters": 420
+    },
+    {
+      "kind": "pier",
+      "name": "九龍公眾碼頭",
+      "lat": 22.293003496,
+      "lng": 114.17031435,
+      "radiusMeters": 420
+    },
+    {
+      "kind": "pier",
+      "name": "北丫碼頭",
+      "lat": 22.35281146,
+      "lng": 114.349526267,
+      "radiusMeters": 420
+    },
+    {
+      "kind": "pier",
+      "name": "吉澳洲碼頭",
+      "lat": 22.550142865,
+      "lng": 114.290029071,
+      "radiusMeters": 420
+    },
+    {
+      "kind": "pier",
+      "name": "嘉道理碼頭",
+      "lat": 22.377121163,
+      "lng": 113.980024506,
+      "radiusMeters": 420
+    },
+    {
+      "kind": "pier",
+      "name": "坪洲公眾碼頭",
+      "lat": 22.284175385,
+      "lng": 114.037832489,
+      "radiusMeters": 420
+    },
+    {
+      "kind": "pier",
+      "name": "塔門碼頭",
+      "lat": 22.470360017,
+      "lng": 114.358639868,
+      "radiusMeters": 420
+    },
+    {
+      "kind": "pier",
+      "name": "大利島碼頭",
+      "lat": 22.288515419,
+      "lng": 114.033587632,
+      "radiusMeters": 420
+    },
+    {
+      "kind": "pier",
+      "name": "大埔鐵路碼頭",
+      "lat": 22.442549223,
+      "lng": 114.18398542,
+      "radiusMeters": 420
+    },
+    {
+      "kind": "pier",
+      "name": "大廟灣公眾碼頭",
+      "lat": 22.269954967,
+      "lng": 114.288802966,
+      "radiusMeters": 420
+    },
+    {
+      "kind": "pier",
+      "name": "大排咀碼頭",
+      "lat": 22.342467938,
+      "lng": 114.060985515,
+      "radiusMeters": 420
+    },
+    {
+      "kind": "pier",
+      "name": "大水坑碼頭",
+      "lat": 22.281985666,
+      "lng": 114.023037028,
+      "radiusMeters": 420
+    },
+    {
+      "kind": "pier",
+      "name": "大潭灣碼頭",
+      "lat": 22.238830395,
+      "lng": 114.225783799,
+      "radiusMeters": 420
+    },
+    {
+      "kind": "pier",
+      "name": "大澳公眾碼頭",
+      "lat": 22.252621165,
+      "lng": 113.853044201,
+      "radiusMeters": 420
+    },
+    {
+      "kind": "pier",
+      "name": "大美督一號碼頭",
+      "lat": 22.470443839,
+      "lng": 114.232510837,
+      "radiusMeters": 420
+    },
+    {
+      "kind": "pier",
+      "name": "大頭洲碼頭",
+      "lat": 22.376860483,
+      "lng": 114.321086432,
+      "radiusMeters": 420
+    },
+    {
+      "kind": "pier",
+      "name": "布袋澳二號碼頭",
+      "lat": 22.276632871,
+      "lng": 114.295513056,
+      "radiusMeters": 420
+    },
+    {
+      "kind": "pier",
+      "name": "早禾坑碼頭",
+      "lat": 22.392165813,
+      "lng": 114.288589804,
+      "radiusMeters": 420
+    },
+    {
+      "kind": "pier",
+      "name": "東平洲公眾碼頭",
+      "lat": 22.544948259,
+      "lng": 114.433370247,
+      "radiusMeters": 420
+    },
+    {
+      "kind": "pier",
+      "name": "東涌公眾碼頭",
+      "lat": 22.286257064,
+      "lng": 113.934214975,
+      "radiusMeters": 420
+    },
+    {
+      "kind": "pier",
+      "name": "東涌發展碼頭(公眾)",
+      "lat": 22.294158912,
+      "lng": 113.940402296,
+      "radiusMeters": 420
+    },
+    {
+      "kind": "pier",
+      "name": "東龍洲公眾碼頭",
+      "lat": 22.254647937,
+      "lng": 114.288926611,
+      "radiusMeters": 420
+    },
+    {
+      "kind": "pier",
+      "name": "東龍洲北碼頭",
+      "lat": 22.258221128,
+      "lng": 114.293120604,
+      "radiusMeters": 420
+    },
+    {
+      "kind": "pier",
+      "name": "榕樹灣公眾碼頭",
+      "lat": 22.207984508,
+      "lng": 114.028471227,
+      "radiusMeters": 420
+    },
+    {
+      "kind": "pier",
+      "name": "榕樹灣發展碼頭",
+      "lat": 22.225187856,
+      "lng": 114.110384462,
+      "radiusMeters": 420
+    },
+    {
+      "kind": "pier",
+      "name": "沙螺灣碼頭",
+      "lat": 22.293758641,
+      "lng": 113.904002788,
+      "radiusMeters": 420
+    },
+    {
+      "kind": "pier",
+      "name": "沙頭角公眾碼頭",
+      "lat": 22.541541767,
+      "lng": 114.227309178,
+      "radiusMeters": 420
+    },
+    {
+      "kind": "pier",
+      "name": "油柑頭碼頭",
+      "lat": 22.368227496,
+      "lng": 114.098529649,
+      "radiusMeters": 420
+    },
+    {
+      "kind": "pier",
+      "name": "深井 釣魚灣碼頭",
+      "lat": 22.365087287,
+      "lng": 114.058005533,
+      "radiusMeters": 420
+    },
+    {
+      "kind": "pier",
+      "name": "深井公眾碼頭",
+      "lat": 22.364833739,
+      "lng": 114.057063965,
+      "radiusMeters": 420
+    },
+    {
+      "kind": "pier",
+      "name": "烏溪沙碼頭",
+      "lat": 22.429472166,
+      "lng": 114.23404866,
+      "radiusMeters": 420
+    },
+    {
+      "kind": "pier",
+      "name": "白沙灣第二碼頭",
+      "lat": 22.362255895,
+      "lng": 114.259982846,
+      "radiusMeters": 420
+    },
+    {
+      "kind": "pier",
+      "name": "糖水道碼頭",
+      "lat": 22.293670445,
+      "lng": 114.198504994,
+      "radiusMeters": 420
+    },
+    {
+      "kind": "pier",
+      "name": "索罟灣二號碼頭",
+      "lat": 22.206329855,
+      "lng": 114.131118334,
+      "radiusMeters": 420
+    },
+    {
+      "kind": "pier",
+      "name": "索罟灣公眾碼頭",
+      "lat": 22.205652491,
+      "lng": 114.130905195,
+      "radiusMeters": 420
+    },
+    {
+      "kind": "pier",
+      "name": "聖士提反灣 (南 )碼頭",
+      "lat": 22.212012294,
+      "lng": 114.214223499,
+      "radiusMeters": 420
+    },
+    {
+      "kind": "pier",
+      "name": "芝麻灣碼頭",
+      "lat": 22.23965401,
+      "lng": 114.000267838,
+      "radiusMeters": 420
+    },
+    {
+      "kind": "pier",
+      "name": "荃灣渡輪碼頭 (西鐵 )",
+      "lat": 22.366724837,
+      "lng": 114.110725295,
+      "radiusMeters": 420
+    },
+    {
+      "kind": "pier",
+      "name": "荔枝莊碼頭",
+      "lat": 22.456689462,
+      "lng": 114.299678248,
+      "radiusMeters": 420
+    },
+    {
+      "kind": "pier",
+      "name": "蒲台公眾碼頭",
+      "lat": 22.165038897,
+      "lng": 114.253108764,
+      "radiusMeters": 420
+    },
+    {
+      "kind": "pier",
+      "name": "蘆荻灣碼頭",
+      "lat": 22.22312565,
+      "lng": 114.126631804,
+      "radiusMeters": 420
+    },
+    {
+      "kind": "pier",
+      "name": "西灣碼頭",
+      "lat": 22.216597698,
+      "lng": 114.103449356,
+      "radiusMeters": 420
+    },
+    {
+      "kind": "pier",
+      "name": "西貢公眾碼頭",
+      "lat": 22.381518414,
+      "lng": 114.275355924,
+      "radiusMeters": 420
+    },
+    {
+      "kind": "pier",
+      "name": "西貢新公眾碼頭",
+      "lat": 22.3812119,
+      "lng": 114.274491497,
+      "radiusMeters": 420
+    },
+    {
+      "kind": "pier",
+      "name": "觀塘公眾碼頭",
+      "lat": 22.308647877,
+      "lng": 114.220227597,
+      "radiusMeters": 420
+    },
+    {
+      "kind": "pier",
+      "name": "調景嶺碼頭",
+      "lat": 22.306986252,
+      "lng": 114.264812343,
+      "radiusMeters": 420
+    },
+    {
+      "kind": "pier",
+      "name": "赤柱卜公碼頭",
+      "lat": 22.217341293,
+      "lng": 114.210170759,
+      "radiusMeters": 420
+    },
+    {
+      "kind": "pier",
+      "name": "長洲公眾碼頭",
+      "lat": 22.207984508,
+      "lng": 114.028471227,
+      "radiusMeters": 420
+    },
+    {
+      "kind": "pier",
+      "name": "青衣公眾碼頭",
+      "lat": 22.354208013,
+      "lng": 114.109537072,
+      "radiusMeters": 420
+    },
+    {
+      "kind": "pier",
+      "name": "馬料水渡輪碼頭",
+      "lat": 22.417169384,
+      "lng": 114.214423872,
+      "radiusMeters": 420
+    },
+    {
+      "kind": "pier",
+      "name": "高流灣公眾碼頭",
+      "lat": 22.458563997,
+      "lng": 114.360684187,
+      "radiusMeters": 420
+    },
+    {
+      "kind": "pier",
+      "name": "鴨洲公眾碼頭",
+      "lat": 22.550426745,
+      "lng": 114.269788019,
+      "radiusMeters": 420
+    },
+    {
+      "kind": "pier",
+      "name": "鹽田仔碼頭",
+      "lat": 22.377346985,
+      "lng": 114.300666879,
+      "radiusMeters": 420
+    },
+    {
+      "kind": "pier",
+      "name": "鹿洲村碼頭",
+      "lat": 22.218466997,
+      "lng": 114.130648851,
+      "radiusMeters": 420
+    },
+    {
+      "kind": "pier",
+      "name": "黃石公眾碼頭",
+      "lat": 22.435588638,
+      "lng": 114.337107171,
+      "radiusMeters": 420
     }
   ]
 }

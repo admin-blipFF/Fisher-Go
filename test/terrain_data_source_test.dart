@@ -110,5 +110,72 @@ void main() {
         expect(point.dy, inInclusiveRange(0.22, 0.82));
       }
     });
+
+    test('classifies terrain from polygon and line geometry', () {
+      final source = GeoTerrainDataSource(GeoTerrainDataset.fromJson('''
+{
+  "schemaVersion": 3,
+  "features": [
+    {
+      "kind": "water",
+      "name": "geometry water",
+      "lat": 22.35,
+      "lng": 114.07,
+      "radiusMeters": 1,
+      "geometry": {
+        "type": "polygon",
+        "coordinates": [
+          [22.405, 114.000],
+          [22.405, 114.080],
+          [22.300, 114.080],
+          [22.300, 114.000]
+        ]
+      }
+    },
+    {
+      "kind": "land",
+      "name": "geometry land",
+      "lat": 22.35,
+      "lng": 114.14,
+      "radiusMeters": 1,
+      "geometry": {
+        "type": "polygon",
+        "coordinates": [
+          [22.405, 114.080],
+          [22.405, 114.170],
+          [22.300, 114.170],
+          [22.300, 114.080]
+        ]
+      }
+    },
+    {
+      "kind": "road",
+      "name": "geometry bridge road",
+      "lat": 22.352,
+      "lng": 114.075,
+      "radiusMeters": 450,
+      "geometry": {
+        "type": "lineString",
+        "coordinates": [
+          [22.355, 114.020],
+          [22.350, 114.130]
+        ]
+      }
+    }
+  ]
+}
+'''));
+
+      final tiles = source.buildTiles(
+        playerLatLng: const LatLng(22.35, 114.08),
+        rows: 15,
+        cols: 11,
+      );
+      final kinds = tiles.map((tile) => tile.kind).toSet();
+
+      expect(kinds, contains(TerrainKind.water));
+      expect(kinds, contains(TerrainKind.land));
+      expect(kinds, contains(TerrainKind.road));
+    });
   });
 }

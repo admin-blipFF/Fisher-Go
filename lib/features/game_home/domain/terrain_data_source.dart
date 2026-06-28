@@ -71,6 +71,7 @@ class GeoTerrainFeature {
     required this.lat,
     required this.lng,
     required this.radiusMeters,
+    this.geometry,
   });
 
   final TerrainKind kind;
@@ -78,8 +79,36 @@ class GeoTerrainFeature {
   final double lat;
   final double lng;
   final double radiusMeters;
+  final GeoTerrainGeometry? geometry;
 
   LatLng get center => LatLng(lat, lng);
+}
+
+class GeoTerrainGeometry {
+  const GeoTerrainGeometry({
+    required this.type,
+    required this.coordinates,
+  });
+
+  final String type;
+  final List<LatLng> coordinates;
+
+  bool get isPolygon => type == 'polygon';
+  bool get isLineString => type == 'lineString';
+
+  factory GeoTerrainGeometry.fromJson(Map<String, dynamic> source) {
+    final coordinatesJson = source['coordinates'] as List<dynamic>? ?? const [];
+    return GeoTerrainGeometry(
+      type: source['type'] as String,
+      coordinates: [
+        for (final coordinate in coordinatesJson)
+          LatLng(
+            ((coordinate as List<dynamic>)[0] as num).toDouble(),
+            (coordinate[1] as num).toDouble(),
+          ),
+      ],
+    );
+  }
 }
 
 class GeoTerrainDataset {
@@ -99,6 +128,11 @@ class GeoTerrainDataset {
             lat: (raw['lat'] as num).toDouble(),
             lng: (raw['lng'] as num).toDouble(),
             radiusMeters: (raw['radiusMeters'] as num).toDouble(),
+            geometry: raw['geometry'] is Map<String, dynamic>
+                ? GeoTerrainGeometry.fromJson(
+                    raw['geometry'] as Map<String, dynamic>,
+                  )
+                : null,
           ),
       ],
     );
@@ -216,8 +250,9 @@ class GeoTerrainDataSource implements TerrainDataSource {
     GeoTerrainFeature? best;
     double bestRatio = double.infinity;
     for (final feature in dataset.features.where((f) => f.kind == kind)) {
-      final distance = _distance.as(LengthUnit.Meter, point, feature.center);
-      if (distance <= feature.radiusMeters) {
+      final distance = _featureDistanceMeters(point, feature);
+      if (distance <= feature.radiusMeters ||
+          _containsGeometry(point, feature)) {
         final ratio = distance / feature.radiusMeters;
         if (ratio < bestRatio) {
           best = feature;
@@ -239,6 +274,74 @@ class GeoTerrainDataSource implements TerrainDataSource {
       }
     }
     return best;
+  }
+
+  double _featureDistanceMeters(LatLng point, GeoTerrainFeature feature) {
+    final geometry = feature.geometry;
+    if (geometry != null && geometry.isLineString) {
+      return _distanceToLineStringMeters(point, geometry.coordinates);
+    }
+    if (geometry != null &&
+        geometry.isPolygon &&
+        _pointInPolygon(point, geometry.coordinates)) {
+      return 0;
+    }
+    return _distance.as(LengthUnit.Meter, point, feature.center);
+  }
+
+  bool _containsGeometry(LatLng point, GeoTerrainFeature feature) {
+    final geometry = feature.geometry;
+    return geometry != null &&
+        geometry.isPolygon &&
+        _pointInPolygon(point, geometry.coordinates);
+  }
+
+  double _distanceToLineStringMeters(LatLng point, List<LatLng> line) {
+    if (line.length < 2) return double.infinity;
+    var best = double.infinity;
+    for (var i = 0; i < line.length - 1; i++) {
+      best =
+          math.min(best, _distanceToSegmentMeters(point, line[i], line[i + 1]));
+    }
+    return best;
+  }
+
+  double _distanceToSegmentMeters(LatLng point, LatLng a, LatLng b) {
+    const metersPerDegreeLat = 111320.0;
+    final metersPerDegreeLng =
+        111320.0 * math.cos(point.latitude * math.pi / 180);
+    final px = point.longitude * metersPerDegreeLng;
+    final py = point.latitude * metersPerDegreeLat;
+    final ax = a.longitude * metersPerDegreeLng;
+    final ay = a.latitude * metersPerDegreeLat;
+    final bx = b.longitude * metersPerDegreeLng;
+    final by = b.latitude * metersPerDegreeLat;
+    final dx = bx - ax;
+    final dy = by - ay;
+    final lengthSquared = dx * dx + dy * dy;
+    if (lengthSquared == 0) {
+      return math.sqrt(math.pow(px - ax, 2) + math.pow(py - ay, 2));
+    }
+    final t = (((px - ax) * dx + (py - ay) * dy) / lengthSquared).clamp(0, 1);
+    final cx = ax + dx * t;
+    final cy = ay + dy * t;
+    return math.sqrt(math.pow(px - cx, 2) + math.pow(py - cy, 2));
+  }
+
+  bool _pointInPolygon(LatLng point, List<LatLng> polygon) {
+    if (polygon.length < 3) return false;
+    var inside = false;
+    for (var i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+      final xi = polygon[i].longitude;
+      final yi = polygon[i].latitude;
+      final xj = polygon[j].longitude;
+      final yj = polygon[j].latitude;
+      final intersects = ((yi > point.latitude) != (yj > point.latitude)) &&
+          (point.longitude <
+              (xj - xi) * (point.latitude - yi) / (yj - yi) + xi);
+      if (intersects) inside = !inside;
+    }
+    return inside;
   }
 }
 

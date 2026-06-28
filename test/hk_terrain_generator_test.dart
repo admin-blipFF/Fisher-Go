@@ -11,15 +11,21 @@ void main() {
       sourceCsv: File(
         'data/hk_geo/hk_fishing_spots_master_all_geocoded_gov.csv',
       ).readAsStringSync(),
+      osmVectorCacheJson:
+          File('data/hk_geo/osm_vector_cache.json').readAsStringSync(),
     );
     final features = asset['features'] as List<Map<String, Object>>;
     final names = features.map((feature) => feature['name']).toSet();
     final kinds = features.map((feature) => feature['kind']).toSet();
+    final geometryFeatures =
+        features.where((feature) => feature.containsKey('geometry')).toList();
 
     expect(features.length, greaterThan(70));
     expect(
         kinds, containsAll(['water', 'land', 'road', 'pier', 'fishingNode']));
     expect(names, containsAll(['青馬大橋', '三門仔村碼頭', '長洲公眾碼頭', '跑道尾立魚位']));
+    expect(geometryFeatures.length, greaterThanOrEqualTo(6));
+    expect(names, containsAll(['OSM 汲水門水域', 'OSM 青馬主幹道']));
   });
 
   test('current bundled terrain asset matches generator output', () {
@@ -27,6 +33,8 @@ void main() {
       sourceCsv: File(
         'data/hk_geo/hk_fishing_spots_master_all_geocoded_gov.csv',
       ).readAsStringSync(),
+      osmVectorCacheJson:
+          File('data/hk_geo/osm_vector_cache.json').readAsStringSync(),
     );
     final current = jsonDecode(
       File('assets/maps/hk_terrain_mvp.json').readAsStringSync(),

@@ -3,10 +3,16 @@ import 'dart:io';
 import 'dart:math' as math;
 
 const _sourcePath = 'data/hk_geo/hk_fishing_spots_master_all_geocoded_gov.csv';
+const _osmVectorCachePath = 'data/hk_geo/osm_vector_cache.json';
 const _outputPath = 'assets/maps/hk_terrain_mvp.json';
 
-Map<String, Object> buildTerrainAsset({required String sourceCsv}) {
+Map<String, Object> buildTerrainAsset({
+  required String sourceCsv,
+  String? osmVectorCacheJson,
+}) {
   final features = <Map<String, Object>>[
+    if (osmVectorCacheJson != null)
+      ..._featuresFromOsmVectorCache(osmVectorCacheJson),
     ..._manualGameplayFeatures,
     ..._featuresFromCsv(sourceCsv),
   ];
@@ -18,7 +24,10 @@ Map<String, Object> buildTerrainAsset({required String sourceCsv}) {
   return {
     'schemaVersion': 2,
     'name': 'FisherGo Hong Kong terrain MVP',
-    'generatedFrom': _sourcePath,
+    'generatedFrom': [
+      _sourcePath,
+      if (osmVectorCacheJson != null) _osmVectorCachePath
+    ],
     'features': uniqueFeatures.values.toList(),
   };
 }
@@ -27,7 +36,11 @@ void writeTerrainAsset({
   required File source,
   required File output,
 }) {
-  final asset = buildTerrainAsset(sourceCsv: source.readAsStringSync());
+  final cache = File(_osmVectorCachePath);
+  final asset = buildTerrainAsset(
+    sourceCsv: source.readAsStringSync(),
+    osmVectorCacheJson: cache.existsSync() ? cache.readAsStringSync() : null,
+  );
   const encoder = JsonEncoder.withIndent('  ');
   output.writeAsStringSync('${encoder.convert(asset)}\n');
 }
@@ -38,6 +51,37 @@ void main() {
     output: File(_outputPath),
   );
   stdout.writeln('Generated $_outputPath from $_sourcePath');
+}
+
+List<Map<String, Object>> _featuresFromOsmVectorCache(String sourceJson) {
+  final decoded = jsonDecode(sourceJson) as Map<String, dynamic>;
+  final featuresJson = decoded['features'] as List<dynamic>? ?? const [];
+  return [
+    for (final raw in featuresJson)
+      _featureFromOsmCache(raw as Map<String, dynamic>),
+  ];
+}
+
+Map<String, Object> _featureFromOsmCache(Map<String, dynamic> raw) {
+  final geometry = raw['geometry'] as Map<String, dynamic>;
+  final coordinates = (geometry['coordinates'] as List<dynamic>)
+      .map((coordinate) => [
+            _round(((coordinate as List<dynamic>)[0] as num).toDouble()),
+            _round((coordinate[1] as num).toDouble()),
+          ])
+      .toList();
+  final center = _centerOf(coordinates);
+  return _feature(
+    kind: raw['kind'] as String,
+    name: raw['name'] as String,
+    lat: center.$1,
+    lng: center.$2,
+    radiusMeters: raw['radiusMeters'] as num,
+    geometry: {
+      'type': geometry['type'] as String,
+      'coordinates': coordinates,
+    },
+  );
 }
 
 List<Map<String, Object>> _featuresFromCsv(String sourceCsv) {
@@ -183,6 +227,7 @@ Map<String, Object> _feature({
   required double lat,
   required double lng,
   required num radiusMeters,
+  Map<String, Object>? geometry,
 }) =>
     {
       'kind': kind,
@@ -190,7 +235,19 @@ Map<String, Object> _feature({
       'lat': _round(lat),
       'lng': _round(lng),
       'radiusMeters': radiusMeters.round(),
+      if (geometry != null) 'geometry': geometry,
     };
+
+(double, double) _centerOf(List<List<double>> coordinates) {
+  if (coordinates.isEmpty) return (0, 0);
+  final lat =
+      coordinates.map((coordinate) => coordinate[0]).reduce((a, b) => a + b) /
+          coordinates.length;
+  final lng =
+      coordinates.map((coordinate) => coordinate[1]).reduce((a, b) => a + b) /
+          coordinates.length;
+  return (_round(lat), _round(lng));
+}
 
 Map<String, String> _record(List<String> header, List<String> row) {
   final result = <String, String>{};

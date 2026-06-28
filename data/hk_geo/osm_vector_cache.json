@@ -1,0 +1,202 @@
+{
+  "schemaVersion": 1,
+  "source": "OSM coastline and road vector cache MVP, simplified for FisherGo tile classification",
+  "features": [
+    {
+      "kind": "water",
+      "name": "OSM 汲水門水域",
+      "radiusMeters": 1,
+      "geometry": {
+        "type": "polygon",
+        "coordinates": [
+          [22.384, 114.018],
+          [22.383, 114.094],
+          [22.326, 114.104],
+          [22.307, 114.062],
+          [22.333, 114.016]
+        ]
+      }
+    },
+    {
+      "kind": "land",
+      "name": "OSM 馬灣陸地",
+      "radiusMeters": 1,
+      "geometry": {
+        "type": "polygon",
+        "coordinates": [
+          [22.363, 114.049],
+          [22.361, 114.069],
+          [22.344, 114.073],
+          [22.338, 114.055],
+          [22.348, 114.043]
+        ]
+      }
+    },
+    {
+      "kind": "land",
+      "name": "OSM 青衣西岸陸地",
+      "radiusMeters": 1,
+      "geometry": {
+        "type": "polygon",
+        "coordinates": [
+          [22.377, 114.089],
+          [22.367, 114.125],
+          [22.333, 114.117],
+          [22.337, 114.088]
+        ]
+      }
+    },
+    {
+      "kind": "road",
+      "name": "OSM 青馬主幹道",
+      "radiusMeters": 360,
+      "geometry": {
+        "type": "lineString",
+        "coordinates": [
+          [22.359, 114.045],
+          [22.353, 114.066],
+          [22.351, 114.083],
+          [22.354, 114.105]
+        ]
+      }
+    },
+    {
+      "kind": "water",
+      "name": "OSM 東涌跑道尾海面",
+      "radiusMeters": 1,
+      "geometry": {
+        "type": "polygon",
+        "coordinates": [
+          [22.318, 113.891],
+          [22.319, 113.978],
+          [22.270, 113.985],
+          [22.260, 113.910]
+        ]
+      }
+    },
+    {
+      "kind": "land",
+      "name": "OSM 赤鱲角跑道陸地",
+      "radiusMeters": 1,
+      "geometry": {
+        "type": "polygon",
+        "coordinates": [
+          [22.330, 113.900],
+          [22.327, 113.965],
+          [22.294, 113.960],
+          [22.296, 113.895]
+        ]
+      }
+    },
+    {
+      "kind": "road",
+      "name": "OSM 機場跑道道路",
+      "radiusMeters": 300,
+      "geometry": {
+        "type": "lineString",
+        "coordinates": [
+          [22.316, 113.909],
+          [22.309, 113.931],
+          [22.300, 113.953]
+        ]
+      }
+    },
+    {
+      "kind": "water",
+      "name": "OSM 三門仔大埔內海",
+      "radiusMeters": 1,
+      "geometry": {
+        "type": "polygon",
+        "coordinates": [
+          [22.484, 114.188],
+          [22.486, 114.244],
+          [22.440, 114.250],
+          [22.432, 114.197]
+        ]
+      }
+    },
+    {
+      "kind": "land",
+      "name": "OSM 三門仔岸線陸地",
+      "radiusMeters": 1,
+      "geometry": {
+        "type": "polygon",
+        "coordinates": [
+          [22.468, 114.205],
+          [22.467, 114.226],
+          [22.449, 114.224],
+          [22.451, 114.207]
+        ]
+      }
+    },
+    {
+      "kind": "road",
+      "name": "OSM 三門仔路網",
+      "radiusMeters": 260,
+      "geometry": {
+        "type": "lineString",
+        "coordinates": [
+          [22.455, 114.203],
+          [22.457, 114.213],
+          [22.461, 114.224]
+        ]
+      }
+    },
+    {
+      "kind": "water",
+      "name": "OSM 東水外海",
+      "radiusMeters": 1,
+      "geometry": {
+        "type": "polygon",
+        "coordinates": [
+          [22.337, 114.286],
+          [22.337, 114.383],
+          [22.270, 114.390],
+          [22.266, 114.294]
+        ]
+      }
+    },
+    {
+      "kind": "land",
+      "name": "OSM 東水礁石陸地",
+      "radiusMeters": 1,
+      "geometry": {
+        "type": "polygon",
+        "coordinates": [
+          [22.314, 114.320],
+          [22.313, 114.343],
+          [22.292, 114.344],
+          [22.291, 114.321]
+        ]
+      }
+    },
+    {
+      "kind": "water",
+      "name": "OSM 長洲外海",
+      "radiusMeters": 1,
+      "geometry": {
+        "type": "polygon",
+        "coordinates": [
+          [22.239, 113.995],
+          [22.238, 114.060],
+          [22.182, 114.062],
+          [22.180, 113.996]
+        ]
+      }
+    },
+    {
+      "kind": "land",
+      "name": "OSM 長洲陸地",
+      "radiusMeters": 1,
+      "geometry": {
+        "type": "polygon",
+        "coordinates": [
+          [22.222, 114.016],
+          [22.222, 114.040],
+          [22.198, 114.041],
+          [22.196, 114.017]
+        ]
+      }
+    }
+  ]
+}

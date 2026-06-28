@@ -205,8 +205,8 @@ class GeoTerrainDataSource implements TerrainDataSource {
   ) {
     final rowT = rows <= 1 ? 0.5 : row / (rows - 1);
     final colT = cols <= 1 ? 0.5 : col / (cols - 1);
-    const latSpan = 0.105;
-    const lngSpan = 0.135;
+    const latSpan = 0.009;
+    const lngSpan = 0.0098;
     return LatLng(
       playerLatLng.latitude + (0.5 - rowT) * latSpan,
       playerLatLng.longitude + (colT - 0.5) * lngSpan,
@@ -255,9 +255,9 @@ class GeoTerrainDataSource implements TerrainDataSource {
     double bestRatio = double.infinity;
     for (final feature in dataset.features.where((f) => f.kind == kind)) {
       final distance = _featureDistanceMeters(point, feature);
-      if (distance <= feature.radiusMeters ||
-          _containsGeometry(point, feature)) {
-        final ratio = distance / feature.radiusMeters;
+      final radius = _effectiveRadiusMeters(feature);
+      if (distance <= radius || _containsGeometry(point, feature)) {
+        final ratio = distance / radius;
         if (ratio < bestRatio) {
           best = feature;
           bestRatio = ratio;
@@ -265,6 +265,23 @@ class GeoTerrainDataSource implements TerrainDataSource {
       }
     }
     return best;
+  }
+
+  double _effectiveRadiusMeters(GeoTerrainFeature feature) {
+    if (feature.geometry != null) {
+      return switch (feature.kind) {
+        TerrainKind.road => math.min(feature.radiusMeters, 160),
+        TerrainKind.pier => math.min(feature.radiusMeters, 90),
+        TerrainKind.fishingNode => math.min(feature.radiusMeters, 95),
+        _ => feature.radiusMeters,
+      };
+    }
+    return switch (feature.kind) {
+      TerrainKind.road => math.min(feature.radiusMeters, 160),
+      TerrainKind.pier => math.min(feature.radiusMeters, 90),
+      TerrainKind.fishingNode => math.min(feature.radiusMeters, 95),
+      _ => feature.radiusMeters,
+    };
   }
 
   GeoTerrainFeature? _nearestOfKind(LatLng point, TerrainKind kind) {
@@ -420,8 +437,8 @@ class LocalTerrainDataSource implements TerrainDataSource {
   ) {
     final rowT = rows <= 1 ? 0.5 : row / (rows - 1);
     final colT = cols <= 1 ? 0.5 : col / (cols - 1);
-    const latSpan = 0.105;
-    const lngSpan = 0.135;
+    const latSpan = 0.009;
+    const lngSpan = 0.0098;
     return LatLng(
       playerLatLng.latitude + (0.5 - rowT) * latSpan,
       playerLatLng.longitude + (colT - 0.5) * lngSpan,

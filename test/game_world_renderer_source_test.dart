@@ -12,5 +12,7 @@ void main() {
 
     expect(source, isNot(contains('fishergo_overworld_imagegen_v3.png')));
     expect(source, contains('_HybridTerrainMapPainter'));
+    expect(source, contains('_mapBearingDegrees'));
+    expect(source, contains('_RotateMapButton'));
   });
 }

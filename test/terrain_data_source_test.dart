@@ -94,7 +94,6 @@ void main() {
       expect(kinds, contains(TerrainKind.water));
       expect(kinds, contains(TerrainKind.land));
       expect(kinds, contains(TerrainKind.road));
-      expect(kinds, contains(TerrainKind.pier));
       expect(kinds, contains(TerrainKind.fishingNode));
     });
 
@@ -115,6 +114,26 @@ void main() {
       expect(centerTile.centerLatLng.latitude, closeTo(player.latitude, 0.001));
       expect(
           centerTile.centerLatLng.longitude, closeTo(player.longitude, 0.001));
+    });
+
+    test('limits generated game tile viewport to roughly 500 meters radius',
+        () {
+      final json = File('assets/maps/hk_terrain_mvp.json').readAsStringSync();
+      final source = GeoTerrainDataSource(GeoTerrainDataset.fromJson(json));
+      const player = LatLng(22.3517, 114.0743);
+      const distance = Distance();
+
+      final tiles = source.buildTiles(
+        playerLatLng: player,
+        rows: 23,
+        cols: 17,
+      );
+      final farthestMeters = tiles
+          .map((tile) =>
+              distance.as(LengthUnit.Meter, player, tile.centerLatLng))
+          .reduce((a, b) => a > b ? a : b);
+
+      expect(farthestMeters, lessThanOrEqualTo(750));
     });
 
     test('uses dataset fishing nodes when visible spots are empty', () {

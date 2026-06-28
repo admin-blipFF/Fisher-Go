@@ -63,6 +63,7 @@ class _GameHomeScreenState extends State<GameHomeScreen>
   bool _isAtBoatSpot = false;
   BoatVendor? _activeBoatVendor;
   List<LatLng> _cachedBoatSpots = [];
+  double _mapBearingDegrees = 0;
   // 船家自動前進佇列
   List<_SpotDemo> _boatSpotQueue = [];
   int _boatSpotQueueIndex = -1;
@@ -659,6 +660,12 @@ class _GameHomeScreenState extends State<GameHomeScreen>
     );
   }
 
+  void _rotateMapClockwise() {
+    setState(() {
+      _mapBearingDegrees = (_mapBearingDegrees + 45) % 360;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     // 建立地圖 marker
@@ -679,6 +686,7 @@ class _GameHomeScreenState extends State<GameHomeScreen>
       playerLatLng: _playerLatLng,
       spots: visibleSpots,
       terrainDataSource: _terrainDataSource,
+      mapBearingDegrees: _mapBearingDegrees,
     );
 
     return Scaffold(
@@ -715,6 +723,14 @@ class _GameHomeScreenState extends State<GameHomeScreen>
           left: 12,
           top: MediaQuery.of(context).padding.top + 66,
           child: _PanoramaMapButton(onTap: _openPanoramaMap),
+        ),
+        Positioned(
+          left: 12,
+          top: MediaQuery.of(context).padding.top + 118,
+          child: _RotateMapButton(
+            bearingDegrees: _mapBearingDegrees,
+            onTap: _rotateMapClockwise,
+          ),
         ),
         Positioned(
           right: 12,
@@ -3272,6 +3288,7 @@ class _GameWorldMapShell extends StatelessWidget {
     required this.playerLatLng,
     required this.spots,
     required this.terrainDataSource,
+    required this.mapBearingDegrees,
   });
 
   final int spotCount;
@@ -3279,6 +3296,7 @@ class _GameWorldMapShell extends StatelessWidget {
   final LatLng playerLatLng;
   final List<_SpotDemo> spots;
   final TerrainDataSource terrainDataSource;
+  final double mapBearingDegrees;
 
   @override
   Widget build(BuildContext context) {
@@ -3291,6 +3309,7 @@ class _GameWorldMapShell extends StatelessWidget {
               playerLatLng: playerLatLng,
               spots: spots,
               terrainDataSource: terrainDataSource,
+              mapBearingDegrees: mapBearingDegrees,
             ),
             size: Size.infinite,
           ),
@@ -3344,6 +3363,58 @@ class _PanoramaMapButton extends StatelessWidget {
             ],
           ),
           child: const Icon(Icons.map, color: Color(0xFF126B82), size: 23),
+        ),
+      ),
+    );
+  }
+}
+
+class _RotateMapButton extends StatelessWidget {
+  const _RotateMapButton({
+    required this.bearingDegrees,
+    required this.onTap,
+  });
+
+  final double bearingDegrees;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Tooltip(
+      message: '旋轉地圖',
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          width: 44,
+          height: 44,
+          decoration: const BoxDecoration(
+            shape: BoxShape.circle,
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Colors.white, Color(0xFFE8FFF6)],
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black38,
+                blurRadius: 12,
+                offset: Offset(0, 6),
+              ),
+              BoxShadow(
+                color: Colors.white70,
+                blurRadius: 2,
+                offset: Offset(-1, -1),
+              ),
+            ],
+          ),
+          child: Transform.rotate(
+            angle: bearingDegrees * math.pi / 180,
+            child: const Icon(
+              Icons.explore,
+              color: Color(0xFF126B82),
+              size: 24,
+            ),
+          ),
         ),
       ),
     );
@@ -3538,21 +3609,35 @@ class _HybridTerrainMapPainter extends CustomPainter {
     required this.playerLatLng,
     required this.spots,
     required this.terrainDataSource,
+    required this.mapBearingDegrees,
   });
 
   final LatLng playerLatLng;
   final List<_SpotDemo> spots;
   final TerrainDataSource terrainDataSource;
+  final double mapBearingDegrees;
 
   @override
   void paint(Canvas canvas, Size size) {
     _drawMapBase(canvas, size);
     final tiles = _buildTiles(size);
+    canvas.save();
+    _applyMapRotation(canvas, size);
     for (final tile in tiles) {
       _drawTile(canvas, tile);
     }
     _drawFishingDataNodes(canvas, size);
+    canvas.restore();
     _drawDepthOverlay(canvas, size);
+  }
+
+  void _applyMapRotation(Canvas canvas, Size size) {
+    if (mapBearingDegrees == 0) return;
+    final center = Offset(size.width * 0.5, size.height * 0.5);
+    canvas
+      ..translate(center.dx, center.dy)
+      ..rotate(mapBearingDegrees * math.pi / 180)
+      ..translate(-center.dx, -center.dy);
   }
 
   void _drawMapBase(Canvas canvas, Size size) {
@@ -3706,8 +3791,8 @@ class _HybridTerrainMapPainter extends CustomPainter {
         ]);
       case TerrainKind.road:
         return LinearGradient(colors: [
-          const Color(0xFFE7D8A6).withValues(alpha: 0.66),
-          const Color(0xFFBBA06A).withValues(alpha: 0.52),
+          const Color(0xFFFFE7A3).withValues(alpha: 0.84),
+          const Color(0xFFD8B86F).withValues(alpha: 0.74),
         ]);
       case TerrainKind.pier:
         return LinearGradient(colors: [
@@ -3793,14 +3878,14 @@ class _HybridTerrainMapPainter extends CustomPainter {
 
   void _drawRoadTileTexture(Canvas canvas, _RenderedTerrainTile tile) {
     final edge = Paint()
-      ..color = const Color(0xFF244F55).withValues(alpha: 0.44)
+      ..color = const Color(0xFF163E47).withValues(alpha: 0.68)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 3
+      ..strokeWidth = 4.4
       ..strokeCap = StrokeCap.round;
     final center = Paint()
-      ..color = Colors.white.withValues(alpha: 0.45)
+      ..color = Colors.white.withValues(alpha: 0.78)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.2
+      ..strokeWidth = 1.7
       ..strokeCap = StrokeCap.round;
     final a = tile.center.translate(-tile.size.width * 0.3, 0);
     final b = tile.center.translate(tile.size.width * 0.3, 0);
@@ -3891,7 +3976,8 @@ class _HybridTerrainMapPainter extends CustomPainter {
   bool shouldRepaint(covariant _HybridTerrainMapPainter oldDelegate) =>
       oldDelegate.playerLatLng != playerLatLng ||
       oldDelegate.spots != spots ||
-      oldDelegate.terrainDataSource != terrainDataSource;
+      oldDelegate.terrainDataSource != terrainDataSource ||
+      oldDelegate.mapBearingDegrees != mapBearingDegrees;
 }
 
 class _GameWorldAtmospherePainter extends CustomPainter {

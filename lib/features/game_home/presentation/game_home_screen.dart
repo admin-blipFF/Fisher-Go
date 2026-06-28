@@ -3285,25 +3285,6 @@ class _GameWorldMapShell extends StatelessWidget {
     return Stack(
       fit: StackFit.expand,
       children: [
-        Image.asset(
-          'assets/maps/fishergo_overworld_imagegen_v3.png',
-          fit: BoxFit.cover,
-          alignment: Alignment.center,
-          filterQuality: FilterQuality.high,
-        ),
-        DecoratedBox(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                const Color(0xFF063642).withValues(alpha: 0.06),
-                Colors.transparent,
-                const Color(0xFF042B28).withValues(alpha: 0.16),
-              ],
-            ),
-          ),
-        ),
         IgnorePointer(
           child: CustomPaint(
             painter: _HybridTerrainMapPainter(
@@ -3565,21 +3546,85 @@ class _HybridTerrainMapPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
+    _drawMapBase(canvas, size);
     final tiles = _buildTiles(size);
     for (final tile in tiles) {
       _drawTile(canvas, tile);
     }
-    _drawRoadNetwork(canvas, size);
     _drawFishingDataNodes(canvas, size);
+    _drawDepthOverlay(canvas, size);
+  }
+
+  void _drawMapBase(Canvas canvas, Size size) {
+    final rect = Offset.zero & size;
+    canvas.drawRect(
+      rect,
+      Paint()
+        ..shader = const LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Color(0xFF72D5D0),
+            Color(0xFF35B9B2),
+            Color(0xFF52C879),
+            Color(0xFF238F65),
+          ],
+          stops: [0, 0.34, 0.58, 1],
+        ).createShader(rect),
+    );
+
+    final waterPaint = Paint()
+      ..color = const Color(0xFF0C8EA4).withValues(alpha: 0.16)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.2
+      ..strokeCap = StrokeCap.round;
+    for (var i = 0; i < 14; i++) {
+      final y = size.height * (0.08 + i * 0.055);
+      final path = Path()
+        ..moveTo(-size.width * 0.1, y)
+        ..cubicTo(
+          size.width * 0.18,
+          y - 16,
+          size.width * 0.38,
+          y + 20,
+          size.width * 0.68,
+          y - 4,
+        )
+        ..quadraticBezierTo(
+          size.width * 0.86,
+          y - 18,
+          size.width * 1.1,
+          y + 2,
+        );
+      canvas.drawPath(path, waterPaint);
+    }
+
+    final landMist = Paint()
+      ..shader = RadialGradient(
+        colors: [
+          const Color(0xFFE8F2A5).withValues(alpha: 0.16),
+          const Color(0xFFE8F2A5).withValues(alpha: 0),
+        ],
+      ).createShader(
+        Rect.fromCircle(
+          center: Offset(size.width * 0.68, size.height * 0.84),
+          radius: size.width * 0.74,
+        ),
+      );
+    canvas.drawCircle(
+      Offset(size.width * 0.68, size.height * 0.84),
+      size.width * 0.74,
+      landMist,
+    );
   }
 
   List<_RenderedTerrainTile> _buildTiles(Size size) {
     final tiles = <_RenderedTerrainTile>[];
-    final tileW = size.width * 0.22;
-    final tileH = size.height * 0.055;
-    final origin = Offset(size.width * 0.5, size.height * 0.29);
-    const rows = 15;
-    const cols = 11;
+    final tileW = size.width * 0.18;
+    final tileH = size.height * 0.062;
+    final origin = Offset(size.width * 0.5, size.height * 0.08);
+    const rows = 23;
+    const cols = 17;
     final terrainTiles = terrainDataSource.buildTiles(
       playerLatLng: playerLatLng,
       rows: rows,
@@ -3589,12 +3634,12 @@ class _HybridTerrainMapPainter extends CustomPainter {
     for (final tile in terrainTiles) {
       final row = tile.row;
       final col = tile.col;
-      final rowScale = 0.66 + row * 0.034;
+      final rowScale = 0.58 + row * 0.025;
       final centeredCol = col - (cols - 1) / 2;
       final x = origin.dx +
           centeredCol * tileW * rowScale * 0.68 +
           (row.isOdd ? tileW * rowScale * 0.34 : 0);
-      final y = origin.dy + row * tileH * 0.78;
+      final y = origin.dy + row * tileH * 0.68;
       if (x < -tileW || x > size.width + tileW || y > size.height + tileH) {
         continue;
       }
@@ -3799,31 +3844,6 @@ class _HybridTerrainMapPainter extends CustomPainter {
     );
   }
 
-  void _drawRoadNetwork(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = const Color(0xFFFFE3A2).withValues(alpha: 0.28)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = size.width * 0.018
-      ..strokeCap = StrokeCap.round;
-    final path = Path()
-      ..moveTo(size.width * 0.78, size.height * 0.17)
-      ..cubicTo(
-        size.width * 0.88,
-        size.height * 0.36,
-        size.width * 0.78,
-        size.height * 0.5,
-        size.width * 0.92,
-        size.height * 0.68,
-      )
-      ..quadraticBezierTo(
-        size.width * 0.98,
-        size.height * 0.78,
-        size.width * 0.84,
-        size.height * 0.96,
-      );
-    canvas.drawPath(path, paint);
-  }
-
   void _drawFishingDataNodes(Canvas canvas, Size size) {
     final points = terrainDataSource.projectFishingNodes([
       for (final spot in spots)
@@ -3848,6 +3868,23 @@ class _HybridTerrainMapPainter extends CustomPainter {
           ..strokeWidth = 3,
       );
     }
+  }
+
+  void _drawDepthOverlay(Canvas canvas, Size size) {
+    final rect = Offset.zero & size;
+    canvas.drawRect(
+      rect,
+      Paint()
+        ..shader = LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            const Color(0xFF062B3D).withValues(alpha: 0.08),
+            Colors.transparent,
+            const Color(0xFF031C1F).withValues(alpha: 0.28),
+          ],
+        ).createShader(rect),
+    );
   }
 
   @override

@@ -10,11 +10,13 @@ class TerrainTile {
     required this.kind,
     required this.row,
     required this.col,
+    required this.centerLatLng,
   });
 
   final TerrainKind kind;
   final int row;
   final int col;
+  final LatLng centerLatLng;
 
   @override
   bool operator ==(Object other) =>
@@ -23,10 +25,11 @@ class TerrainTile {
           runtimeType == other.runtimeType &&
           kind == other.kind &&
           row == other.row &&
-          col == other.col;
+          col == other.col &&
+          centerLatLng == other.centerLatLng;
 
   @override
-  int get hashCode => Object.hash(kind, row, col);
+  int get hashCode => Object.hash(kind, row, col, centerLatLng);
 }
 
 class TerrainFishingSpot {
@@ -175,6 +178,7 @@ class GeoTerrainDataSource implements TerrainDataSource {
                 _classifyTile(_tileLatLng(playerLatLng, row, col, rows, cols)),
             row: row,
             col: col,
+            centerLatLng: _tileLatLng(playerLatLng, row, col, rows, cols),
           ),
     ];
   }
@@ -369,6 +373,7 @@ class LocalTerrainDataSource implements TerrainDataSource {
             kind: _classifyTerrain(row, col, rows, cols, seed),
             row: row,
             col: col,
+            centerLatLng: _tileLatLng(playerLatLng, row, col, rows, cols),
           ),
     ];
   }
@@ -404,5 +409,22 @@ class LocalTerrainDataSource implements TerrainDataSource {
     if (row < coastLine) return TerrainKind.water;
     if ((row - coastLine).abs() < 1.1) return TerrainKind.shore;
     return TerrainKind.land;
+  }
+
+  LatLng _tileLatLng(
+    LatLng playerLatLng,
+    int row,
+    int col,
+    int rows,
+    int cols,
+  ) {
+    final rowT = rows <= 1 ? 0.5 : row / (rows - 1);
+    final colT = cols <= 1 ? 0.5 : col / (cols - 1);
+    const latSpan = 0.105;
+    const lngSpan = 0.135;
+    return LatLng(
+      playerLatLng.latitude + (0.5 - rowT) * latSpan,
+      playerLatLng.longitude + (colT - 0.5) * lngSpan,
+    );
   }
 }

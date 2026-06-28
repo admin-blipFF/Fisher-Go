@@ -98,6 +98,25 @@ void main() {
       expect(kinds, contains(TerrainKind.fishingNode));
     });
 
+    test('centers generated game tiles on the player GPS position', () {
+      final json = File('assets/maps/hk_terrain_mvp.json').readAsStringSync();
+      final source = GeoTerrainDataSource(GeoTerrainDataset.fromJson(json));
+      const player = LatLng(22.3517, 114.0743);
+
+      final tiles = source.buildTiles(
+        playerLatLng: player,
+        rows: 15,
+        cols: 11,
+      );
+      final centerTile = tiles.singleWhere(
+        (tile) => tile.row == 7 && tile.col == 5,
+      );
+
+      expect(centerTile.centerLatLng.latitude, closeTo(player.latitude, 0.001));
+      expect(
+          centerTile.centerLatLng.longitude, closeTo(player.longitude, 0.001));
+    });
+
     test('uses dataset fishing nodes when visible spots are empty', () {
       final json = File('assets/maps/hk_terrain_mvp.json').readAsStringSync();
       final source = GeoTerrainDataSource(GeoTerrainDataset.fromJson(json));

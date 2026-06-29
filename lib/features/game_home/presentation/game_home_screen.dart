@@ -414,6 +414,15 @@ class _GameHomeScreenState extends State<GameHomeScreen>
   }
 
   void _openMinigame() {
+    if (!_isTutorialFishing && _baitCount <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('紅蟲不足，請先到個人頁購買魚餌'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
     unawaited(_grantFirstFishingAtSpotBonus());
     _speedMultiplier = 1.0;
     _fishingController.duration = const Duration(milliseconds: 900);
@@ -674,6 +683,7 @@ class _GameHomeScreenState extends State<GameHomeScreen>
     final visibleSpots = _visibleSpots;
     final selectedSpot = _selectedSpot;
     final selectedCanOpen = selectedSpot != null && _canOpenSpot(selectedSpot);
+    final hasBait = _baitCount > 0;
     final nearestSpot = visibleSpots.isEmpty
         ? null
         : visibleSpots.reduce((a, b) =>
@@ -803,10 +813,12 @@ class _GameHomeScreenState extends State<GameHomeScreen>
             hasCurrent: false,
             pendingCount: 0,
             baitSummary: '紅蟲 x$_baitCount',
+            canFish: hasBait,
             onAddCheckpoint: () => widget.onOpenScreen(GameScreen.profile),
-            onFishNearby: (_activeBoatVendor != null ||
-                    _isAtBoatSpot ||
-                    (nearestSpot != null && _canOpenSpot(nearestSpot)))
+            onFishNearby: hasBait &&
+                    (_activeBoatVendor != null ||
+                        _isAtBoatSpot ||
+                        (nearestSpot != null && _canOpenSpot(nearestSpot)))
                 ? () {
                     if (_activeBoatVendor != null) {
                       _showBoatSpotPicker();
@@ -837,10 +849,12 @@ class _GameHomeScreenState extends State<GameHomeScreen>
                 LatLng(_selectedSpot!.lat, _selectedSpot!.lng),
               ),
               unlockRadiusMeters: _unlockRadiusMeters(_selectedSpot!),
-              canStartFishing: selectedCanOpen || _selectedSpot!.rarity == 3,
-              onStartFishing: (selectedCanOpen || _selectedSpot!.rarity == 3)
-                  ? _openMinigame
-                  : null,
+              canStartFishing:
+                  hasBait && (selectedCanOpen || _selectedSpot!.rarity == 3),
+              onStartFishing:
+                  hasBait && (selectedCanOpen || _selectedSpot!.rarity == 3)
+                      ? _openMinigame
+                      : null,
             ),
           ),
         if (_showMinigame)
@@ -3439,14 +3453,18 @@ class _RotateMapButton extends StatelessWidget {
         child: Container(
           width: 44,
           height: 44,
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             shape: BoxShape.circle,
-            gradient: LinearGradient(
+            gradient: const LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [Colors.white, Color(0xFFE8FFF6)],
+              colors: [Color(0xFF07323B), Color(0xFF126B82)],
             ),
-            boxShadow: [
+            border: Border.all(
+              color: const Color(0xFF8EF7E8).withValues(alpha: 0.85),
+              width: 1.4,
+            ),
+            boxShadow: const [
               BoxShadow(
                 color: Colors.black38,
                 blurRadius: 12,
@@ -3461,10 +3479,20 @@ class _RotateMapButton extends StatelessWidget {
           ),
           child: Transform.rotate(
             angle: bearingDegrees * math.pi / 180,
-            child: const Icon(
-              Icons.explore,
-              color: Color(0xFF126B82),
-              size: 24,
+            child: Stack(
+              alignment: Alignment.center,
+              children: const [
+                Icon(
+                  Icons.sync,
+                  color: Color(0x66FFFFFF),
+                  size: 29,
+                ),
+                Icon(
+                  Icons.explore,
+                  color: Colors.white,
+                  size: 22,
+                ),
+              ],
             ),
           ),
         ),
@@ -4598,6 +4626,7 @@ class _BottomBar extends StatelessWidget {
     required this.hasCurrent,
     required this.pendingCount,
     required this.baitSummary,
+    required this.canFish,
     required this.onAddCheckpoint,
     required this.onFishNearby,
   });
@@ -4605,11 +4634,13 @@ class _BottomBar extends StatelessWidget {
   final bool hasCurrent;
   final int pendingCount;
   final String baitSummary;
+  final bool canFish;
   final VoidCallback onAddCheckpoint;
   final VoidCallback? onFishNearby;
 
   @override
   Widget build(BuildContext context) {
+    final fishingAction = canFish ? onFishNearby : onAddCheckpoint;
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
@@ -4637,14 +4668,14 @@ class _BottomBar extends StatelessWidget {
         ),
         const SizedBox(width: 6),
         ElevatedButton.icon(
-          onPressed: onFishNearby,
+          onPressed: fishingAction,
           icon: const Icon(Icons.phishing, size: 18),
-          label: const Text('開釣'),
+          label: Text(canFish ? '開釣' : '買餌'),
           style: ElevatedButton.styleFrom(
             backgroundColor:
-                onFishNearby == null ? Colors.white24 : Colors.cyan,
+                fishingAction == null ? Colors.white24 : Colors.cyan,
             foregroundColor:
-                onFishNearby == null ? Colors.white54 : Colors.black,
+                fishingAction == null ? Colors.white54 : Colors.black,
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             shape:
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),

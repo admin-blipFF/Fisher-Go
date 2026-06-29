@@ -46,8 +46,8 @@ class GameHomeScreen extends StatefulWidget {
 
 class _GameHomeScreenState extends State<GameHomeScreen>
     with TickerProviderStateMixin {
-  // HK 地圖中心（無 GPS 權限時 fallback）
-  static const _hkTerritoryCenter = LatLng(22.3600, 114.1350);
+  // 無 GPS 權限時用青馬附近做可視 fallback，保留有道路、水域和釣點的首屏。
+  static const _hkTerritoryCenter = LatLng(22.3517, 114.0743);
 
   bool _autoMode = false;
   LatLng _playerLatLng = _hkTerritoryCenter;
@@ -79,7 +79,6 @@ class _GameHomeScreenState extends State<GameHomeScreen>
   static const int _minVisibleSpots = 8;
 
   List<_SpotDemo> get _visibleSpots {
-    if (!_hasLiveLocation) return const [];
     final withinRadius = _nearbySpots
         .where((spot) =>
             _distanceMeters(_playerLatLng, LatLng(spot.lat, spot.lng)) <=

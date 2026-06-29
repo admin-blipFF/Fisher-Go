@@ -43,31 +43,16 @@ class GameMapPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    _drawMapBase(canvas, size);
-    for (final feature in terrainFeatures) {
-      final path = _pathForFeature(feature);
-      if (path == null) continue;
-      switch (feature.kind) {
-        case TerrainKind.water:
-          _drawWaterFeature(canvas, path, feature.isClosed);
-        case TerrainKind.land:
-        case TerrainKind.shore:
-          _drawLandFeature(canvas, path, feature.isClosed);
-        case TerrainKind.road:
-          _drawRoadFeature(canvas, path);
-        case TerrainKind.pier:
-          _drawPierFeature(canvas, path);
-        case TerrainKind.fishingNode:
-          break;
-      }
-    }
-    for (final spot in fishingSpots) {
-      _drawFishingSpotGlow(canvas, spot.screenPosition);
-    }
-    _drawDepthOverlay(canvas, size);
+    _drawSeaLayer(canvas, size);
+    _drawLandLayer(canvas, size);
+    _drawCoastlineLayer(canvas, size);
+    _drawRoadLayer(canvas, size);
+    _drawPierLayer(canvas, size);
+    _drawFishingSpotLayer(canvas, size);
+    _drawAtmosphereLayer(canvas, size);
   }
 
-  void _drawMapBase(Canvas canvas, Size size) {
+  void _drawSeaLayer(Canvas canvas, Size size) {
     final rect = Offset.zero & size;
     canvas.drawRect(
       rect,
@@ -76,40 +61,227 @@ class GameMapPainter extends CustomPainter {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            Color(0xFF72D5D0),
-            Color(0xFF35B9B2),
-            Color(0xFF52C879),
-            Color(0xFF238F65),
+            Color(0xFF6BE5E0),
+            Color(0xFF28B9CC),
+            Color(0xFF1D9DB5),
+            Color(0xFF147B93),
           ],
-          stops: [0, 0.34, 0.58, 1],
+          stops: [0, 0.36, 0.72, 1],
         ).createShader(rect),
     );
 
-    final waterPaint = Paint()
-      ..color = const Color(0xFF0C8EA4).withValues(alpha: 0.16)
+    for (final feature in terrainFeatures) {
+      if (feature.kind != TerrainKind.water) continue;
+      final path = _pathForFeature(feature);
+      if (path == null) continue;
+      if (feature.isClosed) {
+        canvas.drawPath(
+          path,
+          Paint()
+            ..shader = LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                const Color(0xFF7AF5EF).withValues(alpha: 0.18),
+                const Color(0xFF036C8C).withValues(alpha: 0.42),
+              ],
+            ).createShader(path.getBounds())
+            ..style = PaintingStyle.fill,
+        );
+      }
+    }
+
+    final wavePaint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.13)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.2
+      ..strokeWidth = 1.4
       ..strokeCap = StrokeCap.round;
-    for (var i = 0; i < 14; i++) {
-      final y = size.height * (0.08 + i * 0.055);
+    for (var i = 0; i < 16; i++) {
+      final y = size.height * (0.07 + i * 0.057);
+      final xShift = (i.isEven ? -0.12 : -0.02) * size.width;
       final path = Path()
-        ..moveTo(-size.width * 0.1, y)
+        ..moveTo(xShift, y)
         ..cubicTo(
           size.width * 0.18,
-          y - 16,
+          y - 13,
           size.width * 0.38,
-          y + 20,
-          size.width * 0.68,
-          y - 4,
+          y + 16,
+          size.width * 0.64,
+          y - 3,
         )
         ..quadraticBezierTo(
-          size.width * 0.86,
+          size.width * 0.83,
           y - 18,
-          size.width * 1.1,
-          y + 2,
+          size.width * 1.14,
+          y + 4,
         );
-      canvas.drawPath(path, waterPaint);
+      canvas.drawPath(path, wavePaint);
     }
+  }
+
+  void _drawLandLayer(Canvas canvas, Size size) {
+    for (final feature in terrainFeatures) {
+      if (feature.kind != TerrainKind.land &&
+          feature.kind != TerrainKind.shore) {
+        continue;
+      }
+      final path = _pathForFeature(feature);
+      if (path == null) continue;
+      if (feature.isClosed) {
+        canvas.drawPath(
+          path,
+          Paint()
+            ..shader = LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                const Color(0xFFB7F06B).withValues(alpha: 0.62),
+                const Color(0xFF55C76B).withValues(alpha: 0.58),
+                const Color(0xFF2FAE77).withValues(alpha: 0.5),
+              ],
+            ).createShader(path.getBounds())
+            ..style = PaintingStyle.fill,
+        );
+      }
+
+      _drawLandTexture(canvas, path);
+    }
+  }
+
+  void _drawCoastlineLayer(Canvas canvas, Size size) {
+    for (final feature in terrainFeatures) {
+      if (feature.kind != TerrainKind.water &&
+          feature.kind != TerrainKind.land &&
+          feature.kind != TerrainKind.shore) {
+        continue;
+      }
+      final path = _pathForFeature(feature);
+      if (path == null) continue;
+
+      canvas.drawPath(
+        path,
+        Paint()
+          ..color = const Color(0xFFEFFFD8).withValues(alpha: 0.56)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = feature.kind == TerrainKind.water ? 2.4 : 6.0
+          ..strokeCap = StrokeCap.round
+          ..strokeJoin = StrokeJoin.round,
+      );
+      canvas.drawPath(
+        path,
+        Paint()
+          ..color = const Color(0xFF0A7284).withValues(alpha: 0.46)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = feature.kind == TerrainKind.water ? 1.2 : 2.0
+          ..strokeCap = StrokeCap.round
+          ..strokeJoin = StrokeJoin.round,
+      );
+    }
+  }
+
+  void _drawRoadLayer(Canvas canvas, Size size) {
+    for (final feature in terrainFeatures) {
+      if (feature.kind != TerrainKind.road) continue;
+      final path = _pathForFeature(feature);
+      if (path == null) continue;
+
+      canvas.drawPath(
+        path,
+        Paint()
+          ..color = const Color(0xFF0A3945).withValues(alpha: 0.72)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 9.5
+          ..strokeCap = StrokeCap.round
+          ..strokeJoin = StrokeJoin.round,
+      );
+      canvas.drawPath(
+        path,
+        Paint()
+          ..color = const Color(0xFFFFCF52).withValues(alpha: 0.92)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 5.8
+          ..strokeCap = StrokeCap.round
+          ..strokeJoin = StrokeJoin.round,
+      );
+      canvas.drawPath(
+        path,
+        Paint()
+          ..color = Colors.white.withValues(alpha: 0.76)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.4
+          ..strokeCap = StrokeCap.round
+          ..strokeJoin = StrokeJoin.round,
+      );
+    }
+  }
+
+  void _drawPierLayer(Canvas canvas, Size size) {
+    for (final feature in terrainFeatures) {
+      if (feature.kind != TerrainKind.pier) continue;
+      final path = _pathForFeature(feature);
+      if (path == null) continue;
+
+      canvas.drawPath(
+        path,
+        Paint()
+          ..color = const Color(0xFF3F2B24).withValues(alpha: 0.5)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 8
+          ..strokeCap = StrokeCap.square
+          ..strokeJoin = StrokeJoin.round,
+      );
+      canvas.drawPath(
+        path,
+        Paint()
+          ..color = const Color(0xFFC47A42).withValues(alpha: 0.78)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 5
+          ..strokeCap = StrokeCap.round
+          ..strokeJoin = StrokeJoin.round,
+      );
+      canvas.drawPath(
+        path,
+        Paint()
+          ..color = const Color(0xFFFFE6A9).withValues(alpha: 0.7)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.5
+          ..strokeCap = StrokeCap.round
+          ..strokeJoin = StrokeJoin.round,
+      );
+    }
+  }
+
+  void _drawFishingSpotLayer(Canvas canvas, Size size) {
+    for (final spot in fishingSpots) {
+      _drawFishingSpotMarker(canvas, spot.screenPosition);
+    }
+  }
+
+  void _drawAtmosphereLayer(Canvas canvas, Size size) {
+    final rect = Offset.zero & size;
+    canvas.drawRect(
+      rect,
+      Paint()
+        ..shader = LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            const Color(0xFFFFFFFF).withValues(alpha: 0.06),
+            Colors.transparent,
+            const Color(0xFF022C39).withValues(alpha: 0.28),
+          ],
+          stops: const [0, 0.48, 1],
+        ).createShader(rect),
+    );
+
+    canvas.drawCircle(
+      Offset(size.width * 0.5, size.height * 0.53),
+      size.shortestSide * 0.46,
+      Paint()
+        ..color = Colors.white.withValues(alpha: 0.08)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.1,
+    );
   }
 
   Path? _pathForFeature(TerrainVectorFeature feature) {
@@ -127,139 +299,69 @@ class GameMapPainter extends CustomPainter {
     return path;
   }
 
-  void _drawWaterFeature(Canvas canvas, Path path, bool isClosed) {
-    if (isClosed) {
-      canvas.drawPath(
-        path,
-        Paint()
-          ..color = const Color(0xFF0A7E99).withValues(alpha: 0.2)
-          ..style = PaintingStyle.fill,
-      );
+  void _drawLandTexture(Canvas canvas, Path path) {
+    final bounds = path.getBounds();
+    if (bounds.isEmpty) return;
+    final grassPaint = Paint()
+      ..color = const Color(0xFFE2FF8B).withValues(alpha: 0.16)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.2
+      ..strokeCap = StrokeCap.round;
+    for (var x = bounds.left; x < bounds.right; x += 22) {
+      final start = Offset(x, bounds.top + 10);
+      final end = Offset(x + 14, bounds.bottom - 8);
+      canvas.drawLine(start, end, grassPaint);
     }
-    canvas.drawPath(
-      path,
-      Paint()
-        ..color = const Color(0xFFE3FBFF).withValues(alpha: 0.34)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 2.2
-        ..strokeCap = StrokeCap.round
-        ..strokeJoin = StrokeJoin.round,
-    );
   }
 
-  void _drawLandFeature(Canvas canvas, Path path, bool isClosed) {
-    if (isClosed) {
-      canvas.drawPath(
-        path,
-        Paint()
-          ..color = const Color(0xFFE8F2A5).withValues(alpha: 0.16)
-          ..style = PaintingStyle.fill,
-      );
-    }
+  void _drawFishingSpotMarker(Canvas canvas, Offset center) {
     canvas.drawPath(
-      path,
+      Path()
+        ..moveTo(center.dx, center.dy - 36)
+        ..quadraticBezierTo(
+            center.dx + 18, center.dy - 28, center.dx + 9, center.dy - 10)
+        ..quadraticBezierTo(center.dx + 4, center.dy - 2, center.dx, center.dy)
+        ..quadraticBezierTo(
+            center.dx - 4, center.dy - 2, center.dx - 9, center.dy - 10)
+        ..quadraticBezierTo(
+            center.dx - 18, center.dy - 28, center.dx, center.dy - 36)
+        ..close(),
       Paint()
-        ..color = const Color(0xFFE8F8CF).withValues(alpha: 0.48)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 5
-        ..strokeCap = StrokeCap.round
-        ..strokeJoin = StrokeJoin.round,
+        ..shader = const LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Color(0xFFFFF570), Color(0xFF12D6C6)],
+        ).createShader(Rect.fromCircle(center: center, radius: 36)),
     );
-    canvas.drawPath(
-      path,
-      Paint()
-        ..color = const Color(0xFF0A6D7D).withValues(alpha: 0.48)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.8
-        ..strokeCap = StrokeCap.round
-        ..strokeJoin = StrokeJoin.round,
-    );
-  }
-
-  void _drawRoadFeature(Canvas canvas, Path path) {
-    canvas.drawPath(
-      path,
-      Paint()
-        ..color = const Color(0xFF0C3F48).withValues(alpha: 0.72)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 7
-        ..strokeCap = StrokeCap.round
-        ..strokeJoin = StrokeJoin.round,
-    );
-    canvas.drawPath(
-      path,
-      Paint()
-        ..color = const Color(0xFFFFC94A).withValues(alpha: 0.9)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 4.2
-        ..strokeCap = StrokeCap.round
-        ..strokeJoin = StrokeJoin.round,
-    );
-    canvas.drawPath(
-      path,
-      Paint()
-        ..color = Colors.white.withValues(alpha: 0.72)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.2
-        ..strokeCap = StrokeCap.round
-        ..strokeJoin = StrokeJoin.round,
-    );
-  }
-
-  void _drawPierFeature(Canvas canvas, Path path) {
-    canvas.drawPath(
-      path,
-      Paint()
-        ..color = const Color(0xFF8A4D25).withValues(alpha: 0.72)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 5
-        ..strokeCap = StrokeCap.round
-        ..strokeJoin = StrokeJoin.round,
-    );
-    canvas.drawPath(
-      path,
-      Paint()
-        ..color = const Color(0xFFFFE49A).withValues(alpha: 0.68)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.7
-        ..strokeCap = StrokeCap.round
-        ..strokeJoin = StrokeJoin.round,
-    );
-  }
-
-  void _drawFishingSpotGlow(Canvas canvas, Offset center) {
     canvas.drawCircle(
-      center,
-      24,
+      center.translate(0, -21),
+      8,
+      Paint()
+        ..color = const Color(0xFF062E38).withValues(alpha: 0.62)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 3,
+    );
+    canvas.drawCircle(
+      center.translate(0, -21),
+      27,
       Paint()
         ..shader = RadialGradient(
           colors: [
-            const Color(0xFFFFF36D).withValues(alpha: 0.48),
+            const Color(0xFFFFF36D).withValues(alpha: 0.35),
             const Color(0xFFFFF36D).withValues(alpha: 0),
           ],
-        ).createShader(Rect.fromCircle(center: center, radius: 24)),
+        ).createShader(Rect.fromCircle(center: center, radius: 27)),
     );
     canvas.drawCircle(
-      center,
-      8,
-      Paint()..color = const Color(0xFFFFF7A8).withValues(alpha: 0.74),
-    );
-  }
-
-  void _drawDepthOverlay(Canvas canvas, Size size) {
-    final rect = Offset.zero & size;
-    canvas.drawRect(
-      rect,
+      center.translate(0, 2),
+      16,
       Paint()
-        ..shader = LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
+        ..shader = RadialGradient(
           colors: [
-            const Color(0xFF062B3D).withValues(alpha: 0.08),
-            Colors.transparent,
-            const Color(0xFF031C1F).withValues(alpha: 0.28),
+            const Color(0xFFFFF36D).withValues(alpha: 0.28),
+            const Color(0xFFFFF36D).withValues(alpha: 0),
           ],
-        ).createShader(rect),
+        ).createShader(Rect.fromCircle(center: center, radius: 16)),
     );
   }
 

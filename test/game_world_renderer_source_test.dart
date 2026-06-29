@@ -22,10 +22,12 @@ void main() {
     expect(source, contains('visibleVectorFeatures'));
     expect(source, isNot(contains('_HybridTerrainMapPainter')));
     expect(rendererSource, contains('class GameMapPainter'));
-    expect(rendererSource, contains('_drawWaterFeature'));
-    expect(rendererSource, contains('_drawLandFeature'));
-    expect(rendererSource, contains('_drawRoadFeature'));
-    expect(rendererSource, contains('_drawPierFeature'));
-    expect(rendererSource, contains('_drawFishingSpotGlow'));
+    expect(rendererSource, contains('_drawSeaLayer'));
+    expect(rendererSource, contains('_drawLandLayer'));
+    expect(rendererSource, contains('_drawCoastlineLayer'));
+    expect(rendererSource, contains('_drawRoadLayer'));
+    expect(rendererSource, contains('_drawPierLayer'));
+    expect(rendererSource, contains('_drawFishingSpotLayer'));
+    expect(rendererSource, contains('_drawAtmosphereLayer'));
   });
 }

@@ -84,6 +84,56 @@ void main() {
       expect(markers.single.screenPosition.dy, closeTo(422, 8));
     });
 
+    test('keeps east fishing spot to the right after projection', () {
+      const dataset = GeoTerrainDataset(features: []);
+      const eastSpot = GameMapFishingSpot(
+        id: 'east-node',
+        name: 'East Node',
+        position: LatLng(22.3517, 114.0783),
+      );
+      final store = GameMapFeatureStore(dataset: dataset);
+      final camera = GameMapCamera(
+        center: const LatLng(22.3517, 114.0743),
+        visibleRadiusMeters: 500,
+        bearingDegrees: 0,
+        viewportSize: const Size(390, 844),
+      );
+
+      final markers = store.projectFishingSpots(
+        camera: camera,
+        spots: const [eastSpot],
+      );
+
+      expect(markers, hasLength(1));
+      expect(markers.single.screenPosition.dx, greaterThan(195));
+      expect(markers.single.screenPosition.dy, closeTo(422, 0.01));
+    });
+
+    test('bearing rotates east fishing spot below the player', () {
+      const dataset = GeoTerrainDataset(features: []);
+      const eastSpot = GameMapFishingSpot(
+        id: 'east-node',
+        name: 'East Node',
+        position: LatLng(22.3517, 114.0783),
+      );
+      final store = GameMapFeatureStore(dataset: dataset);
+      final camera = GameMapCamera(
+        center: const LatLng(22.3517, 114.0743),
+        visibleRadiusMeters: 500,
+        bearingDegrees: 90,
+        viewportSize: const Size(390, 844),
+      );
+
+      final markers = store.projectFishingSpots(
+        camera: camera,
+        spots: const [eastSpot],
+      );
+
+      expect(markers, hasLength(1));
+      expect(markers.single.screenPosition.dx, closeTo(195, 8));
+      expect(markers.single.screenPosition.dy, greaterThan(422));
+    });
+
     test('keeps long lineString visible when only its segment crosses viewport',
         () {
       const dataset = GeoTerrainDataset(

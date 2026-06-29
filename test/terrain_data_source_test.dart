@@ -215,5 +215,21 @@ void main() {
       expect(kinds, contains(TerrainKind.land));
       expect(kinds, contains(TerrainKind.road));
     });
+
+    test('exposes nearby vector geometry for game map overlays', () {
+      final json = File('assets/maps/hk_terrain_mvp.json').readAsStringSync();
+      final source = GeoTerrainDataSource(GeoTerrainDataset.fromJson(json));
+
+      final features = source.visibleVectorFeatures(
+        playerLatLng: const LatLng(22.3517, 114.0743),
+        radiusMeters: 900,
+      );
+
+      expect(
+          features.map((feature) => feature.kind), contains(TerrainKind.road));
+      expect(
+          features.map((feature) => feature.kind), contains(TerrainKind.water));
+      expect(features.every((feature) => feature.points.length >= 2), isTrue);
+    });
   });
 }

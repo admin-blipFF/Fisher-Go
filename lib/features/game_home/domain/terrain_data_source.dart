@@ -57,6 +57,20 @@ class TerrainMapPoint {
   int get hashCode => Object.hash(dx, dy);
 }
 
+class TerrainVectorFeature {
+  const TerrainVectorFeature({
+    required this.kind,
+    required this.name,
+    required this.points,
+    required this.isClosed,
+  });
+
+  final TerrainKind kind;
+  final String name;
+  final List<LatLng> points;
+  final bool isClosed;
+}
+
 abstract class TerrainDataSource {
   List<TerrainTile> buildTiles({
     required LatLng playerLatLng,
@@ -65,6 +79,11 @@ abstract class TerrainDataSource {
   });
 
   List<TerrainMapPoint> projectFishingNodes(List<TerrainFishingSpot> spots);
+
+  List<TerrainVectorFeature> visibleVectorFeatures({
+    required LatLng playerLatLng,
+    required double radiusMeters,
+  });
 }
 
 class GeoTerrainFeature {
@@ -196,6 +215,23 @@ class GeoTerrainDataSource implements TerrainDataSource {
     return _fallback.projectFishingNodes(nodes);
   }
 
+  @override
+  List<TerrainVectorFeature> visibleVectorFeatures({
+    required LatLng playerLatLng,
+    required double radiusMeters,
+  }) {
+    return [
+      for (final feature in dataset.features)
+        if (_isVisibleVectorFeature(playerLatLng, radiusMeters, feature))
+          TerrainVectorFeature(
+            kind: feature.kind,
+            name: feature.name,
+            points: feature.geometry!.coordinates,
+            isClosed: feature.geometry!.isPolygon,
+          ),
+    ];
+  }
+
   LatLng _tileLatLng(
     LatLng playerLatLng,
     int row,
@@ -265,6 +301,23 @@ class GeoTerrainDataSource implements TerrainDataSource {
       }
     }
     return best;
+  }
+
+  bool _isVisibleVectorFeature(
+    LatLng playerLatLng,
+    double radiusMeters,
+    GeoTerrainFeature feature,
+  ) {
+    final geometry = feature.geometry;
+    if (geometry == null || geometry.coordinates.length < 2) return false;
+    if (feature.kind == TerrainKind.fishingNode) return false;
+    if (_featureDistanceMeters(playerLatLng, feature) <= radiusMeters) {
+      return true;
+    }
+    return geometry.coordinates.any(
+      (point) =>
+          _distance.as(LengthUnit.Meter, playerLatLng, point) <= radiusMeters,
+    );
   }
 
   double _effectiveRadiusMeters(GeoTerrainFeature feature) {
@@ -403,6 +456,14 @@ class LocalTerrainDataSource implements TerrainDataSource {
       final dy = (1 - ((spot.lat - 22.15) / (22.58 - 22.15))).clamp(0.22, 0.82);
       return TerrainMapPoint(dx.toDouble(), dy.toDouble());
     }).toList();
+  }
+
+  @override
+  List<TerrainVectorFeature> visibleVectorFeatures({
+    required LatLng playerLatLng,
+    required double radiusMeters,
+  }) {
+    return const [];
   }
 
   TerrainKind _classifyTerrain(

@@ -3626,6 +3626,9 @@ class _HybridTerrainMapPainter extends CustomPainter {
     for (final tile in tiles) {
       _drawTile(canvas, tile);
     }
+    _drawTileCoastlineNetwork(canvas, tiles);
+    _drawTileRoadNetwork(canvas, tiles);
+    _drawTerrainVectorOverlays(canvas, size);
     _drawFishingDataNodes(canvas, size);
     canvas.restore();
     _drawDepthOverlay(canvas, size);
@@ -3735,6 +3738,235 @@ class _HybridTerrainMapPainter extends CustomPainter {
       ));
     }
     return tiles;
+  }
+
+  void _drawTileCoastlineNetwork(
+    Canvas canvas,
+    List<_RenderedTerrainTile> tiles,
+  ) {
+    final shoreTilesByRow = <int, List<_RenderedTerrainTile>>{};
+    for (final tile
+        in tiles.where((tile) => tile.data.kind == TerrainKind.shore)) {
+      shoreTilesByRow.putIfAbsent(tile.data.row, () => []).add(tile);
+    }
+    final shorePoints = [
+      for (final entry in shoreTilesByRow.entries)
+        _averageTileCenter(entry.value),
+    ]..sort((a, b) => a.dy.compareTo(b.dy));
+    if (shorePoints.length < 2) return;
+
+    final path = Path();
+    for (var i = 0; i < shorePoints.length; i++) {
+      final center = shorePoints[i];
+      if (i == 0) {
+        path.moveTo(center.dx, center.dy);
+      } else {
+        final previous = shorePoints[i - 1];
+        final control = Offset(
+          (previous.dx + center.dx) * 0.5,
+          (previous.dy + center.dy) * 0.5 - 4,
+        );
+        path.quadraticBezierTo(control.dx, control.dy, center.dx, center.dy);
+      }
+    }
+
+    canvas.drawPath(
+      path,
+      Paint()
+        ..color = const Color(0xFFEAF6C7).withValues(alpha: 0.5)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 7
+        ..strokeCap = StrokeCap.round
+        ..strokeJoin = StrokeJoin.round,
+    );
+    canvas.drawPath(
+      path,
+      Paint()
+        ..color = const Color(0xFF0C7F8C).withValues(alpha: 0.58)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2.2
+        ..strokeCap = StrokeCap.round
+        ..strokeJoin = StrokeJoin.round,
+    );
+  }
+
+  Offset _averageTileCenter(List<_RenderedTerrainTile> tiles) {
+    var x = 0.0;
+    var y = 0.0;
+    for (final tile in tiles) {
+      x += tile.center.dx;
+      y += tile.center.dy;
+    }
+    return Offset(x / tiles.length, y / tiles.length);
+  }
+
+  void _drawTileRoadNetwork(
+    Canvas canvas,
+    List<_RenderedTerrainTile> tiles,
+  ) {
+    final roadTiles =
+        tiles.where((tile) => tile.data.kind == TerrainKind.road).toList()
+          ..sort((a, b) {
+            final rowCompare = a.data.row.compareTo(b.data.row);
+            if (rowCompare != 0) return rowCompare;
+            return a.data.col.compareTo(b.data.col);
+          });
+    if (roadTiles.length < 2) return;
+
+    for (final tile in roadTiles) {
+      final next = _nearestForwardRoadTile(tile, roadTiles);
+      if (next == null) continue;
+      final path = Path()
+        ..moveTo(tile.center.dx, tile.center.dy)
+        ..lineTo(next.center.dx, next.center.dy);
+      _drawRoadVector(canvas, path);
+    }
+  }
+
+  _RenderedTerrainTile? _nearestForwardRoadTile(
+    _RenderedTerrainTile tile,
+    List<_RenderedTerrainTile> roadTiles,
+  ) {
+    _RenderedTerrainTile? best;
+    var bestDistance = double.infinity;
+    for (final candidate in roadTiles) {
+      if (candidate.data.row <= tile.data.row) continue;
+      final rowDelta = candidate.data.row - tile.data.row;
+      if (rowDelta > 2) continue;
+      final distance = (candidate.center - tile.center).distance;
+      if (distance < bestDistance && distance <= tile.size.width * 1.4) {
+        best = candidate;
+        bestDistance = distance;
+      }
+    }
+    return best;
+  }
+
+  void _drawTerrainVectorOverlays(Canvas canvas, Size size) {
+    final features = terrainDataSource.visibleVectorFeatures(
+      playerLatLng: playerLatLng,
+      radiusMeters: 900,
+    );
+    for (final feature in features) {
+      final path = _vectorPathFor(feature, size);
+      if (path == null) continue;
+      switch (feature.kind) {
+        case TerrainKind.water:
+        case TerrainKind.land:
+        case TerrainKind.shore:
+          _drawCoastlineVector(canvas, path);
+        case TerrainKind.road:
+          _drawRoadVector(canvas, path);
+        case TerrainKind.pier:
+          _drawPierVector(canvas, path);
+        case TerrainKind.fishingNode:
+          break;
+      }
+    }
+  }
+
+  Path? _vectorPathFor(TerrainVectorFeature feature, Size size) {
+    if (feature.points.length < 2) return null;
+    final path = Path();
+    var hasStarted = false;
+    for (final point in feature.points) {
+      final offset = _projectLatLngToMap(point, size);
+      if (!hasStarted) {
+        path.moveTo(offset.dx, offset.dy);
+        hasStarted = true;
+      } else {
+        path.lineTo(offset.dx, offset.dy);
+      }
+    }
+    if (feature.isClosed) path.close();
+    return path;
+  }
+
+  Offset _projectLatLngToMap(LatLng point, Size size) {
+    const latSpan = 0.009;
+    const lngSpan = 0.0098;
+    final dx =
+        ((point.longitude - (playerLatLng.longitude - lngSpan * 0.5)) / lngSpan)
+            .clamp(-0.25, 1.25);
+    final dy =
+        (((playerLatLng.latitude + latSpan * 0.5) - point.latitude) / latSpan)
+            .clamp(-0.25, 1.25);
+    final perspective = 0.86 + dy * 0.18;
+    final x = size.width * (0.5 + (dx - 0.5) * perspective);
+    final y = size.height * (0.08 + dy * 0.74);
+    return Offset(x.toDouble(), y.toDouble());
+  }
+
+  void _drawCoastlineVector(Canvas canvas, Path path) {
+    canvas.drawPath(
+      path,
+      Paint()
+        ..color = const Color(0xFFE8F8CF).withValues(alpha: 0.48)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 5
+        ..strokeCap = StrokeCap.round
+        ..strokeJoin = StrokeJoin.round,
+    );
+    canvas.drawPath(
+      path,
+      Paint()
+        ..color = const Color(0xFF0A6D7D).withValues(alpha: 0.48)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.8
+        ..strokeCap = StrokeCap.round
+        ..strokeJoin = StrokeJoin.round,
+    );
+  }
+
+  void _drawRoadVector(Canvas canvas, Path path) {
+    canvas.drawPath(
+      path,
+      Paint()
+        ..color = const Color(0xFF0C3F48).withValues(alpha: 0.72)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 11
+        ..strokeCap = StrokeCap.round
+        ..strokeJoin = StrokeJoin.round,
+    );
+    canvas.drawPath(
+      path,
+      Paint()
+        ..color = const Color(0xFFFFE195).withValues(alpha: 0.92)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 7
+        ..strokeCap = StrokeCap.round
+        ..strokeJoin = StrokeJoin.round,
+    );
+    canvas.drawPath(
+      path,
+      Paint()
+        ..color = Colors.white.withValues(alpha: 0.76)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.8
+        ..strokeCap = StrokeCap.round
+        ..strokeJoin = StrokeJoin.round,
+    );
+  }
+
+  void _drawPierVector(Canvas canvas, Path path) {
+    canvas.drawPath(
+      path,
+      Paint()
+        ..color = const Color(0xFF4F3427).withValues(alpha: 0.68)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 8
+        ..strokeCap = StrokeCap.square
+        ..strokeJoin = StrokeJoin.round,
+    );
+    canvas.drawPath(
+      path,
+      Paint()
+        ..color = const Color(0xFFFFC982).withValues(alpha: 0.78)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 4
+        ..strokeCap = StrokeCap.square
+        ..strokeJoin = StrokeJoin.round,
+    );
   }
 
   void _drawTile(Canvas canvas, _RenderedTerrainTile tile) {

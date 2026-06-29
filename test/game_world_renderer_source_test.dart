@@ -14,5 +14,9 @@ void main() {
     expect(source, contains('_HybridTerrainMapPainter'));
     expect(source, contains('_mapBearingDegrees'));
     expect(source, contains('_RotateMapButton'));
+    expect(source, contains('_drawTerrainVectorOverlays'));
+    expect(source, contains('visibleVectorFeatures'));
+    expect(source, contains('_drawTileRoadNetwork'));
+    expect(source, contains('_drawTileCoastlineNetwork'));
   });
 }

@@ -3330,6 +3330,11 @@ class _GameWorldMapShell extends StatelessWidget {
                         playerLatLng: playerLatLng,
                         radiusMeters: 900,
                       );
+              final terrainTiles = terrainDataSource.buildTiles(
+                playerLatLng: playerLatLng,
+                rows: 17,
+                cols: 13,
+              );
               final fishingSpotInputs = [
                 for (final spot in spots)
                   GameMapFishingSpot(
@@ -3354,6 +3359,7 @@ class _GameWorldMapShell extends StatelessWidget {
                   ];
               return GameMapRenderer(
                 camera: camera,
+                terrainTiles: terrainTiles,
                 terrainFeatures: terrainFeatures,
                 fishingSpots: fishingSpots,
               );

@@ -13,6 +13,7 @@ const viewport = Size(390, 780);
 void main() {
   GameMapPainter painter({
     double bearing = 0,
+    List<TerrainTile>? tiles,
     List<TerrainVectorFeature>? features,
     List<ProjectedFishingSpot>? spots,
   }) {
@@ -24,6 +25,7 @@ void main() {
     );
     return GameMapPainter(
       camera: camera,
+      terrainTiles: tiles ?? [_waterTile()],
       terrainFeatures: features ?? [_roadFeature()],
       fishingSpots: spots ?? [_projectedSpot(camera)],
     );
@@ -38,6 +40,11 @@ void main() {
 
     expect(
       painter(features: [_waterFeature()]).shouldRepaint(painter()),
+      isTrue,
+    );
+
+    expect(
+      painter(tiles: [_roadTile()]).shouldRepaint(painter()),
       isTrue,
     );
 
@@ -63,6 +70,24 @@ void main() {
       isTrue,
     );
   });
+}
+
+TerrainTile _waterTile() {
+  return const TerrainTile(
+    kind: TerrainKind.water,
+    row: 0,
+    col: 0,
+    centerLatLng: center,
+  );
+}
+
+TerrainTile _roadTile() {
+  return const TerrainTile(
+    kind: TerrainKind.road,
+    row: 0,
+    col: 0,
+    centerLatLng: center,
+  );
 }
 
 TerrainVectorFeature _roadFeature() {

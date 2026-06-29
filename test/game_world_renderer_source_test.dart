@@ -20,8 +20,11 @@ void main() {
     expect(source, contains('_mapBearingDegrees'));
     expect(source, contains('_RotateMapButton'));
     expect(source, contains('visibleVectorFeatures'));
+    expect(source, contains('terrainDataSource.buildTiles'));
+    expect(source, contains('terrainTiles: terrainTiles'));
     expect(source, isNot(contains('_HybridTerrainMapPainter')));
     expect(rendererSource, contains('class GameMapPainter'));
+    expect(rendererSource, contains('_drawFallbackTileLayer'));
     expect(rendererSource, contains('_drawSeaLayer'));
     expect(rendererSource, contains('_drawLandLayer'));
     expect(rendererSource, contains('_drawCoastlineLayer'));

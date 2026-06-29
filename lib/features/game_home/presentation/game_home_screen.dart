@@ -23,10 +23,13 @@ import '../domain/fishing_biome_rules.dart';
 import '../domain/fishing_event_rules.dart';
 import '../domain/fishing_spawn_rules.dart';
 import '../domain/fishing_strike_rules.dart';
+import '../domain/game_map_camera.dart';
+import '../domain/game_map_feature_store.dart';
 import '../domain/terrain_data_source.dart';
 import '../../navigation/game_screen.dart';
 import '../../profile/data/player_progress_service.dart';
 import '../../profile/data/profile_wallet_service.dart';
+import 'game_map_renderer.dart';
 
 /// 地圖首頁
 class GameHomeScreen extends StatefulWidget {
@@ -3304,14 +3307,58 @@ class _GameWorldMapShell extends StatelessWidget {
       fit: StackFit.expand,
       children: [
         IgnorePointer(
-          child: CustomPaint(
-            painter: _HybridTerrainMapPainter(
-              playerLatLng: playerLatLng,
-              spots: spots,
-              terrainDataSource: terrainDataSource,
-              mapBearingDegrees: mapBearingDegrees,
-            ),
-            size: Size.infinite,
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final viewportSize = Size(
+                constraints.maxWidth,
+                constraints.maxHeight,
+              );
+              final camera = GameMapCamera(
+                center: playerLatLng,
+                visibleRadiusMeters: 500,
+                bearingDegrees: mapBearingDegrees,
+                viewportSize: viewportSize,
+              );
+              final featureStore = terrainDataSource is GeoTerrainDataSource
+                  ? GameMapFeatureStore(
+                      dataset:
+                          (terrainDataSource as GeoTerrainDataSource).dataset,
+                    )
+                  : null;
+              final terrainFeatures =
+                  featureStore?.visibleTerrainFeatures(camera) ??
+                      terrainDataSource.visibleVectorFeatures(
+                        playerLatLng: playerLatLng,
+                        radiusMeters: 900,
+                      );
+              final fishingSpotInputs = [
+                for (final spot in spots)
+                  GameMapFishingSpot(
+                    id: '${spot.name}:${spot.lat}:${spot.lng}',
+                    name: spot.name,
+                    position: LatLng(spot.lat, spot.lng),
+                  ),
+              ];
+              final fishingSpots = featureStore?.projectFishingSpots(
+                    camera: camera,
+                    spots: fishingSpotInputs,
+                  ) ??
+                  [
+                    for (final spot in fishingSpotInputs)
+                      if (camera.isVisible(spot.position))
+                        ProjectedFishingSpot(
+                          id: spot.id,
+                          name: spot.name,
+                          position: spot.position,
+                          screenPosition: camera.project(spot.position),
+                        ),
+                  ];
+              return GameMapRenderer(
+                camera: camera,
+                terrainFeatures: terrainFeatures,
+                fishingSpots: fishingSpots,
+              );
+            },
           ),
         ),
         IgnorePointer(
@@ -3594,622 +3641,6 @@ class _PanoramaMapSheet extends StatelessWidget {
       ),
     );
   }
-}
-
-class _RenderedTerrainTile {
-  const _RenderedTerrainTile(this.data, this.center, this.size);
-
-  final TerrainTile data;
-  final Offset center;
-  final Size size;
-}
-
-class _HybridTerrainMapPainter extends CustomPainter {
-  const _HybridTerrainMapPainter({
-    required this.playerLatLng,
-    required this.spots,
-    required this.terrainDataSource,
-    required this.mapBearingDegrees,
-  });
-
-  final LatLng playerLatLng;
-  final List<_SpotDemo> spots;
-  final TerrainDataSource terrainDataSource;
-  final double mapBearingDegrees;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    _drawMapBase(canvas, size);
-    final tiles = _buildTiles(size);
-    canvas.save();
-    _applyMapRotation(canvas, size);
-    for (final tile in tiles) {
-      _drawTile(canvas, tile);
-    }
-    _drawTileCoastlineNetwork(canvas, tiles);
-    _drawTileRoadNetwork(canvas, tiles);
-    _drawTerrainVectorOverlays(canvas, size);
-    _drawFishingDataNodes(canvas, size);
-    canvas.restore();
-    _drawDepthOverlay(canvas, size);
-  }
-
-  void _applyMapRotation(Canvas canvas, Size size) {
-    if (mapBearingDegrees == 0) return;
-    final center = Offset(size.width * 0.5, size.height * 0.5);
-    canvas
-      ..translate(center.dx, center.dy)
-      ..rotate(mapBearingDegrees * math.pi / 180)
-      ..translate(-center.dx, -center.dy);
-  }
-
-  void _drawMapBase(Canvas canvas, Size size) {
-    final rect = Offset.zero & size;
-    canvas.drawRect(
-      rect,
-      Paint()
-        ..shader = const LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            Color(0xFF72D5D0),
-            Color(0xFF35B9B2),
-            Color(0xFF52C879),
-            Color(0xFF238F65),
-          ],
-          stops: [0, 0.34, 0.58, 1],
-        ).createShader(rect),
-    );
-
-    final waterPaint = Paint()
-      ..color = const Color(0xFF0C8EA4).withValues(alpha: 0.16)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.2
-      ..strokeCap = StrokeCap.round;
-    for (var i = 0; i < 14; i++) {
-      final y = size.height * (0.08 + i * 0.055);
-      final path = Path()
-        ..moveTo(-size.width * 0.1, y)
-        ..cubicTo(
-          size.width * 0.18,
-          y - 16,
-          size.width * 0.38,
-          y + 20,
-          size.width * 0.68,
-          y - 4,
-        )
-        ..quadraticBezierTo(
-          size.width * 0.86,
-          y - 18,
-          size.width * 1.1,
-          y + 2,
-        );
-      canvas.drawPath(path, waterPaint);
-    }
-
-    final landMist = Paint()
-      ..shader = RadialGradient(
-        colors: [
-          const Color(0xFFE8F2A5).withValues(alpha: 0.16),
-          const Color(0xFFE8F2A5).withValues(alpha: 0),
-        ],
-      ).createShader(
-        Rect.fromCircle(
-          center: Offset(size.width * 0.68, size.height * 0.84),
-          radius: size.width * 0.74,
-        ),
-      );
-    canvas.drawCircle(
-      Offset(size.width * 0.68, size.height * 0.84),
-      size.width * 0.74,
-      landMist,
-    );
-  }
-
-  List<_RenderedTerrainTile> _buildTiles(Size size) {
-    final tiles = <_RenderedTerrainTile>[];
-    final tileW = size.width * 0.18;
-    final tileH = size.height * 0.062;
-    final origin = Offset(size.width * 0.5, size.height * 0.08);
-    const rows = 23;
-    const cols = 17;
-    final terrainTiles = terrainDataSource.buildTiles(
-      playerLatLng: playerLatLng,
-      rows: rows,
-      cols: cols,
-    );
-
-    for (final tile in terrainTiles) {
-      final row = tile.row;
-      final col = tile.col;
-      final rowScale = 0.58 + row * 0.025;
-      final centeredCol = col - (cols - 1) / 2;
-      final x = origin.dx +
-          centeredCol * tileW * rowScale * 0.68 +
-          (row.isOdd ? tileW * rowScale * 0.34 : 0);
-      final y = origin.dy + row * tileH * 0.68;
-      if (x < -tileW || x > size.width + tileW || y > size.height + tileH) {
-        continue;
-      }
-      tiles.add(_RenderedTerrainTile(
-        tile,
-        Offset(x, y),
-        Size(tileW * rowScale, tileH * rowScale),
-      ));
-    }
-    return tiles;
-  }
-
-  void _drawTileCoastlineNetwork(
-    Canvas canvas,
-    List<_RenderedTerrainTile> tiles,
-  ) {
-    final shoreTilesByRow = <int, List<_RenderedTerrainTile>>{};
-    for (final tile
-        in tiles.where((tile) => tile.data.kind == TerrainKind.shore)) {
-      shoreTilesByRow.putIfAbsent(tile.data.row, () => []).add(tile);
-    }
-    final shorePoints = [
-      for (final entry in shoreTilesByRow.entries)
-        _averageTileCenter(entry.value),
-    ]..sort((a, b) => a.dy.compareTo(b.dy));
-    if (shorePoints.length < 2) return;
-
-    final path = Path();
-    for (var i = 0; i < shorePoints.length; i++) {
-      final center = shorePoints[i];
-      if (i == 0) {
-        path.moveTo(center.dx, center.dy);
-      } else {
-        final previous = shorePoints[i - 1];
-        final control = Offset(
-          (previous.dx + center.dx) * 0.5,
-          (previous.dy + center.dy) * 0.5 - 4,
-        );
-        path.quadraticBezierTo(control.dx, control.dy, center.dx, center.dy);
-      }
-    }
-
-    canvas.drawPath(
-      path,
-      Paint()
-        ..color = const Color(0xFFEAF6C7).withValues(alpha: 0.5)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 7
-        ..strokeCap = StrokeCap.round
-        ..strokeJoin = StrokeJoin.round,
-    );
-    canvas.drawPath(
-      path,
-      Paint()
-        ..color = const Color(0xFF0C7F8C).withValues(alpha: 0.58)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 2.2
-        ..strokeCap = StrokeCap.round
-        ..strokeJoin = StrokeJoin.round,
-    );
-  }
-
-  Offset _averageTileCenter(List<_RenderedTerrainTile> tiles) {
-    var x = 0.0;
-    var y = 0.0;
-    for (final tile in tiles) {
-      x += tile.center.dx;
-      y += tile.center.dy;
-    }
-    return Offset(x / tiles.length, y / tiles.length);
-  }
-
-  void _drawTileRoadNetwork(
-    Canvas canvas,
-    List<_RenderedTerrainTile> tiles,
-  ) {
-    final roadTiles =
-        tiles.where((tile) => tile.data.kind == TerrainKind.road).toList()
-          ..sort((a, b) {
-            final rowCompare = a.data.row.compareTo(b.data.row);
-            if (rowCompare != 0) return rowCompare;
-            return a.data.col.compareTo(b.data.col);
-          });
-    if (roadTiles.length < 2) return;
-
-    for (final tile in roadTiles) {
-      final next = _nearestForwardRoadTile(tile, roadTiles);
-      if (next == null) continue;
-      final path = Path()
-        ..moveTo(tile.center.dx, tile.center.dy)
-        ..lineTo(next.center.dx, next.center.dy);
-      _drawRoadVector(canvas, path);
-    }
-  }
-
-  _RenderedTerrainTile? _nearestForwardRoadTile(
-    _RenderedTerrainTile tile,
-    List<_RenderedTerrainTile> roadTiles,
-  ) {
-    _RenderedTerrainTile? best;
-    var bestDistance = double.infinity;
-    for (final candidate in roadTiles) {
-      if (candidate.data.row <= tile.data.row) continue;
-      final rowDelta = candidate.data.row - tile.data.row;
-      if (rowDelta > 2) continue;
-      final distance = (candidate.center - tile.center).distance;
-      if (distance < bestDistance && distance <= tile.size.width * 1.4) {
-        best = candidate;
-        bestDistance = distance;
-      }
-    }
-    return best;
-  }
-
-  void _drawTerrainVectorOverlays(Canvas canvas, Size size) {
-    final features = terrainDataSource.visibleVectorFeatures(
-      playerLatLng: playerLatLng,
-      radiusMeters: 900,
-    );
-    for (final feature in features) {
-      final path = _vectorPathFor(feature, size);
-      if (path == null) continue;
-      switch (feature.kind) {
-        case TerrainKind.water:
-        case TerrainKind.land:
-        case TerrainKind.shore:
-          _drawCoastlineVector(canvas, path);
-        case TerrainKind.road:
-          _drawRoadVector(canvas, path);
-        case TerrainKind.pier:
-          _drawPierVector(canvas, path);
-        case TerrainKind.fishingNode:
-          break;
-      }
-    }
-  }
-
-  Path? _vectorPathFor(TerrainVectorFeature feature, Size size) {
-    if (feature.points.length < 2) return null;
-    final path = Path();
-    var hasStarted = false;
-    for (final point in feature.points) {
-      final offset = _projectLatLngToMap(point, size);
-      if (!hasStarted) {
-        path.moveTo(offset.dx, offset.dy);
-        hasStarted = true;
-      } else {
-        path.lineTo(offset.dx, offset.dy);
-      }
-    }
-    if (feature.isClosed) path.close();
-    return path;
-  }
-
-  Offset _projectLatLngToMap(LatLng point, Size size) {
-    const latSpan = 0.009;
-    const lngSpan = 0.0098;
-    final dx =
-        ((point.longitude - (playerLatLng.longitude - lngSpan * 0.5)) / lngSpan)
-            .clamp(-0.25, 1.25);
-    final dy =
-        (((playerLatLng.latitude + latSpan * 0.5) - point.latitude) / latSpan)
-            .clamp(-0.25, 1.25);
-    final perspective = 0.86 + dy * 0.18;
-    final x = size.width * (0.5 + (dx - 0.5) * perspective);
-    final y = size.height * (0.08 + dy * 0.74);
-    return Offset(x.toDouble(), y.toDouble());
-  }
-
-  void _drawCoastlineVector(Canvas canvas, Path path) {
-    canvas.drawPath(
-      path,
-      Paint()
-        ..color = const Color(0xFFE8F8CF).withValues(alpha: 0.48)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 5
-        ..strokeCap = StrokeCap.round
-        ..strokeJoin = StrokeJoin.round,
-    );
-    canvas.drawPath(
-      path,
-      Paint()
-        ..color = const Color(0xFF0A6D7D).withValues(alpha: 0.48)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.8
-        ..strokeCap = StrokeCap.round
-        ..strokeJoin = StrokeJoin.round,
-    );
-  }
-
-  void _drawRoadVector(Canvas canvas, Path path) {
-    canvas.drawPath(
-      path,
-      Paint()
-        ..color = const Color(0xFF0C3F48).withValues(alpha: 0.72)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 11
-        ..strokeCap = StrokeCap.round
-        ..strokeJoin = StrokeJoin.round,
-    );
-    canvas.drawPath(
-      path,
-      Paint()
-        ..color = const Color(0xFFFFE195).withValues(alpha: 0.92)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 7
-        ..strokeCap = StrokeCap.round
-        ..strokeJoin = StrokeJoin.round,
-    );
-    canvas.drawPath(
-      path,
-      Paint()
-        ..color = Colors.white.withValues(alpha: 0.76)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.8
-        ..strokeCap = StrokeCap.round
-        ..strokeJoin = StrokeJoin.round,
-    );
-  }
-
-  void _drawPierVector(Canvas canvas, Path path) {
-    canvas.drawPath(
-      path,
-      Paint()
-        ..color = const Color(0xFF4F3427).withValues(alpha: 0.68)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 8
-        ..strokeCap = StrokeCap.square
-        ..strokeJoin = StrokeJoin.round,
-    );
-    canvas.drawPath(
-      path,
-      Paint()
-        ..color = const Color(0xFFFFC982).withValues(alpha: 0.78)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 4
-        ..strokeCap = StrokeCap.square
-        ..strokeJoin = StrokeJoin.round,
-    );
-  }
-
-  void _drawTile(Canvas canvas, _RenderedTerrainTile tile) {
-    final path = _diamond(tile);
-    canvas.drawPath(
-      path.shift(Offset(0, tile.size.height * 0.16)),
-      Paint()..color = const Color(0xFF052F35).withValues(alpha: 0.18),
-    );
-
-    final basePaint = Paint()
-      ..shader =
-          _terrainGradient(tile.data.kind).createShader(path.getBounds());
-    canvas.drawPath(path, basePaint);
-    canvas.drawPath(
-      path,
-      Paint()
-        ..color = Colors.white.withValues(alpha: 0.18)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 0.9,
-    );
-
-    switch (tile.data.kind) {
-      case TerrainKind.water:
-        _drawWaterTexture(canvas, tile);
-      case TerrainKind.shore:
-        _drawShoreTexture(canvas, tile);
-      case TerrainKind.land:
-        _drawLandTexture(canvas, tile);
-      case TerrainKind.road:
-        _drawRoadTileTexture(canvas, tile);
-      case TerrainKind.pier:
-        _drawPierTexture(canvas, tile);
-      case TerrainKind.fishingNode:
-        _drawFishingNodeTexture(canvas, tile);
-    }
-  }
-
-  LinearGradient _terrainGradient(TerrainKind kind) {
-    switch (kind) {
-      case TerrainKind.water:
-        return LinearGradient(colors: [
-          const Color(0xFF1BC6D5).withValues(alpha: 0.42),
-          const Color(0xFF038FB0).withValues(alpha: 0.5),
-        ]);
-      case TerrainKind.shore:
-        return LinearGradient(colors: [
-          const Color(0xFFECCB83).withValues(alpha: 0.45),
-          const Color(0xFF84D7B3).withValues(alpha: 0.36),
-        ]);
-      case TerrainKind.land:
-        return LinearGradient(colors: [
-          const Color(0xFF66C96B).withValues(alpha: 0.34),
-          const Color(0xFF2D9F59).withValues(alpha: 0.36),
-        ]);
-      case TerrainKind.road:
-        return LinearGradient(colors: [
-          const Color(0xFFFFE7A3).withValues(alpha: 0.84),
-          const Color(0xFFD8B86F).withValues(alpha: 0.74),
-        ]);
-      case TerrainKind.pier:
-        return LinearGradient(colors: [
-          const Color(0xFFC88E55).withValues(alpha: 0.72),
-          const Color(0xFF8D5E35).withValues(alpha: 0.64),
-        ]);
-      case TerrainKind.fishingNode:
-        return LinearGradient(colors: [
-          const Color(0xFFFFE66B).withValues(alpha: 0.52),
-          const Color(0xFF21D6C0).withValues(alpha: 0.34),
-        ]);
-    }
-  }
-
-  Path _diamond(_RenderedTerrainTile tile) {
-    final w = tile.size.width;
-    final h = tile.size.height;
-    final p = tile.center;
-    return Path()
-      ..moveTo(p.dx, p.dy - h * 0.52)
-      ..lineTo(p.dx + w * 0.5, p.dy)
-      ..lineTo(p.dx, p.dy + h * 0.52)
-      ..lineTo(p.dx - w * 0.5, p.dy)
-      ..close();
-  }
-
-  void _drawWaterTexture(Canvas canvas, _RenderedTerrainTile tile) {
-    final paint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.22)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.1
-      ..strokeCap = StrokeCap.round;
-    for (var i = 0; i < 3; i++) {
-      final y = tile.center.dy + (i - 1) * tile.size.height * 0.18;
-      final path = Path()
-        ..moveTo(tile.center.dx - tile.size.width * 0.22, y)
-        ..quadraticBezierTo(
-          tile.center.dx,
-          y - tile.size.height * 0.12,
-          tile.center.dx + tile.size.width * 0.22,
-          y,
-        );
-      canvas.drawPath(path, paint);
-    }
-  }
-
-  void _drawShoreTexture(Canvas canvas, _RenderedTerrainTile tile) {
-    final foamPaint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.28)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.3
-      ..strokeCap = StrokeCap.round;
-    canvas.drawLine(
-      tile.center.translate(-tile.size.width * 0.28, -tile.size.height * 0.02),
-      tile.center.translate(tile.size.width * 0.2, tile.size.height * 0.18),
-      foamPaint,
-    );
-    for (var i = 0; i < 3; i++) {
-      canvas.drawCircle(
-        tile.center.translate(
-            (i - 1) * tile.size.width * 0.14, tile.size.height * 0.08),
-        tile.size.width * 0.025,
-        Paint()..color = const Color(0xFF6E8475).withValues(alpha: 0.5),
-      );
-    }
-  }
-
-  void _drawLandTexture(Canvas canvas, _RenderedTerrainTile tile) {
-    final paint = Paint()
-      ..color = const Color(0xFFB7F47A).withValues(alpha: 0.24)
-      ..strokeWidth = 1
-      ..strokeCap = StrokeCap.round;
-    for (var i = 0; i < 4; i++) {
-      final dx = (i - 1.5) * tile.size.width * 0.09;
-      canvas.drawLine(
-        tile.center.translate(dx, tile.size.height * 0.02),
-        tile.center
-            .translate(dx + tile.size.width * 0.04, -tile.size.height * 0.12),
-        paint,
-      );
-    }
-  }
-
-  void _drawRoadTileTexture(Canvas canvas, _RenderedTerrainTile tile) {
-    final edge = Paint()
-      ..color = const Color(0xFF163E47).withValues(alpha: 0.68)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 4.4
-      ..strokeCap = StrokeCap.round;
-    final center = Paint()
-      ..color = Colors.white.withValues(alpha: 0.78)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.7
-      ..strokeCap = StrokeCap.round;
-    final a = tile.center.translate(-tile.size.width * 0.3, 0);
-    final b = tile.center.translate(tile.size.width * 0.3, 0);
-    canvas.drawLine(a, b, edge);
-    canvas.drawLine(a, b, center);
-  }
-
-  void _drawPierTexture(Canvas canvas, _RenderedTerrainTile tile) {
-    final paint = Paint()
-      ..color = const Color(0xFFFFD39B).withValues(alpha: 0.42)
-      ..strokeWidth = 1.3
-      ..strokeCap = StrokeCap.round;
-    for (var i = -2; i <= 2; i++) {
-      final dx = i * tile.size.width * 0.08;
-      canvas.drawLine(
-        tile.center.translate(dx, -tile.size.height * 0.28),
-        tile.center.translate(dx, tile.size.height * 0.28),
-        paint,
-      );
-    }
-  }
-
-  void _drawFishingNodeTexture(Canvas canvas, _RenderedTerrainTile tile) {
-    final center = tile.center;
-    canvas.drawCircle(
-      center,
-      tile.size.width * 0.18,
-      Paint()
-        ..shader = RadialGradient(
-          colors: [
-            const Color(0xFFFFF36D).withValues(alpha: 0.52),
-            const Color(0xFFFFF36D).withValues(alpha: 0),
-          ],
-        ).createShader(
-            Rect.fromCircle(center: center, radius: tile.size.width * 0.22)),
-    );
-    canvas.drawCircle(
-      center,
-      tile.size.width * 0.065,
-      Paint()..color = const Color(0xFFFFF7A8).withValues(alpha: 0.74),
-    );
-  }
-
-  void _drawFishingDataNodes(Canvas canvas, Size size) {
-    final points = terrainDataSource.projectFishingNodes([
-      for (final spot in spots)
-        TerrainFishingSpot(lat: spot.lat, lng: spot.lng),
-    ]);
-
-    for (final normalized in points) {
-      final p = Offset(size.width * normalized.dx, size.height * normalized.dy);
-      canvas.drawLine(
-        p.translate(0, -36),
-        p.translate(0, 8),
-        Paint()
-          ..color = const Color(0xFFFFF36D).withValues(alpha: 0.32)
-          ..strokeWidth = 2,
-      );
-      canvas.drawCircle(
-        p,
-        14,
-        Paint()
-          ..color = const Color(0xFF082D34).withValues(alpha: 0.52)
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 3,
-      );
-    }
-  }
-
-  void _drawDepthOverlay(Canvas canvas, Size size) {
-    final rect = Offset.zero & size;
-    canvas.drawRect(
-      rect,
-      Paint()
-        ..shader = LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            const Color(0xFF062B3D).withValues(alpha: 0.08),
-            Colors.transparent,
-            const Color(0xFF031C1F).withValues(alpha: 0.28),
-          ],
-        ).createShader(rect),
-    );
-  }
-
-  @override
-  bool shouldRepaint(covariant _HybridTerrainMapPainter oldDelegate) =>
-      oldDelegate.playerLatLng != playerLatLng ||
-      oldDelegate.spots != spots ||
-      oldDelegate.terrainDataSource != terrainDataSource ||
-      oldDelegate.mapBearingDegrees != mapBearingDegrees;
 }
 
 class _GameWorldAtmospherePainter extends CustomPainter {

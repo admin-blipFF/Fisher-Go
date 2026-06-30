@@ -61,6 +61,7 @@ class GameMapPainter extends CustomPainter {
     _drawCoastlineLayer(canvas, size);
     _drawRoadLayer(canvas, size);
     _drawPierLayer(canvas, size);
+    _drawLandmarkLabelLayer(canvas, size);
     _drawFishingSpotLayer(canvas, size);
     _drawAtmosphereLayer(canvas, size);
   }
@@ -423,6 +424,56 @@ class GameMapPainter extends CustomPainter {
     }
   }
 
+  void _drawLandmarkLabelLayer(Canvas canvas, Size size) {
+    final labels = <_MapLabel>[];
+    for (final feature in terrainFeatures) {
+      final label = _labelForFeature(feature);
+      if (label == null) continue;
+      final anchor = _featureAnchor(feature);
+      if (anchor == null) continue;
+      if (anchor.dx < 18 ||
+          anchor.dx > size.width - 18 ||
+          anchor.dy < 92 ||
+          anchor.dy > size.height - 118) {
+        continue;
+      }
+      labels.add(_MapLabel(label, _iconForFeature(feature), anchor));
+    }
+    final usedFallbackKinds = <TerrainKind>{};
+    for (final tile in terrainTiles) {
+      final label = _fallbackLabelForTile(tile);
+      if (label == null || usedFallbackKinds.contains(tile.kind)) {
+        continue;
+      }
+      if (!camera.isVisible(tile.centerLatLng, paddingMeters: 80)) {
+        continue;
+      }
+      final anchor = camera.project(tile.centerLatLng);
+      if (anchor.dx < 18 ||
+          anchor.dx > size.width - 18 ||
+          anchor.dy < 92 ||
+          anchor.dy > size.height - 118) {
+        continue;
+      }
+      usedFallbackKinds.add(tile.kind);
+      labels.add(_MapLabel(label, _iconForTile(tile), anchor));
+    }
+
+    labels.sort((a, b) => _labelPriority(a.icon).compareTo(
+          _labelPriority(b.icon),
+        ));
+
+    final occupied = <Rect>[];
+    for (final label in labels.take(7)) {
+      final rect = _labelRect(label, size);
+      if (occupied.any((other) => other.overlaps(rect.inflate(8)))) {
+        continue;
+      }
+      occupied.add(rect);
+      _drawLabelPill(canvas, label, rect);
+    }
+  }
+
   void _drawAtmosphereLayer(Canvas canvas, Size size) {
     final rect = Offset.zero & size;
     canvas.drawRect(
@@ -463,6 +514,183 @@ class GameMapPainter extends CustomPainter {
     }
     if (feature.isClosed) path.close();
     return path;
+  }
+
+  Offset? _featureAnchor(TerrainVectorFeature feature) {
+    if (feature.points.isEmpty) return null;
+    if (feature.points.length == 1) {
+      return camera.project(feature.points.single);
+    }
+    if (feature.kind == TerrainKind.road || feature.kind == TerrainKind.pier) {
+      return camera.project(feature.points[feature.points.length ~/ 2]);
+    }
+
+    var dx = 0.0;
+    var dy = 0.0;
+    for (final point in feature.points) {
+      final projected = camera.project(point);
+      dx += projected.dx;
+      dy += projected.dy;
+    }
+    return Offset(dx / feature.points.length, dy / feature.points.length);
+  }
+
+  String? _labelForFeature(TerrainVectorFeature feature) {
+    if (feature.name.isEmpty) return null;
+    return switch (feature.kind) {
+      TerrainKind.road => _shortLabel(feature.name),
+      TerrainKind.pier => _shortLabel(feature.name),
+      TerrainKind.water => _shortLabel(feature.name),
+      TerrainKind.shore => _shortLabel(feature.name),
+      TerrainKind.land => null,
+      TerrainKind.fishingNode => null,
+    };
+  }
+
+  String? _fallbackLabelForTile(TerrainTile tile) {
+    return switch (tile.kind) {
+      TerrainKind.road => '道路',
+      TerrainKind.pier => '碼頭',
+      TerrainKind.shore => '岸線',
+      TerrainKind.water => null,
+      TerrainKind.land => null,
+      TerrainKind.fishingNode => null,
+    };
+  }
+
+  String _shortLabel(String value) {
+    const maxRunes = 8;
+    final runes = value.runes.toList(growable: false);
+    if (runes.length <= maxRunes) return value;
+    return String.fromCharCodes(runes.take(maxRunes));
+  }
+
+  String _iconForFeature(TerrainVectorFeature feature) {
+    return switch (feature.kind) {
+      TerrainKind.road => '=',
+      TerrainKind.pier => '|',
+      TerrainKind.water => '~',
+      TerrainKind.shore => '.',
+      TerrainKind.land => '+',
+      TerrainKind.fishingNode => 'o',
+    };
+  }
+
+  String _iconForTile(TerrainTile tile) {
+    return switch (tile.kind) {
+      TerrainKind.road => '=',
+      TerrainKind.pier => '|',
+      TerrainKind.shore => '.',
+      TerrainKind.water => '~',
+      TerrainKind.land => '+',
+      TerrainKind.fishingNode => 'o',
+    };
+  }
+
+  int _labelPriority(String icon) {
+    return switch (icon) {
+      '=' => 0,
+      '|' => 1,
+      '~' => 2,
+      _ => 3,
+    };
+  }
+
+  Rect _labelRect(_MapLabel label, Size size) {
+    final width = 58.0 + label.text.runes.length * 9.0;
+    final clampedWidth = width.clamp(74.0, 142.0).toDouble();
+    final center = Offset(
+      label.anchor.dx
+          .clamp(
+            12 + clampedWidth * 0.5,
+            size.width - 12 - clampedWidth * 0.5,
+          )
+          .toDouble(),
+      (label.anchor.dy - 18).clamp(108.0, size.height - 132).toDouble(),
+    );
+    return Rect.fromCenter(
+      center: center,
+      width: clampedWidth,
+      height: 30,
+    );
+  }
+
+  void _drawLabelPill(Canvas canvas, _MapLabel label, Rect rect) {
+    final rrect = RRect.fromRectAndRadius(rect, const Radius.circular(15));
+    canvas.drawRRect(
+      rrect.shift(const Offset(0, 3)),
+      Paint()..color = const Color(0xFF052D37).withValues(alpha: 0.22),
+    );
+    canvas.drawRRect(
+      rrect,
+      Paint()
+        ..shader = const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xE6073640), Color(0xD90A5661)],
+        ).createShader(rect),
+    );
+    canvas.drawRRect(
+      rrect,
+      Paint()
+        ..color = const Color(0xFFE9FFF6).withValues(alpha: 0.32)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1,
+    );
+
+    final iconCenter = Offset(rect.left + 17, rect.center.dy);
+    canvas.drawCircle(
+      iconCenter,
+      10,
+      Paint()..color = const Color(0xFFFFD95E).withValues(alpha: 0.92),
+    );
+    _paintText(
+      canvas,
+      label.icon,
+      iconCenter,
+      fontSize: 12,
+      color: const Color(0xFF06323B),
+      weight: FontWeight.w800,
+      centered: true,
+    );
+    _paintText(
+      canvas,
+      label.text,
+      Offset(rect.left + 33, rect.center.dy - 7),
+      fontSize: 12,
+      color: Colors.white,
+      weight: FontWeight.w700,
+    );
+  }
+
+  void _paintText(
+    Canvas canvas,
+    String text,
+    Offset offset, {
+    required double fontSize,
+    required Color color,
+    required FontWeight weight,
+    bool centered = false,
+  }) {
+    final painter = TextPainter(
+      text: TextSpan(
+        text: text,
+        style: TextStyle(
+          color: color,
+          fontSize: fontSize,
+          fontWeight: weight,
+          height: 1,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+      maxLines: 1,
+    )..layout(maxWidth: 102);
+    painter.paint(
+      canvas,
+      centered
+          ? offset - Offset(painter.width * 0.5, painter.height * 0.5)
+          : offset,
+    );
   }
 
   void _drawLandTexture(Canvas canvas, Path path) {
@@ -599,4 +827,12 @@ class GameMapPainter extends CustomPainter {
     }
     return true;
   }
+}
+
+class _MapLabel {
+  const _MapLabel(this.text, this.icon, this.anchor);
+
+  final String text;
+  final String icon;
+  final Offset anchor;
 }

@@ -19,6 +19,8 @@ void main() {
     expect(source, contains('GameMapFeatureStore'));
     expect(source, contains('_mapBearingDegrees'));
     expect(source, contains('_RotateMapButton'));
+    expect(source, contains('_rotateMapByDrag'));
+    expect(source, contains('onHorizontalDragUpdate'));
     expect(source, contains('visibleVectorFeatures'));
     expect(source, contains('terrainDataSource.buildTiles'));
     expect(source, contains('terrainTiles: terrainTiles'));

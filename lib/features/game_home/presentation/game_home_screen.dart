@@ -677,6 +677,13 @@ class _GameHomeScreenState extends State<GameHomeScreen>
     });
   }
 
+  void _rotateMapByDrag(DragUpdateDetails details) {
+    setState(() {
+      _mapBearingDegrees = (_mapBearingDegrees + details.delta.dx * 0.45) % 360;
+      if (_mapBearingDegrees < 0) _mapBearingDegrees += 360;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     // 建立地圖 marker
@@ -703,7 +710,11 @@ class _GameHomeScreenState extends State<GameHomeScreen>
 
     return Scaffold(
       body: Stack(children: [
-        mapWorld,
+        GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onHorizontalDragUpdate: _rotateMapByDrag,
+          child: mapWorld,
+        ),
         Center(
           child: IgnorePointer(
             child: _PlayerAvatar(
@@ -3451,8 +3462,8 @@ class _RotateMapButton extends StatelessWidget {
       child: GestureDetector(
         onTap: onTap,
         child: Container(
-          width: 44,
-          height: 44,
+          width: 52,
+          height: 52,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             gradient: const LinearGradient(

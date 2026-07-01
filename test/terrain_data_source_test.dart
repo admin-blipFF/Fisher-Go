@@ -50,14 +50,11 @@ void main() {
       expect(points.first, isNot(points.last));
     });
 
-    test('provides fallback fishing nodes when no visible spots are available',
-        () {
+    test('returns no fishing nodes when no visible spots are available', () {
       const source = LocalTerrainDataSource();
       final points = source.projectFishingNodes(const []);
 
-      expect(points, hasLength(4));
-      expect(points.first.dx, 0.18);
-      expect(points.first.dy, 0.42);
+      expect(points, isEmpty);
     });
   });
 
@@ -136,17 +133,13 @@ void main() {
       expect(farthestMeters, lessThanOrEqualTo(750));
     });
 
-    test('uses dataset fishing nodes when visible spots are empty', () {
+    test('returns no dataset fishing nodes when visible spots are empty', () {
       final json = File('assets/maps/hk_terrain_mvp.json').readAsStringSync();
       final source = GeoTerrainDataSource(GeoTerrainDataset.fromJson(json));
 
       final points = source.projectFishingNodes(const []);
 
-      expect(points.length, greaterThanOrEqualTo(4));
-      for (final point in points) {
-        expect(point.dx, inInclusiveRange(0.12, 0.88));
-        expect(point.dy, inInclusiveRange(0.22, 0.82));
-      }
+      expect(points, isEmpty);
     });
 
     test('classifies terrain from polygon and line geometry', () {

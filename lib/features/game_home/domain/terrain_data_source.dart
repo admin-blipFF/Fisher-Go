@@ -204,15 +204,8 @@ class GeoTerrainDataSource implements TerrainDataSource {
 
   @override
   List<TerrainMapPoint> projectFishingNodes(List<TerrainFishingSpot> spots) {
-    if (spots.isNotEmpty) return _fallback.projectFishingNodes(spots);
-
-    final nodes = dataset.features
-        .where((feature) => feature.kind == TerrainKind.fishingNode)
-        .take(8)
-        .map(
-            (feature) => TerrainFishingSpot(lat: feature.lat, lng: feature.lng))
-        .toList();
-    return _fallback.projectFishingNodes(nodes);
+    if (spots.isEmpty) return const [];
+    return _fallback.projectFishingNodes(spots);
   }
 
   @override
@@ -422,13 +415,6 @@ class GeoTerrainDataSource implements TerrainDataSource {
 class LocalTerrainDataSource implements TerrainDataSource {
   const LocalTerrainDataSource();
 
-  static const _fallbackFishingNodes = [
-    TerrainMapPoint(0.18, 0.42),
-    TerrainMapPoint(0.36, 0.36),
-    TerrainMapPoint(0.66, 0.47),
-    TerrainMapPoint(0.76, 0.62),
-  ];
-
   @override
   List<TerrainTile> buildTiles({
     required LatLng playerLatLng,
@@ -450,7 +436,7 @@ class LocalTerrainDataSource implements TerrainDataSource {
 
   @override
   List<TerrainMapPoint> projectFishingNodes(List<TerrainFishingSpot> spots) {
-    if (spots.isEmpty) return _fallbackFishingNodes;
+    if (spots.isEmpty) return const [];
     return spots.take(6).map((spot) {
       final dx = ((spot.lng - 113.8) / (114.55 - 113.8)).clamp(0.12, 0.88);
       final dy = (1 - ((spot.lat - 22.15) / (22.58 - 22.15))).clamp(0.22, 0.82);

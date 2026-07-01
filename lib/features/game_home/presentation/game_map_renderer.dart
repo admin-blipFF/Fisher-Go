@@ -103,14 +103,6 @@ class GameMapPainter extends CustomPainter {
       tileWidth,
       tileHeight,
     );
-    for (final tile in terrainTiles) {
-      if (tile.kind != TerrainKind.fishingNode) continue;
-      if (!camera.isVisible(tile.centerLatLng, paddingMeters: 80)) {
-        continue;
-      }
-      final center = camera.project(tile.centerLatLng);
-      _drawFallbackNode(canvas, center, tileWidth);
-    }
   }
 
   void _drawSeaLayer(Canvas canvas, Size size) {
@@ -262,18 +254,27 @@ class GameMapPainter extends CustomPainter {
     canvas.drawPath(
       roadPath,
       Paint()
-        ..color = const Color(0xFF08303A).withValues(alpha: 0.58)
+        ..color = const Color(0xFF12313A).withValues(alpha: 0.82)
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 7
+        ..strokeWidth = 8.5
         ..strokeCap = StrokeCap.round
         ..strokeJoin = StrokeJoin.round,
     );
     canvas.drawPath(
       roadPath,
       Paint()
-        ..color = const Color(0xFFFFD45C).withValues(alpha: 0.68)
+        ..color = const Color(0xFFE5ECE6).withValues(alpha: 0.92)
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 4
+        ..strokeWidth = 5.2
+        ..strokeCap = StrokeCap.round
+        ..strokeJoin = StrokeJoin.round,
+    );
+    canvas.drawPath(
+      roadPath,
+      Paint()
+        ..color = const Color(0xFF88F4EF).withValues(alpha: 0.58)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.1
         ..strokeCap = StrokeCap.round
         ..strokeJoin = StrokeJoin.round,
     );
@@ -297,22 +298,6 @@ class GameMapPainter extends CustomPainter {
         paint,
       );
     }
-  }
-
-  void _drawFallbackNode(Canvas canvas, Offset center, double tileWidth) {
-    canvas.drawCircle(
-      center,
-      tileWidth * 0.18,
-      Paint()
-        ..shader = RadialGradient(
-          colors: [
-            const Color(0xFFFFF36D).withValues(alpha: 0.42),
-            const Color(0xFFFFF36D).withValues(alpha: 0),
-          ],
-        ).createShader(
-          Rect.fromCircle(center: center, radius: tileWidth * 0.18),
-        ),
-    );
   }
 
   void _drawCoastlineLayer(Canvas canvas, Size size) {
@@ -355,7 +340,7 @@ class GameMapPainter extends CustomPainter {
       canvas.drawPath(
         path,
         Paint()
-          ..color = const Color(0xFF0A3945).withValues(alpha: 0.72)
+          ..color = const Color(0xFF12313A).withValues(alpha: 0.84)
           ..style = PaintingStyle.stroke
           ..strokeWidth = 9.5
           ..strokeCap = StrokeCap.round
@@ -364,7 +349,7 @@ class GameMapPainter extends CustomPainter {
       canvas.drawPath(
         path,
         Paint()
-          ..color = const Color(0xFFFFCF52).withValues(alpha: 0.92)
+          ..color = const Color(0xFFE5ECE6).withValues(alpha: 0.95)
           ..style = PaintingStyle.stroke
           ..strokeWidth = 5.8
           ..strokeCap = StrokeCap.round
@@ -373,7 +358,7 @@ class GameMapPainter extends CustomPainter {
       canvas.drawPath(
         path,
         Paint()
-          ..color = Colors.white.withValues(alpha: 0.76)
+          ..color = const Color(0xFF88F4EF).withValues(alpha: 0.62)
           ..style = PaintingStyle.stroke
           ..strokeWidth = 1.4
           ..strokeCap = StrokeCap.round

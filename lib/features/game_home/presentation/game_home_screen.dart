@@ -46,7 +46,7 @@ class GameHomeScreen extends StatefulWidget {
 
 class _GameHomeScreenState extends State<GameHomeScreen>
     with TickerProviderStateMixin {
-  // 無 GPS 權限時用青馬附近做可視 fallback，保留有道路、水域和釣點的首屏。
+  // 無 GPS 權限時用青馬附近做可視 fallback，保留有道路、水域的首屏。
   static const _hkTerritoryCenter = LatLng(22.3517, 114.0743);
 
   bool _autoMode = false;
@@ -72,24 +72,16 @@ class _GameHomeScreenState extends State<GameHomeScreen>
   int _boatSpotQueueIndex = -1;
   Map<int, String> _boatSpotResults = {}; // index -> 'success'/'fail'
   static String? _lastMinigameResult; // tree-shaker resistant static write
-  static const double _spotDisplayRadiusMeters = 3000;
+  static const double _spotDisplayRadiusMeters = 500;
   static const double _pierUnlockRadiusMeters = 80;
   static const double _islandSeaFishingRadiusMeters = 500;
-  // 無釣點落入顯示半徑時，至少顯示最近的這麼多個，避免地圖空白。
-  static const int _minVisibleSpots = 8;
 
   List<_SpotDemo> get _visibleSpots {
-    final withinRadius = _nearbySpots
+    return _nearbySpots
         .where((spot) =>
             _distanceMeters(_playerLatLng, LatLng(spot.lat, spot.lng)) <=
             _spotDisplayRadiusMeters)
         .toList();
-    if (withinRadius.isNotEmpty) return withinRadius;
-    // Fallback：附近半徑內一個都無，顯示全港最近的 N 個，畀玩家睇到方向。
-    final sorted = [..._nearbySpots]..sort((a, b) =>
-        _distanceMeters(_playerLatLng, LatLng(a.lat, a.lng))
-            .compareTo(_distanceMeters(_playerLatLng, LatLng(b.lat, b.lng))));
-    return sorted.take(_minVisibleSpots).toList();
   }
 
   double _distanceMeters(LatLng a, LatLng b) {
@@ -655,7 +647,7 @@ class _GameHomeScreenState extends State<GameHomeScreen>
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (sheetContext) => _PanoramaMapSheet(
-        spots: _visibleSpots,
+        spots: _nearbySpots,
         playerLatLng: _playerLatLng,
         hasLiveLocation: _hasLiveLocation,
         playerAccuracyMeters: _playerAccuracyMeters,
@@ -4162,7 +4154,8 @@ class _GameWorldAtmospherePainter extends CustomPainter {
   }
 
   void _drawFishingBeacons(Canvas canvas, Size size) {
-    final count = spotCount.clamp(3, 7);
+    final count = spotCount.clamp(0, 7);
+    if (count == 0) return;
     final anchors = [
       Offset(size.width * 0.28, size.height * 0.43),
       Offset(size.width * 0.72, size.height * 0.39),

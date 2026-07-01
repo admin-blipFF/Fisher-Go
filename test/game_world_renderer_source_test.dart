@@ -19,6 +19,12 @@ void main() {
     expect(source, contains('GameMapFeatureStore'));
     expect(source, contains('_mapBearingDegrees'));
     expect(source, contains('_RotateMapButton'));
+    expect(
+        source, contains('static const double _spotDisplayRadiusMeters = 500'));
+    expect(source, isNot(contains('_minVisibleSpots')));
+    expect(source, isNot(contains('sorted.take')));
+    expect(source, contains('spotCount.clamp(0, 7)'));
+    expect(source, isNot(contains('spotCount.clamp(3, 7)')));
     expect(source, contains('_rotateMapByDrag'));
     expect(source, contains('onHorizontalDragUpdate'));
     expect(source, contains('visibleVectorFeatures'));
@@ -27,6 +33,7 @@ void main() {
     expect(source, isNot(contains('_HybridTerrainMapPainter')));
     expect(rendererSource, contains('class GameMapPainter'));
     expect(rendererSource, contains('_drawFallbackTileLayer'));
+    expect(rendererSource, isNot(contains('_drawFallbackNode')));
     expect(rendererSource, contains('_drawSeaLayer'));
     expect(rendererSource, contains('_drawLandLayer'));
     expect(rendererSource, contains('_drawCoastlineLayer'));

@@ -1,4 +1,7 @@
+import 'dart:ui' as ui;
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:latlong2/latlong.dart' hide Path;
 
 import '../domain/game_map_camera.dart';
@@ -12,7 +15,32 @@ class _ProjectedTerrainTile {
   final Offset center;
 }
 
-class GameMapRenderer extends StatelessWidget {
+class GameMapTexturePack {
+  const GameMapTexturePack({
+    this.water,
+    this.land,
+    this.shore,
+    this.road,
+  });
+
+  final ui.Image? water;
+  final ui.Image? land;
+  final ui.Image? shore;
+  final ui.Image? road;
+
+  ui.Image? imageFor(TerrainKind kind) {
+    return switch (kind) {
+      TerrainKind.water => water,
+      TerrainKind.land => land,
+      TerrainKind.shore => shore,
+      TerrainKind.road => road,
+      TerrainKind.pier => road,
+      TerrainKind.fishingNode => null,
+    };
+  }
+}
+
+class GameMapRenderer extends StatefulWidget {
   const GameMapRenderer({
     super.key,
     required this.camera,
@@ -27,13 +55,60 @@ class GameMapRenderer extends StatelessWidget {
   final List<ProjectedFishingSpot> fishingSpots;
 
   @override
+  State<GameMapRenderer> createState() => _GameMapRendererState();
+}
+
+class _GameMapRendererState extends State<GameMapRenderer> {
+  static const _waterTexture = 'assets/maps/textures/water_tile.jpg';
+  static const _landTexture = 'assets/maps/textures/land_tile.jpg';
+  static const _shoreTexture = 'assets/maps/textures/shore_tile.jpg';
+  static const _roadTexture = 'assets/maps/textures/road_tile.jpg';
+
+  GameMapTexturePack _texturePack = const GameMapTexturePack();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadTextures();
+  }
+
+  Future<void> _loadTextures() async {
+    try {
+      final textures = GameMapTexturePack(
+        water: await _loadTexture(_waterTexture),
+        land: await _loadTexture(_landTexture),
+        shore: await _loadTexture(_shoreTexture),
+        road: await _loadTexture(_roadTexture),
+      );
+      if (!mounted) return;
+      setState(() => _texturePack = textures);
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _texturePack = const GameMapTexturePack());
+    }
+  }
+
+  Future<ui.Image> _loadTexture(String assetPath) async {
+    final data = await rootBundle.load(assetPath);
+    final bytes = Uint8List.view(
+      data.buffer,
+      data.offsetInBytes,
+      data.lengthInBytes,
+    );
+    final codec = await ui.instantiateImageCodec(bytes);
+    final frame = await codec.getNextFrame();
+    return frame.image;
+  }
+
+  @override
   Widget build(BuildContext context) {
     return CustomPaint(
       painter: GameMapPainter(
-        camera: camera,
-        terrainTiles: terrainTiles,
-        terrainFeatures: terrainFeatures,
-        fishingSpots: fishingSpots,
+        camera: widget.camera,
+        terrainTiles: widget.terrainTiles,
+        terrainFeatures: widget.terrainFeatures,
+        fishingSpots: widget.fishingSpots,
+        texturePack: _texturePack,
       ),
       size: Size.infinite,
     );
@@ -46,12 +121,14 @@ class GameMapPainter extends CustomPainter {
     required this.terrainTiles,
     required this.terrainFeatures,
     required this.fishingSpots,
+    this.texturePack = const GameMapTexturePack(),
   });
 
   final GameMapCamera camera;
   final List<TerrainTile> terrainTiles;
   final List<TerrainVectorFeature> terrainFeatures;
   final List<ProjectedFishingSpot> fishingSpots;
+  final GameMapTexturePack texturePack;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -107,19 +184,30 @@ class GameMapPainter extends CustomPainter {
 
   void _drawSeaLayer(Canvas canvas, Size size) {
     final rect = Offset.zero & size;
+    final waterPaint = _texturedFillPaint(
+      TerrainKind.water,
+      rect,
+      fallbackColors: const [
+        Color(0xFF6BE5E0),
+        Color(0xFF28B9CC),
+        Color(0xFF1D9DB5),
+        Color(0xFF147B93),
+      ],
+      textureScale: 0.32,
+    );
+    canvas.drawRect(rect, waterPaint);
     canvas.drawRect(
       rect,
       Paint()
-        ..shader = const LinearGradient(
+        ..shader = LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            Color(0xFF6BE5E0),
-            Color(0xFF28B9CC),
-            Color(0xFF1D9DB5),
-            Color(0xFF147B93),
+            const Color(0xFF8EFFF7).withValues(alpha: 0.16),
+            Colors.transparent,
+            const Color(0xFF063F54).withValues(alpha: 0.34),
           ],
-          stops: [0, 0.36, 0.72, 1],
+          stops: const [0, 0.52, 1],
         ).createShader(rect),
     );
 
@@ -183,16 +271,28 @@ class GameMapPainter extends CustomPainter {
       if (feature.isClosed) {
         canvas.drawPath(
           path,
+          _texturedFillPaint(
+            feature.kind,
+            path.getBounds(),
+            fallbackColors: feature.kind == TerrainKind.shore
+                ? const [
+                    Color(0xFFEED98A),
+                    Color(0xFFB8D97B),
+                    Color(0xFF4DC88D),
+                  ]
+                : const [
+                    Color(0xFFB7F06B),
+                    Color(0xFF55C76B),
+                    Color(0xFF2FAE77),
+                  ],
+            fallbackAlpha: feature.kind == TerrainKind.shore ? 0.56 : 0.62,
+            textureScale: feature.kind == TerrainKind.shore ? 0.3 : 0.24,
+          ),
+        );
+        canvas.drawPath(
+          path,
           Paint()
-            ..shader = LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                const Color(0xFFB7F06B).withValues(alpha: 0.62),
-                const Color(0xFF55C76B).withValues(alpha: 0.58),
-                const Color(0xFF2FAE77).withValues(alpha: 0.5),
-              ],
-            ).createShader(path.getBounds())
+            ..color = const Color(0xFF154B32).withValues(alpha: 0.08)
             ..style = PaintingStyle.fill,
         );
       }
@@ -217,11 +317,16 @@ class GameMapPainter extends CustomPainter {
       );
       canvas.drawOval(
         rect,
-        Paint()
-          ..color =
-              (isShore ? const Color(0xFFEED98A) : const Color(0xFF45C772))
-                  .withValues(alpha: isShore ? 0.18 : 0.2)
-          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 12),
+        _texturedFillPaint(
+          isShore ? TerrainKind.shore : TerrainKind.land,
+          rect,
+          fallbackColors: [
+            isShore ? const Color(0xFFEED98A) : const Color(0xFF45C772),
+            isShore ? const Color(0xFF86DB8E) : const Color(0xFF2FAE77),
+          ],
+          fallbackAlpha: isShore ? 0.2 : 0.22,
+          textureScale: isShore ? 0.28 : 0.23,
+        )..maskFilter = const MaskFilter.blur(BlurStyle.normal, 12),
       );
     }
   }
@@ -262,12 +367,12 @@ class GameMapPainter extends CustomPainter {
     );
     canvas.drawPath(
       roadPath,
-      Paint()
-        ..color = const Color(0xFFE5ECE6).withValues(alpha: 0.92)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 5.2
-        ..strokeCap = StrokeCap.round
-        ..strokeJoin = StrokeJoin.round,
+      _texturedStrokePaint(
+        TerrainKind.road,
+        roadPath.getBounds(),
+        fallbackColor: const Color(0xFFE5ECE6).withValues(alpha: 0.92),
+        width: 5.2,
+      ),
     );
     canvas.drawPath(
       roadPath,
@@ -348,12 +453,12 @@ class GameMapPainter extends CustomPainter {
       );
       canvas.drawPath(
         path,
-        Paint()
-          ..color = const Color(0xFFE5ECE6).withValues(alpha: 0.95)
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 5.8
-          ..strokeCap = StrokeCap.round
-          ..strokeJoin = StrokeJoin.round,
+        _texturedStrokePaint(
+          TerrainKind.road,
+          path.getBounds(),
+          fallbackColor: const Color(0xFFE5ECE6).withValues(alpha: 0.95),
+          width: 5.8,
+        ),
       );
       canvas.drawPath(
         path,
@@ -693,6 +798,60 @@ class GameMapPainter extends CustomPainter {
     }
   }
 
+  Paint _texturedFillPaint(
+    TerrainKind kind,
+    Rect rect, {
+    required List<Color> fallbackColors,
+    double fallbackAlpha = 1,
+    double textureScale = 0.28,
+  }) {
+    final image = texturePack.imageFor(kind);
+    if (image == null) {
+      return Paint()
+        ..shader = LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            for (final color in fallbackColors)
+              color.withValues(alpha: fallbackAlpha),
+          ],
+        ).createShader(rect)
+        ..style = PaintingStyle.fill;
+    }
+    return Paint()
+      ..shader = ui.ImageShader(
+        image,
+        ui.TileMode.repeated,
+        ui.TileMode.repeated,
+        Matrix4.diagonal3Values(textureScale, textureScale, 1).storage,
+      )
+      ..style = PaintingStyle.fill;
+  }
+
+  Paint _texturedStrokePaint(
+    TerrainKind kind,
+    Rect rect, {
+    required Color fallbackColor,
+    required double width,
+  }) {
+    final image = texturePack.imageFor(kind);
+    final paint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = width
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+    if (image == null) {
+      return paint..color = fallbackColor;
+    }
+    return paint
+      ..shader = ui.ImageShader(
+        image,
+        ui.TileMode.repeated,
+        ui.TileMode.repeated,
+        Matrix4.diagonal3Values(0.42, 0.42, 1).storage,
+      );
+  }
+
   void _drawFishingSpotMarker(Canvas canvas, Offset center) {
     canvas.drawPath(
       Path()
@@ -749,7 +908,8 @@ class GameMapPainter extends CustomPainter {
       !_sameCamera(oldDelegate.camera, camera) ||
       !_sameTerrainTiles(oldDelegate.terrainTiles, terrainTiles) ||
       !_sameTerrainFeatures(oldDelegate.terrainFeatures, terrainFeatures) ||
-      !_sameFishingSpots(oldDelegate.fishingSpots, fishingSpots);
+      !_sameFishingSpots(oldDelegate.fishingSpots, fishingSpots) ||
+      oldDelegate.texturePack != texturePack;
 
   bool _sameCamera(GameMapCamera a, GameMapCamera b) =>
       a.center.latitude == b.center.latitude &&

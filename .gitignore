@@ -7,6 +7,7 @@
 build/
 coverage/
 .env
+vectorengine.env
 *.iml
 .idea/
 .vscode/

@@ -122,6 +122,7 @@ class _GameHomeScreenState extends State<GameHomeScreen>
             false,
           ),
         ),
+    ..._developerTestSpots,
     ..._verifiedIslandRockSpots,
   ];
 
@@ -3251,6 +3252,10 @@ const List<_SpotDemo> _verifiedIslandRockSpots = [
   _SpotDemo(22.5325825, 114.2804494, 'Tsing Chau', 4, true),
   _SpotDemo(22.4564581, 114.2583046, '東頭洲', 4, true),
   _SpotDemo(22.4457681, 114.1785585, '元洲仔', 4, true),
+];
+
+const List<_SpotDemo> _developerTestSpots = [
+  _SpotDemo(22.3819, 114.1874, '沙田希爾頓中心測試釣點', 1, false),
 ];
 
 class _RadarGridPainter extends CustomPainter {

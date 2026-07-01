@@ -41,5 +41,6 @@ flutter:
     - assets/fish/icons/silhouettes/
     - assets/avatar/layers/
     - assets/maps/
+    - assets/maps/textures/
     - assets/fishing/
     - assets/minigame/

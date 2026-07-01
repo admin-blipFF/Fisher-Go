@@ -12,6 +12,7 @@ void main() {
     final rendererSource = File(
       'lib/features/game_home/presentation/game_map_renderer.dart',
     ).readAsStringSync();
+    final pubspecSource = File('pubspec.yaml').readAsStringSync();
 
     expect(source, isNot(contains('fishergo_overworld_imagegen_v3.png')));
     expect(source, contains('GameMapRenderer'));
@@ -30,8 +31,17 @@ void main() {
     expect(source, contains('visibleVectorFeatures'));
     expect(source, contains('terrainDataSource.buildTiles'));
     expect(source, contains('terrainTiles: terrainTiles'));
+    expect(source, contains('_developerTestSpots'));
+    expect(source, contains('沙田希爾頓中心測試釣點'));
     expect(source, isNot(contains('_HybridTerrainMapPainter')));
     expect(rendererSource, contains('class GameMapPainter'));
+    expect(rendererSource, contains('GameMapTexturePack'));
+    expect(rendererSource, contains('assets/maps/textures/water_tile.jpg'));
+    expect(rendererSource, contains('assets/maps/textures/land_tile.jpg'));
+    expect(rendererSource, contains('assets/maps/textures/shore_tile.jpg'));
+    expect(rendererSource, contains('assets/maps/textures/road_tile.jpg'));
+    expect(rendererSource, contains('ImageShader'));
+    expect(pubspecSource, contains('assets/maps/textures/'));
     expect(rendererSource, contains('_drawFallbackTileLayer'));
     expect(rendererSource, isNot(contains('_drawFallbackNode')));
     expect(rendererSource, contains('_drawSeaLayer'));

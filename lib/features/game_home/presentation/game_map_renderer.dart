@@ -193,7 +193,7 @@ class GameMapPainter extends CustomPainter {
         Color(0xFF1D9DB5),
         Color(0xFF147B93),
       ],
-      textureScale: 0.32,
+      textureScale: 1.15,
     );
     canvas.drawRect(rect, waterPaint);
     canvas.drawRect(

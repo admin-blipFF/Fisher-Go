@@ -59,9 +59,14 @@ void main() {
     expect(rendererSource, contains('_drawFallbackTileLayer'));
     expect(rendererSource, isNot(contains('_drawFallbackNode')));
     expect(rendererSource, contains('_drawSeaLayer'));
+    expect(rendererSource, contains('_drawTileMeshLayer'));
+    expect(rendererSource, contains('_drawTerrainTileSeam'));
+    expect(rendererSource, contains('_drawCoastlineGlowLayer'));
     expect(rendererSource, contains('_drawLandLayer'));
     expect(rendererSource, contains('_drawCoastlineLayer'));
     expect(rendererSource, contains('_drawRoadLayer'));
+    expect(rendererSource, contains('_drawRoadCasing'));
+    expect(rendererSource, contains('_drawRoadCenterHighlight'));
     expect(rendererSource, contains('_drawPierLayer'));
     expect(rendererSource, contains('_drawLandmarkLabelLayer'));
     expect(rendererSource, contains('_drawFishingSpotLayer'));

@@ -134,7 +134,9 @@ class GameMapPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     _drawSeaLayer(canvas, size);
     _drawFallbackTileLayer(canvas, size);
+    _drawTileMeshLayer(canvas, size);
     _drawLandLayer(canvas, size);
+    _drawCoastlineGlowLayer(canvas, size);
     _drawCoastlineLayer(canvas, size);
     _drawRoadLayer(canvas, size);
     _drawPierLayer(canvas, size);
@@ -258,6 +260,54 @@ class GameMapPainter extends CustomPainter {
         );
       canvas.drawPath(path, wavePaint);
     }
+  }
+
+  void _drawTileMeshLayer(Canvas canvas, Size size) {
+    if (terrainTiles.isEmpty) return;
+    final tileWidth = camera.viewportSize.shortestSide / 7.2;
+    final tileHeight = camera.viewportSize.shortestSide / 10.5;
+    for (final tile in terrainTiles) {
+      if (!camera.isVisible(tile.centerLatLng, paddingMeters: 80)) continue;
+      final center = camera.project(tile.centerLatLng);
+      _drawTerrainTileSeam(
+        canvas,
+        center: center,
+        width: tileWidth,
+        height: tileHeight,
+        kind: tile.kind,
+      );
+    }
+  }
+
+  void _drawTerrainTileSeam(
+    Canvas canvas, {
+    required Offset center,
+    required double width,
+    required double height,
+    required TerrainKind kind,
+  }) {
+    if (kind == TerrainKind.fishingNode) return;
+    final path = Path()
+      ..moveTo(center.dx, center.dy - height * 0.5)
+      ..lineTo(center.dx + width * 0.5, center.dy)
+      ..lineTo(center.dx, center.dy + height * 0.5)
+      ..lineTo(center.dx - width * 0.5, center.dy)
+      ..close();
+    final isWater = kind == TerrainKind.water;
+    final isRoad = kind == TerrainKind.road || kind == TerrainKind.pier;
+    final lineColor = isRoad
+        ? const Color(0xFF062E38).withValues(alpha: 0.2)
+        : isWater
+            ? const Color(0xFFB8FFF7).withValues(alpha: 0.08)
+            : const Color(0xFFE8FFB8).withValues(alpha: 0.14);
+    canvas.drawPath(
+      path,
+      Paint()
+        ..color = lineColor
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = isRoad ? 0.9 : 0.7
+        ..strokeJoin = StrokeJoin.round,
+    );
   }
 
   void _drawLandLayer(Canvas canvas, Size size) {
@@ -436,40 +486,89 @@ class GameMapPainter extends CustomPainter {
     }
   }
 
+  void _drawCoastlineGlowLayer(Canvas canvas, Size size) {
+    for (final feature in terrainFeatures) {
+      if (feature.kind != TerrainKind.water &&
+          feature.kind != TerrainKind.land &&
+          feature.kind != TerrainKind.shore) {
+        continue;
+      }
+      final path = _pathForFeature(feature);
+      if (path == null) continue;
+      canvas.drawPath(
+        path,
+        Paint()
+          ..color = const Color(0xFFBAFFF3).withValues(alpha: 0.2)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = feature.kind == TerrainKind.water ? 8 : 12
+          ..strokeCap = StrokeCap.round
+          ..strokeJoin = StrokeJoin.round
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8),
+      );
+    }
+  }
+
   void _drawRoadLayer(Canvas canvas, Size size) {
     for (final feature in terrainFeatures) {
       if (feature.kind != TerrainKind.road) continue;
       final path = _pathForFeature(feature);
       if (path == null) continue;
 
-      canvas.drawPath(
-        path,
-        Paint()
-          ..color = const Color(0xFF12313A).withValues(alpha: 0.84)
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 9.5
-          ..strokeCap = StrokeCap.round
-          ..strokeJoin = StrokeJoin.round,
-      );
+      _drawRoadCasing(canvas, path, width: 12.5);
       canvas.drawPath(
         path,
         _texturedStrokePaint(
           TerrainKind.road,
           path.getBounds(),
-          fallbackColor: const Color(0xFFE5ECE6).withValues(alpha: 0.95),
-          width: 5.8,
+          fallbackColor: const Color(0xFFE5ECE6).withValues(alpha: 0.96),
+          width: 6.6,
         ),
       );
-      canvas.drawPath(
-        path,
-        Paint()
-          ..color = const Color(0xFF88F4EF).withValues(alpha: 0.62)
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 1.4
-          ..strokeCap = StrokeCap.round
-          ..strokeJoin = StrokeJoin.round,
-      );
+      _drawRoadCenterHighlight(canvas, path);
     }
+  }
+
+  void _drawRoadCasing(Canvas canvas, Path path, {required double width}) {
+    canvas.drawPath(
+      path,
+      Paint()
+        ..color = const Color(0xFF052B35).withValues(alpha: 0.74)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = width
+        ..strokeCap = StrokeCap.round
+        ..strokeJoin = StrokeJoin.round,
+    );
+    canvas.drawPath(
+      path,
+      Paint()
+        ..color = const Color(0xFFBFF9EF).withValues(alpha: 0.2)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = width + 4
+        ..strokeCap = StrokeCap.round
+        ..strokeJoin = StrokeJoin.round
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 5),
+    );
+  }
+
+  void _drawRoadCenterHighlight(Canvas canvas, Path path) {
+    canvas.drawPath(
+      path,
+      Paint()
+        ..color = const Color(0xFFFFFFFF).withValues(alpha: 0.66)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.2
+        ..strokeCap = StrokeCap.round
+        ..strokeJoin = StrokeJoin.round,
+    );
+    canvas.drawPath(
+      path,
+      Paint()
+        ..color = const Color(0xFF40DAD2).withValues(alpha: 0.34)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2.2
+        ..strokeCap = StrokeCap.round
+        ..strokeJoin = StrokeJoin.round,
+    );
   }
 
   void _drawPierLayer(Canvas canvas, Size size) {

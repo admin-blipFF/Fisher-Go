@@ -6,6 +6,7 @@ import '../domain/game_shop_item.dart';
 
 class ProfileWalletService {
   static String get _profileBoxName => LocalAccountService.profileBoxName;
+  static String get profileBoxName => _profileBoxName;
   static const _defaultCoins = 500;
 
   /// Cloud-first coin balance. Reads Supabase first, falls back to Hive cache.

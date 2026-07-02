@@ -29,6 +29,7 @@ import '../domain/terrain_data_source.dart';
 import '../../navigation/game_screen.dart';
 import '../../profile/data/player_progress_service.dart';
 import '../../profile/data/profile_wallet_service.dart';
+import '../../profile/presentation/profile_screen.dart';
 import 'game_map_renderer.dart';
 
 /// 地圖首頁
@@ -67,6 +68,7 @@ class _GameHomeScreenState extends State<GameHomeScreen>
   BoatVendor? _activeBoatVendor;
   List<LatLng> _cachedBoatSpots = [];
   double _mapBearingDegrees = 0;
+  _MapAvatarSnapshot _avatarSnapshot = _MapAvatarSnapshot.initial();
   // 船家自動前進佇列
   List<_SpotDemo> _boatSpotQueue = [];
   int _boatSpotQueueIndex = -1;
@@ -126,7 +128,7 @@ class _GameHomeScreenState extends State<GameHomeScreen>
     ..._verifiedIslandRockSpots,
   ];
 
-  Map<String, String> get _equipped => {};
+  Map<String, String> get _equipped => _avatarSnapshot.equipped;
 
   @override
   void initState() {
@@ -136,6 +138,7 @@ class _GameHomeScreenState extends State<GameHomeScreen>
       _checkAnnouncementBadge();
       _loadActiveBoatVendor();
       _loadBait();
+      _loadAvatarSnapshot();
     });
     _claimAdminCoinGrants();
     _radarController =
@@ -152,6 +155,14 @@ class _GameHomeScreenState extends State<GameHomeScreen>
     _fishingController.addListener(_onFishingTick);
     unawaited(_loadTerrainDataset());
     unawaited(_loadPlayerLocation());
+  }
+
+  Future<void> _loadAvatarSnapshot() async {
+    final box = await Hive.openBox(ProfileWalletService.profileBoxName);
+    final raw = box.get('avatar_state');
+    final snapshot = _MapAvatarSnapshot.fromRaw(raw);
+    if (!mounted) return;
+    setState(() => _avatarSnapshot = snapshot);
   }
 
   Future<void> _loadTerrainDataset() async {
@@ -653,6 +664,7 @@ class _GameHomeScreenState extends State<GameHomeScreen>
         hasLiveLocation: _hasLiveLocation,
         playerAccuracyMeters: _playerAccuracyMeters,
         equipped: _equipped,
+        avatarSnapshot: _avatarSnapshot,
         spotDisplayRadiusMeters: _spotDisplayRadiusMeters,
         rarityColor: _rarityColor,
         onSpotSelected: (spot) {
@@ -713,6 +725,7 @@ class _GameHomeScreenState extends State<GameHomeScreen>
           child: IgnorePointer(
             child: _PlayerAvatar(
               equipped: _equipped,
+              avatarSnapshot: _avatarSnapshot,
               isLiveLocation: _hasLiveLocation,
             ),
           ),
@@ -3416,9 +3429,11 @@ class _GameWorldMapShell extends StatelessWidget {
         if (camera.isVisible(LatLng(spot.lat, spot.lng)))
           Positioned(
             left: camera.project(LatLng(spot.lat, spot.lng)).dx - 59,
-            top: camera.project(LatLng(spot.lat, spot.lng)).dy - 76,
+            top: camera.project(LatLng(spot.lat, spot.lng)).dy -
+                84 -
+                _projectedSpotLiftPixels(spot),
             width: 118,
-            height: 106,
+            height: 124,
             child: GestureDetector(
               behavior: HitTestBehavior.translucent,
               onTap: () => onSpotSelected(spot),
@@ -3426,6 +3441,18 @@ class _GameWorldMapShell extends StatelessWidget {
             ),
           ),
     ];
+  }
+
+  double _projectedSpotLiftPixels(_SpotDemo spot) {
+    final distance = Geolocator.distanceBetween(
+      playerLatLng.latitude,
+      playerLatLng.longitude,
+      spot.lat,
+      spot.lng,
+    );
+    if (distance <= 35) return 58;
+    if (distance <= 80) return 30;
+    return 0;
   }
 }
 
@@ -3543,6 +3570,7 @@ class _PanoramaMapSheet extends StatelessWidget {
     required this.hasLiveLocation,
     required this.playerAccuracyMeters,
     required this.equipped,
+    required this.avatarSnapshot,
     required this.spotDisplayRadiusMeters,
     required this.rarityColor,
     required this.onSpotSelected,
@@ -3553,6 +3581,7 @@ class _PanoramaMapSheet extends StatelessWidget {
   final bool hasLiveLocation;
   final double? playerAccuracyMeters;
   final Map<String, String> equipped;
+  final _MapAvatarSnapshot avatarSnapshot;
   final double spotDisplayRadiusMeters;
   final Color Function(int rarity) rarityColor;
   final void Function(_SpotDemo spot) onSpotSelected;
@@ -3566,8 +3595,8 @@ class _PanoramaMapSheet extends StatelessWidget {
         (spot) => Marker(
           point: LatLng(spot.lat, spot.lng),
           width: 118,
-          height: 106,
-          alignment: const Alignment(0, -0.58),
+          height: 124,
+          alignment: const Alignment(0, -0.52),
           child: GestureDetector(
             onTap: () => onSpotSelected(spot),
             child: _SpotMarker(spot: spot),
@@ -3582,6 +3611,7 @@ class _PanoramaMapSheet extends StatelessWidget {
         child: IgnorePointer(
           child: _PlayerAvatar(
             equipped: equipped,
+            avatarSnapshot: avatarSnapshot,
             isLiveLocation: hasLiveLocation,
           ),
         ),
@@ -4212,10 +4242,61 @@ class _GameWorldAtmospherePainter extends CustomPainter {
       oldDelegate.hasLiveLocation != hasLiveLocation;
 }
 
+class _MapAvatarSnapshot {
+  const _MapAvatarSnapshot({
+    required this.selectedGender,
+    required this.selectedHairStyle,
+    required this.selectedPreset,
+    required this.equipped,
+  });
+
+  factory _MapAvatarSnapshot.initial() {
+    final initial = AvatarProfileViewState.initial();
+    return _MapAvatarSnapshot(
+      selectedGender: initial.selectedGender,
+      selectedHairStyle: initial.selectedHairStyle,
+      selectedPreset: initial.selectedPreset,
+      equipped: initial.equipped,
+    );
+  }
+
+  factory _MapAvatarSnapshot.fromRaw(Object? raw) {
+    if (raw is! Map) return _MapAvatarSnapshot.initial();
+    final map = Map<String, dynamic>.from(raw);
+    final state = AvatarProfileViewState.fromMap(map);
+    return _MapAvatarSnapshot(
+      selectedGender: state.selectedGender,
+      selectedHairStyle: state.selectedHairStyle,
+      selectedPreset: state.selectedPreset,
+      equipped: state.equipped.isEmpty
+          ? AvatarProfileViewState.initial().equipped
+          : state.equipped,
+    );
+  }
+
+  AvatarProfileViewState toAvatarProfileViewState() =>
+      AvatarProfileViewState.initial().copyWith(
+        selectedGender: selectedGender,
+        selectedHairStyle: selectedHairStyle,
+        selectedPreset: selectedPreset,
+        equipped: equipped,
+      );
+
+  final String selectedGender;
+  final String selectedHairStyle;
+  final int selectedPreset;
+  final Map<String, String> equipped;
+}
+
 class _PlayerAvatar extends StatelessWidget {
-  const _PlayerAvatar({required this.equipped, required this.isLiveLocation});
+  const _PlayerAvatar({
+    required this.equipped,
+    required this.avatarSnapshot,
+    required this.isLiveLocation,
+  });
 
   final Map<String, String> equipped;
+  final _MapAvatarSnapshot avatarSnapshot;
   final bool isLiveLocation;
 
   @override
@@ -4236,25 +4317,49 @@ class _PlayerAvatar extends StatelessWidget {
           ),
         ),
       ),
-      Container(
-        width: 42,
-        height: 42,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          shape: BoxShape.circle,
-          border: Border.all(color: accent, width: 2.5),
-          boxShadow: [
-            BoxShadow(
-              color: accent.withValues(alpha: 0.5),
-              blurRadius: 12,
-              spreadRadius: 2,
+      Transform.translate(
+        offset: const Offset(0, -7),
+        child: Container(
+          width: 48,
+          height: 56,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            gradient: const LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [Colors.white, Color(0xFFE7FBFF)],
             ),
-          ],
+            border: Border.all(color: accent, width: 2.5),
+            boxShadow: [
+              BoxShadow(
+                color: accent.withValues(alpha: 0.5),
+                blurRadius: 14,
+                spreadRadius: 2,
+              ),
+              const BoxShadow(
+                color: Colors.black38,
+                blurRadius: 10,
+                offset: Offset(0, 5),
+              ),
+            ],
+          ),
+          child: ClipOval(
+            child: AvatarLayeredPreview(
+              avatarState: avatarSnapshot.toAvatarProfileViewState(),
+              size: 58,
+            ),
+          ),
         ),
-        child: Icon(
-          isLiveLocation ? Icons.my_location : Icons.location_searching,
-          color: isLiveLocation ? Colors.cyan : Colors.deepOrange,
-          size: 24,
+      ),
+      Positioned(
+        bottom: 5,
+        child: Container(
+          width: 24,
+          height: 8,
+          decoration: BoxDecoration(
+            color: Colors.black.withValues(alpha: 0.22),
+            borderRadius: BorderRadius.circular(99),
+          ),
         ),
       ),
     ]);
@@ -4285,29 +4390,66 @@ class _SpotMarker extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(children: [
-      Container(
-        width: 44,
-        height: 44,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: c,
-          border: Border.all(color: Colors.white, width: 2.5),
-          boxShadow: [
-            BoxShadow(
-                color: c.withValues(alpha: 0.6),
-                blurRadius: 14,
-                spreadRadius: 2),
+    final rarityColor = c;
+    return Column(mainAxisSize: MainAxisSize.min, children: [
+      SizedBox(
+        width: 82,
+        height: 76,
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            Positioned(
+              bottom: 3,
+              child: _SpotMarkerDepthShadow(color: rarityColor),
+            ),
+            _SpotMarkerHalo(color: rarityColor),
+            Positioned(
+              top: 8,
+              child: _SpotMarkerBuoy(color: rarityColor),
+            ),
+            Positioned(
+              right: 12,
+              top: 13,
+              child: Container(
+                width: 22,
+                height: 22,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: const Color(0xFF082B36),
+                  border: Border.all(color: Colors.white, width: 2),
+                  boxShadow: [
+                    BoxShadow(
+                      color: rarityColor.withValues(alpha: 0.5),
+                      blurRadius: 9,
+                      spreadRadius: 1,
+                    ),
+                  ],
+                ),
+                child: const Icon(
+                  Icons.phishing,
+                  color: Color(0xFF7DF9FF),
+                  size: 13,
+                ),
+              ),
+            ),
           ],
         ),
-        child: const Icon(Icons.set_meal, color: Colors.white, size: 22),
       ),
-      const SizedBox(height: 4),
+      const SizedBox(height: 2),
       Container(
-        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+        constraints: const BoxConstraints(maxWidth: 112),
+        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
         decoration: BoxDecoration(
-          color: Colors.black87,
-          borderRadius: BorderRadius.circular(5),
+          color: const Color(0xE6091D24),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: rarityColor.withValues(alpha: 0.65)),
+          boxShadow: const [
+            BoxShadow(
+              color: Colors.black38,
+              blurRadius: 8,
+              offset: Offset(0, 3),
+            ),
+          ],
         ),
         child: Text(
           spot.name,
@@ -4329,6 +4471,127 @@ class _SpotMarker extends StatelessWidget {
               style: TextStyle(color: Colors.white, fontSize: 8)),
         ),
     ]);
+  }
+}
+
+class _SpotMarkerHalo extends StatelessWidget {
+  const _SpotMarkerHalo({required this.color});
+
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 70,
+      height: 70,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: RadialGradient(
+          colors: [
+            color.withValues(alpha: 0.34),
+            color.withValues(alpha: 0.16),
+            Colors.transparent,
+          ],
+        ),
+        border: Border.all(color: color.withValues(alpha: 0.18), width: 1.5),
+      ),
+    );
+  }
+}
+
+class _SpotMarkerBuoy extends StatelessWidget {
+  const _SpotMarkerBuoy({required this.color});
+
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      alignment: Alignment.center,
+      clipBehavior: Clip.none,
+      children: [
+        Positioned(
+          top: -15,
+          child: Container(
+            width: 7,
+            height: 24,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(99),
+              gradient: const LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [Color(0xFFFFF7A8), Color(0x00FFF7A8)],
+              ),
+            ),
+          ),
+        ),
+        Container(
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Colors.white,
+                const Color(0xFFFFF5A7),
+                color.withValues(alpha: 0.9),
+              ],
+              stops: const [0, 0.52, 1],
+            ),
+            border: Border.all(color: const Color(0xFF083241), width: 3),
+            boxShadow: [
+              BoxShadow(
+                color: color.withValues(alpha: 0.5),
+                blurRadius: 16,
+                spreadRadius: 2,
+              ),
+              const BoxShadow(
+                color: Colors.black45,
+                blurRadius: 8,
+                offset: Offset(0, 5),
+              ),
+            ],
+          ),
+          child: Center(
+            child: Container(
+              width: 18,
+              height: 18,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: const Color(0xFFFFF3A6),
+                border: Border.all(color: Colors.white, width: 2),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _SpotMarkerDepthShadow extends StatelessWidget {
+  const _SpotMarkerDepthShadow({required this.color});
+
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 50,
+      height: 13,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(99),
+        gradient: RadialGradient(
+          colors: [
+            Colors.black.withValues(alpha: 0.32),
+            color.withValues(alpha: 0.18),
+            Colors.transparent,
+          ],
+        ),
+      ),
+    );
   }
 }
 

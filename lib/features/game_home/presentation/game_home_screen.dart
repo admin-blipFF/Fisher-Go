@@ -699,6 +699,7 @@ class _GameHomeScreenState extends State<GameHomeScreen>
       spots: visibleSpots,
       terrainDataSource: _terrainDataSource,
       mapBearingDegrees: _mapBearingDegrees,
+      onSpotSelected: (spot) => setState(() => _selectedSpot = spot),
     );
 
     return Scaffold(
@@ -3313,6 +3314,7 @@ class _GameWorldMapShell extends StatelessWidget {
     required this.spots,
     required this.terrainDataSource,
     required this.mapBearingDegrees,
+    required this.onSpotSelected,
   });
 
   final int spotCount;
@@ -3321,72 +3323,79 @@ class _GameWorldMapShell extends StatelessWidget {
   final List<_SpotDemo> spots;
   final TerrainDataSource terrainDataSource;
   final double mapBearingDegrees;
+  final void Function(_SpotDemo spot) onSpotSelected;
 
   @override
   Widget build(BuildContext context) {
     return Stack(
       fit: StackFit.expand,
       children: [
-        IgnorePointer(
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              final viewportSize = Size(
-                constraints.maxWidth,
-                constraints.maxHeight,
-              );
-              final camera = GameMapCamera(
-                center: playerLatLng,
-                visibleRadiusMeters: 500,
-                bearingDegrees: mapBearingDegrees,
-                viewportSize: viewportSize,
-              );
-              final featureStore = terrainDataSource is GeoTerrainDataSource
-                  ? GameMapFeatureStore(
-                      dataset:
-                          (terrainDataSource as GeoTerrainDataSource).dataset,
-                    )
-                  : null;
-              final terrainFeatures =
-                  featureStore?.visibleTerrainFeatures(camera) ??
-                      terrainDataSource.visibleVectorFeatures(
-                        playerLatLng: playerLatLng,
-                        radiusMeters: 900,
-                      );
-              final terrainTiles = terrainDataSource.buildTiles(
-                playerLatLng: playerLatLng,
-                rows: 17,
-                cols: 13,
-              );
-              final fishingSpotInputs = [
-                for (final spot in spots)
-                  GameMapFishingSpot(
-                    id: '${spot.name}:${spot.lat}:${spot.lng}',
-                    name: spot.name,
-                    position: LatLng(spot.lat, spot.lng),
-                  ),
-              ];
-              final fishingSpots = featureStore?.projectFishingSpots(
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final viewportSize = Size(
+              constraints.maxWidth,
+              constraints.maxHeight,
+            );
+            final camera = GameMapCamera(
+              center: playerLatLng,
+              visibleRadiusMeters: 500,
+              bearingDegrees: mapBearingDegrees,
+              viewportSize: viewportSize,
+            );
+            final featureStore = terrainDataSource is GeoTerrainDataSource
+                ? GameMapFeatureStore(
+                    dataset:
+                        (terrainDataSource as GeoTerrainDataSource).dataset,
+                  )
+                : null;
+            final terrainFeatures =
+                featureStore?.visibleTerrainFeatures(camera) ??
+                    terrainDataSource.visibleVectorFeatures(
+                      playerLatLng: playerLatLng,
+                      radiusMeters: 900,
+                    );
+            final terrainTiles = terrainDataSource.buildTiles(
+              playerLatLng: playerLatLng,
+              rows: 17,
+              cols: 13,
+            );
+            final fishingSpotInputs = [
+              for (final spot in spots)
+                GameMapFishingSpot(
+                  id: '${spot.name}:${spot.lat}:${spot.lng}',
+                  name: spot.name,
+                  position: LatLng(spot.lat, spot.lng),
+                ),
+            ];
+            final fishingSpots = featureStore?.projectFishingSpots(
+                  camera: camera,
+                  spots: fishingSpotInputs,
+                ) ??
+                [
+                  for (final spot in fishingSpotInputs)
+                    if (camera.isVisible(spot.position))
+                      ProjectedFishingSpot(
+                        id: spot.id,
+                        name: spot.name,
+                        position: spot.position,
+                        screenPosition: camera.project(spot.position),
+                      ),
+                ];
+            return Stack(
+              fit: StackFit.expand,
+              children: [
+                IgnorePointer(
+                  child: GameMapRenderer(
                     camera: camera,
-                    spots: fishingSpotInputs,
-                  ) ??
-                  [
-                    for (final spot in fishingSpotInputs)
-                      if (camera.isVisible(spot.position))
-                        ProjectedFishingSpot(
-                          id: spot.id,
-                          name: spot.name,
-                          position: spot.position,
-                          screenPosition: camera.project(spot.position),
-                        ),
-                  ];
-              return GameMapRenderer(
-                camera: camera,
-                terrainTiles: terrainTiles,
-                terrainFeatures: terrainFeatures,
-                fishingSpots: fishingSpots,
-              );
-            },
-          ),
+                    terrainTiles: terrainTiles,
+                    terrainFeatures: terrainFeatures,
+                    fishingSpots: fishingSpots,
+                  ),
+                ),
+                ..._buildProjectedSpotButtons(camera),
+              ],
+            );
+          },
         ),
         IgnorePointer(
           child: CustomPaint(
@@ -3399,6 +3408,24 @@ class _GameWorldMapShell extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  List<Widget> _buildProjectedSpotButtons(GameMapCamera camera) {
+    return [
+      for (final spot in spots)
+        if (camera.isVisible(LatLng(spot.lat, spot.lng)))
+          Positioned(
+            left: camera.project(LatLng(spot.lat, spot.lng)).dx - 59,
+            top: camera.project(LatLng(spot.lat, spot.lng)).dy - 76,
+            width: 118,
+            height: 106,
+            child: GestureDetector(
+              behavior: HitTestBehavior.translucent,
+              onTap: () => onSpotSelected(spot),
+              child: _SpotMarker(spot: spot),
+            ),
+          ),
+    ];
   }
 }
 
@@ -3706,7 +3733,6 @@ class _GameWorldAtmospherePainter extends CustomPainter {
         ],
       ).createShader(Offset.zero & size);
     canvas.drawRect(Offset.zero & size, depthShade);
-    _drawFishingBeacons(canvas, size);
     _drawPlayerRings(canvas, size);
   }
 
@@ -4155,71 +4181,6 @@ class _GameWorldAtmospherePainter extends CustomPainter {
         ..lineTo(p.dx - r * 1.2, p.dy - r * 0.2)
         ..close();
       canvas.drawPath(path, rockPaints[i % rockPaints.length]);
-    }
-  }
-
-  void _drawFishingBeacons(Canvas canvas, Size size) {
-    final count = spotCount.clamp(0, 7);
-    if (count == 0) return;
-    final anchors = [
-      Offset(size.width * 0.28, size.height * 0.43),
-      Offset(size.width * 0.72, size.height * 0.39),
-      Offset(size.width * 0.62, size.height * 0.57),
-      Offset(size.width * 0.36, size.height * 0.63),
-      Offset(size.width * 0.78, size.height * 0.7),
-      Offset(size.width * 0.18, size.height * 0.72),
-      Offset(size.width * 0.52, size.height * 0.35),
-    ];
-    for (var i = 0; i < count; i++) {
-      final p = anchors[i];
-      final shadowPaint = Paint()
-        ..color = const Color(0xFF004B57).withValues(alpha: 0.24);
-      canvas.drawOval(
-        Rect.fromCenter(center: p.translate(0, 16), width: 34, height: 10),
-        shadowPaint,
-      );
-      final beamPaint = Paint()
-        ..shader = RadialGradient(
-          colors: [
-            const Color(0xFFFFF36D).withValues(alpha: 0.76),
-            const Color(0xFFFFE66B).withValues(alpha: 0),
-          ],
-        ).createShader(Rect.fromCircle(center: p, radius: 34));
-      canvas.drawCircle(p, 46, beamPaint);
-      final columnPaint = Paint()
-        ..shader = LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            const Color(0xFFFFF36D).withValues(alpha: 0),
-            const Color(0xFFFFF36D).withValues(alpha: 0.35),
-            const Color(0xFFFFF36D).withValues(alpha: 0),
-          ],
-        ).createShader(Rect.fromLTWH(p.dx - 12, p.dy - 72, 24, 92));
-      canvas.drawRRect(
-        RRect.fromRectAndRadius(
-          Rect.fromLTWH(p.dx - 8, p.dy - 72, 16, 92),
-          const Radius.circular(999),
-        ),
-        columnPaint,
-      );
-      final mastPaint = Paint()
-        ..color = const Color(0xFFFFF36D).withValues(alpha: 0.92)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 3;
-      canvas.drawLine(p.translate(0, -42), p.translate(0, 14), mastPaint);
-      final basePaint = Paint()
-        ..color = const Color(0xFFFFF2A0)
-        ..style = PaintingStyle.fill;
-      canvas.drawCircle(p, 7, basePaint);
-      canvas.drawCircle(
-        p,
-        12,
-        Paint()
-          ..color = const Color(0xFF126B82)
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 3,
-      );
     }
   }
 

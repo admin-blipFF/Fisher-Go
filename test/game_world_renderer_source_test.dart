@@ -24,13 +24,14 @@ void main() {
         source, contains('static const double _spotDisplayRadiusMeters = 500'));
     expect(source, isNot(contains('_minVisibleSpots')));
     expect(source, isNot(contains('sorted.take')));
-    expect(source, contains('spotCount.clamp(0, 7)'));
     expect(source, isNot(contains('spotCount.clamp(3, 7)')));
     expect(source, contains('_rotateMapByDrag'));
     expect(source, contains('onHorizontalDragUpdate'));
     expect(source, contains('visibleVectorFeatures'));
     expect(source, contains('terrainDataSource.buildTiles'));
     expect(source, contains('terrainTiles: terrainTiles'));
+    expect(source, contains('onSpotSelected'));
+    expect(source, contains('_buildProjectedSpotButtons'));
     expect(source, contains('_developerTestSpots'));
     expect(source, contains('沙田希爾頓中心測試釣點'));
     expect(source, isNot(contains('_HybridTerrainMapPainter')));
@@ -55,5 +56,7 @@ void main() {
     expect(rendererSource, contains('_labelForFeature'));
     expect(rendererSource, contains('_fallbackLabelForTile'));
     expect(rendererSource, contains('_iconForFeature'));
+    expect(source, isNot(contains('_drawFishingBeacons')));
+    expect(source, isNot(contains('spotCount.clamp(0, 7)')));
   });
 }

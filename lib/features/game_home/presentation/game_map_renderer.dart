@@ -134,6 +134,7 @@ class GameMapPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     _drawSeaLayer(canvas, size);
     _drawFallbackTileLayer(canvas, size);
+    _drawTerrainTextureLayer(canvas, size);
     _drawTileMeshLayer(canvas, size);
     _drawLandLayer(canvas, size);
     _drawCoastlineGlowLayer(canvas, size);
@@ -279,6 +280,188 @@ class GameMapPainter extends CustomPainter {
     }
   }
 
+  void _drawTerrainTextureLayer(Canvas canvas, Size size) {
+    if (terrainTiles.isEmpty) return;
+    final tileWidth = camera.viewportSize.shortestSide / 7.2;
+    final tileHeight = camera.viewportSize.shortestSide / 10.5;
+    for (var i = 0; i < terrainTiles.length; i++) {
+      final tile = terrainTiles[i];
+      if (!camera.isVisible(tile.centerLatLng, paddingMeters: 80)) continue;
+      if (tile.kind == TerrainKind.fishingNode) continue;
+      _drawTerrainTileTexture(
+        canvas,
+        center: camera.project(tile.centerLatLng),
+        width: tileWidth,
+        height: tileHeight,
+        kind: tile.kind,
+        variant: i,
+      );
+    }
+  }
+
+  void _drawTerrainTileTexture(
+    Canvas canvas, {
+    required Offset center,
+    required double width,
+    required double height,
+    required TerrainKind kind,
+    required int variant,
+  }) {
+    final path = _diamondPath(center, width, height);
+    canvas.save();
+    canvas.clipPath(path);
+    switch (kind) {
+      case TerrainKind.water:
+        _drawWaterTileRipples(canvas, center, width, height, variant);
+      case TerrainKind.land:
+        _drawLandTileBrush(canvas, center, width, height, variant);
+      case TerrainKind.shore:
+        _drawShoreTilePebbles(canvas, center, width, height, variant);
+      case TerrainKind.road:
+      case TerrainKind.pier:
+        _drawTileLightBreakup(
+          canvas,
+          center,
+          width,
+          height,
+          variant,
+          color: const Color(0xFFFFFFFF).withValues(alpha: 0.08),
+        );
+      case TerrainKind.fishingNode:
+        break;
+    }
+    canvas.restore();
+  }
+
+  void _drawWaterTileRipples(
+    Canvas canvas,
+    Offset center,
+    double width,
+    double height,
+    int variant,
+  ) {
+    _drawTileLightBreakup(
+      canvas,
+      center,
+      width,
+      height,
+      variant,
+      color: const Color(0xFFFFFFFF).withValues(alpha: 0.08),
+    );
+    final ripplePaint = Paint()
+      ..color = const Color(0xFFD8FFFB).withValues(alpha: 0.17)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.05
+      ..strokeCap = StrokeCap.round;
+    for (var i = 0; i < 4; i++) {
+      final y =
+          center.dy - height * 0.26 + i * height * 0.17 + (variant % 3) * 1.7;
+      final startX = center.dx - width * (0.34 - i * 0.03);
+      final path = Path()
+        ..moveTo(startX, y)
+        ..quadraticBezierTo(
+          center.dx - width * 0.12,
+          y - 4 - (variant % 2) * 1.6,
+          center.dx + width * 0.08,
+          y + 1.5,
+        )
+        ..quadraticBezierTo(
+          center.dx + width * 0.24,
+          y + 6,
+          center.dx + width * 0.36,
+          y - 1,
+        );
+      canvas.drawPath(path, ripplePaint);
+    }
+  }
+
+  void _drawLandTileBrush(
+    Canvas canvas,
+    Offset center,
+    double width,
+    double height,
+    int variant,
+  ) {
+    _drawTileLightBreakup(
+      canvas,
+      center,
+      width,
+      height,
+      variant,
+      color: const Color(0xFFF1FF9E).withValues(alpha: 0.11),
+    );
+    final grassPaint = Paint()
+      ..color = const Color(0xFFE5FF9A).withValues(alpha: 0.2)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.15
+      ..strokeCap = StrokeCap.round;
+    for (var i = 0; i < 7; i++) {
+      final x = center.dx - width * 0.36 + i * width * 0.12;
+      final y = center.dy - height * 0.2 + ((i + variant) % 4) * height * 0.11;
+      canvas.drawLine(
+        Offset(x, y + height * 0.12),
+        Offset(x + width * 0.08, y - height * 0.08),
+        grassPaint,
+      );
+    }
+  }
+
+  void _drawShoreTilePebbles(
+    Canvas canvas,
+    Offset center,
+    double width,
+    double height,
+    int variant,
+  ) {
+    _drawTileLightBreakup(
+      canvas,
+      center,
+      width,
+      height,
+      variant,
+      color: const Color(0xFFFFE89A).withValues(alpha: 0.16),
+    );
+    final pebblePaint = Paint()
+      ..color = const Color(0xFFFFF1B5).withValues(alpha: 0.24)
+      ..style = PaintingStyle.fill;
+    for (var i = 0; i < 6; i++) {
+      final x = center.dx - width * 0.28 + i * width * 0.11;
+      final y = center.dy + (((i * 5 + variant) % 7) - 3) * height * 0.045;
+      canvas.drawOval(
+        Rect.fromCenter(
+          center: Offset(x, y),
+          width: 4 + (i % 3) * 1.5,
+          height: 2.5 + ((i + variant) % 2) * 1.3,
+        ),
+        pebblePaint,
+      );
+    }
+  }
+
+  void _drawTileLightBreakup(
+    Canvas canvas,
+    Offset center,
+    double width,
+    double height,
+    int variant, {
+    required Color color,
+  }) {
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1
+      ..strokeCap = StrokeCap.round;
+    for (var i = 0; i < 3; i++) {
+      final x = center.dx - width * 0.38 + i * width * 0.24;
+      final y = center.dy - height * 0.24 + ((variant + i) % 4) * height * 0.14;
+      canvas.drawLine(
+        Offset(x, y),
+        Offset(x + width * 0.24, y + height * 0.11),
+        paint,
+      );
+    }
+  }
+
   void _drawTerrainTileSeam(
     Canvas canvas, {
     required Offset center,
@@ -287,12 +470,7 @@ class GameMapPainter extends CustomPainter {
     required TerrainKind kind,
   }) {
     if (kind == TerrainKind.fishingNode) return;
-    final path = Path()
-      ..moveTo(center.dx, center.dy - height * 0.5)
-      ..lineTo(center.dx + width * 0.5, center.dy)
-      ..lineTo(center.dx, center.dy + height * 0.5)
-      ..lineTo(center.dx - width * 0.5, center.dy)
-      ..close();
+    final path = _diamondPath(center, width, height);
     final isWater = kind == TerrainKind.water;
     final isRoad = kind == TerrainKind.road || kind == TerrainKind.pier;
     final lineColor = isRoad
@@ -308,6 +486,15 @@ class GameMapPainter extends CustomPainter {
         ..strokeWidth = isRoad ? 0.9 : 0.7
         ..strokeJoin = StrokeJoin.round,
     );
+  }
+
+  Path _diamondPath(Offset center, double width, double height) {
+    return Path()
+      ..moveTo(center.dx, center.dy - height * 0.5)
+      ..lineTo(center.dx + width * 0.5, center.dy)
+      ..lineTo(center.dx, center.dy + height * 0.5)
+      ..lineTo(center.dx - width * 0.5, center.dy)
+      ..close();
   }
 
   void _drawLandLayer(Canvas canvas, Size size) {

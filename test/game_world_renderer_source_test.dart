@@ -61,6 +61,12 @@ void main() {
     expect(rendererSource, contains('_drawSeaLayer'));
     expect(rendererSource, contains('_drawTileMeshLayer'));
     expect(rendererSource, contains('_drawTerrainTileSeam'));
+    expect(rendererSource, contains('_drawTerrainTextureLayer'));
+    expect(rendererSource, contains('_drawTerrainTileTexture'));
+    expect(rendererSource, contains('_drawWaterTileRipples'));
+    expect(rendererSource, contains('_drawLandTileBrush'));
+    expect(rendererSource, contains('_drawShoreTilePebbles'));
+    expect(rendererSource, contains('_drawTileLightBreakup'));
     expect(rendererSource, contains('_drawCoastlineGlowLayer'));
     expect(rendererSource, contains('_drawLandLayer'));
     expect(rendererSource, contains('_drawCoastlineLayer'));

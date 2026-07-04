@@ -3369,8 +3369,8 @@ class _GameWorldMapShell extends StatelessWidget {
                     );
             final terrainTiles = terrainDataSource.buildTiles(
               playerLatLng: playerLatLng,
-              rows: 17,
-              cols: 13,
+              rows: 29,
+              cols: 21,
             );
             final fishingSpotInputs = [
               for (final spot in spots)

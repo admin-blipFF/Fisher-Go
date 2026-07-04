@@ -29,6 +29,8 @@ void main() {
     expect(source, contains('onHorizontalDragUpdate'));
     expect(source, contains('visibleVectorFeatures'));
     expect(source, contains('terrainDataSource.buildTiles'));
+    expect(source, contains('rows: 29'));
+    expect(source, contains('cols: 21'));
     expect(source, contains('terrainTiles: terrainTiles'));
     expect(source, contains('onSpotSelected'));
     expect(source, contains('_buildProjectedSpotButtons'));
@@ -63,6 +65,12 @@ void main() {
     expect(rendererSource, contains('_drawTerrainTileSeam'));
     expect(rendererSource, contains('_drawTerrainTextureLayer'));
     expect(rendererSource, contains('_drawTerrainTileTexture'));
+    expect(rendererSource, contains('_drawPerspectiveMicroTileLayer'));
+    expect(rendererSource, contains('_projectTileToPerspective'));
+    expect(rendererSource, contains('_drawPerspectiveTerrainCell'));
+    expect(rendererSource, contains('_paintForTerrainCell'));
+    expect(rendererSource, contains('_drawPerspectiveRoadCells'));
+    expect(rendererSource, contains('_drawHorizonLayer'));
     expect(rendererSource, contains('_drawWaterTileRipples'));
     expect(rendererSource, contains('_drawLandTileBrush'));
     expect(rendererSource, contains('_drawShoreTilePebbles'));

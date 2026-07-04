@@ -132,20 +132,279 @@ class GameMapPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    _drawSeaLayer(canvas, size);
-    _drawFallbackTileLayer(canvas, size);
-    _drawTerrainTextureLayer(canvas, size);
-    _drawTileMeshLayer(canvas, size);
-    _drawLandLayer(canvas, size);
-    _drawCoastlineGlowLayer(canvas, size);
-    _drawCoastlineLayer(canvas, size);
-    _drawRoadLayer(canvas, size);
-    _drawPierLayer(canvas, size);
+    _drawHorizonLayer(canvas, size);
+    _drawPerspectiveMicroTileLayer(canvas, size);
     _drawLandmarkLabelLayer(canvas, size);
     _drawFishingSpotLayer(canvas, size);
     _drawAtmosphereLayer(canvas, size);
   }
 
+  void _drawHorizonLayer(Canvas canvas, Size size) {
+    final rect = Offset.zero & size;
+    canvas.drawRect(
+      rect,
+      Paint()
+        ..shader = const LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Color(0xFFA9ECFF),
+            Color(0xFF83F0DF),
+            Color(0xFF56C879),
+            Color(0xFF1B8A67),
+          ],
+          stops: [0, 0.2, 0.54, 1],
+        ).createShader(rect),
+    );
+    final hazeRect = Rect.fromLTWH(0, size.height * 0.14, size.width, 110);
+    canvas.drawOval(
+      hazeRect.inflate(size.width * 0.12),
+      Paint()
+        ..color = const Color(0xFFFFFFFF).withValues(alpha: 0.22)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 20),
+    );
+    canvas.drawRect(
+      Rect.fromLTWH(0, 0, size.width, size.height * 0.42),
+      Paint()
+        ..shader = LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            const Color(0xFFFFFFFF).withValues(alpha: 0.25),
+            Colors.transparent,
+          ],
+        ).createShader(rect),
+    );
+  }
+
+  void _drawPerspectiveMicroTileLayer(Canvas canvas, Size size) {
+    if (terrainTiles.isEmpty) return;
+    final orderedTiles = terrainTiles
+        .where((tile) => camera.isVisible(tile.centerLatLng, paddingMeters: 80))
+        .toList()
+      ..sort((a, b) {
+        final rowCompare = a.row.compareTo(b.row);
+        if (rowCompare != 0) return rowCompare;
+        return a.col.compareTo(b.col);
+      });
+
+    for (final tile in orderedTiles) {
+      if (tile.kind == TerrainKind.road || tile.kind == TerrainKind.pier) {
+        continue;
+      }
+      _drawPerspectiveTerrainCell(canvas, size, tile);
+    }
+    _drawPerspectiveRoadCells(canvas, size, orderedTiles);
+  }
+
+  void _drawPerspectiveTerrainCell(
+    Canvas canvas,
+    Size size,
+    TerrainTile tile,
+  ) {
+    final rect = _projectTileToPerspective(size, tile);
+    if (rect == null) return;
+    final path = _perspectiveCellPath(rect);
+    canvas.drawPath(path, _paintForTerrainCell(tile.kind, rect));
+    canvas.save();
+    canvas.clipPath(path);
+    _drawPerspectiveCellTexture(canvas, rect, tile.kind, tile.row + tile.col);
+    canvas.restore();
+    canvas.drawPath(
+      path,
+      Paint()
+        ..color = _cellEdgeColor(tile.kind)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 0.35,
+    );
+  }
+
+  Rect? _projectTileToPerspective(Size size, TerrainTile tile) {
+    final rowCount = terrainTiles.map((tile) => tile.row).fold<int>(
+              0,
+              (max, row) => row > max ? row : max,
+            ) +
+        1;
+    final colCount = terrainTiles.map((tile) => tile.col).fold<int>(
+              0,
+              (max, col) => col > max ? col : max,
+            ) +
+        1;
+    if (rowCount <= 0 || colCount <= 0) return null;
+    final rowT = rowCount <= 1 ? 0.5 : tile.row / (rowCount - 1);
+    final colT = colCount <= 1 ? 0.5 : tile.col / (colCount - 1);
+    final depth = rowT.clamp(0.0, 1.0);
+    final perspective = 0.34 + depth * depth * 1.24;
+    final horizonY = size.height * 0.2;
+    final groundHeight = size.height * 0.84;
+    final y = horizonY + groundHeight * (depth * depth);
+    final centerX = size.width * 0.5 + (colT - 0.5) * size.width * perspective;
+    final cellWidth = size.width / colCount * perspective * 1.42;
+    final cellHeight = size.height / rowCount * (2.25 + depth * 4.8);
+    if (y < -cellHeight || y > size.height + cellHeight) return null;
+    return Rect.fromCenter(
+      center: Offset(centerX, y),
+      width: cellWidth,
+      height: cellHeight,
+    );
+  }
+
+  Path _perspectiveCellPath(Rect rect) {
+    final topInset = rect.width * 0.08;
+    return Path()
+      ..moveTo(rect.left + topInset, rect.top)
+      ..lineTo(rect.right - topInset, rect.top)
+      ..lineTo(rect.right, rect.bottom)
+      ..lineTo(rect.left, rect.bottom)
+      ..close();
+  }
+
+  Paint _paintForTerrainCell(TerrainKind kind, Rect rect) {
+    return Paint()
+      ..shader = LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: switch (kind) {
+          TerrainKind.water => const [
+              Color(0xFF71E8E1),
+              Color(0xFF20B8C8),
+              Color(0xFF087E9C),
+            ],
+          TerrainKind.shore => const [
+              Color(0xFFE8DB88),
+              Color(0xFFB5DB74),
+              Color(0xFF56C67B),
+            ],
+          TerrainKind.land => const [
+              Color(0xFF8EE35F),
+              Color(0xFF46C968),
+              Color(0xFF238F60),
+            ],
+          TerrainKind.road || TerrainKind.pier => const [
+              Color(0xFFFFF8D8),
+              Color(0xFFE7DEB5),
+            ],
+          TerrainKind.fishingNode => const [
+              Color(0xFF8EE35F),
+              Color(0xFF46C968),
+            ],
+        },
+      ).createShader(rect)
+      ..style = PaintingStyle.fill;
+  }
+
+  void _drawPerspectiveRoadCells(
+    Canvas canvas,
+    Size size,
+    List<TerrainTile> orderedTiles,
+  ) {
+    final roadTiles = orderedTiles
+        .where((tile) =>
+            tile.kind == TerrainKind.road || tile.kind == TerrainKind.pier)
+        .toList();
+    for (final tile in roadTiles) {
+      final rect = _projectTileToPerspective(size, tile);
+      if (rect == null) continue;
+      final path = _perspectiveCellPath(rect.inflate(rect.width * 0.14));
+      canvas.drawPath(
+        path,
+        Paint()
+          ..color = const Color(0xFF165B47).withValues(alpha: 0.2)
+          ..style = PaintingStyle.fill
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3),
+      );
+      canvas.drawPath(
+        path,
+        Paint()
+          ..shader = const LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Color(0xFFFFFBE2), Color(0xFFEADFB9)],
+          ).createShader(rect)
+          ..style = PaintingStyle.fill,
+      );
+      canvas.drawPath(
+        path,
+        Paint()
+          ..color = const Color(0xFFFFFFFF).withValues(alpha: 0.46)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.2,
+      );
+    }
+  }
+
+  void _drawPerspectiveCellTexture(
+    Canvas canvas,
+    Rect rect,
+    TerrainKind kind,
+    int variant,
+  ) {
+    switch (kind) {
+      case TerrainKind.water:
+        _drawWaterTileRipples(
+          canvas,
+          rect.center,
+          rect.width,
+          rect.height,
+          variant,
+        );
+      case TerrainKind.land:
+        _drawLandTileBrush(
+            canvas, rect.center, rect.width, rect.height, variant);
+        _drawFlowerFlecks(canvas, rect, variant);
+      case TerrainKind.shore:
+        _drawShoreTilePebbles(
+            canvas, rect.center, rect.width, rect.height, variant);
+      case TerrainKind.road:
+      case TerrainKind.pier:
+        _drawTileLightBreakup(
+          canvas,
+          rect.center,
+          rect.width,
+          rect.height,
+          variant,
+          color: const Color(0xFFFFFFFF).withValues(alpha: 0.12),
+        );
+      case TerrainKind.fishingNode:
+        break;
+    }
+  }
+
+  void _drawFlowerFlecks(Canvas canvas, Rect rect, int variant) {
+    final colors = const [
+      Color(0xFFFFF36D),
+      Color(0xFFFFFFFF),
+      Color(0xFFFF8BCB),
+      Color(0xFF9DFF8B),
+    ];
+    for (var i = 0; i < 4; i++) {
+      final x =
+          rect.left + rect.width * (0.18 + ((i * 17 + variant) % 64) / 90);
+      final y =
+          rect.top + rect.height * (0.18 + ((i * 11 + variant) % 58) / 86);
+      canvas.drawCircle(
+        Offset(x, y),
+        (rect.width * 0.018).clamp(1.2, 3.4).toDouble(),
+        Paint()
+          ..color =
+              colors[(i + variant) % colors.length].withValues(alpha: 0.42),
+      );
+    }
+  }
+
+  Color _cellEdgeColor(TerrainKind kind) {
+    return switch (kind) {
+      TerrainKind.water => const Color(0xFFD8FFFB).withValues(alpha: 0.1),
+      TerrainKind.shore => const Color(0xFFFFFFC8).withValues(alpha: 0.18),
+      TerrainKind.land => const Color(0xFFE8FFAE).withValues(alpha: 0.12),
+      TerrainKind.road ||
+      TerrainKind.pier =>
+        const Color(0xFFFFFFFF).withValues(alpha: 0.3),
+      TerrainKind.fishingNode => Colors.transparent,
+    };
+  }
+
+  // ignore: unused_element
   void _drawFallbackTileLayer(Canvas canvas, Size size) {
     if (terrainTiles.isEmpty) return;
     final tileWidth = camera.viewportSize.shortestSide / 7.2;
@@ -185,6 +444,7 @@ class GameMapPainter extends CustomPainter {
     );
   }
 
+  // ignore: unused_element
   void _drawSeaLayer(Canvas canvas, Size size) {
     final rect = Offset.zero & size;
     final waterPaint = _texturedFillPaint(
@@ -263,6 +523,7 @@ class GameMapPainter extends CustomPainter {
     }
   }
 
+  // ignore: unused_element
   void _drawTileMeshLayer(Canvas canvas, Size size) {
     if (terrainTiles.isEmpty) return;
     final tileWidth = camera.viewportSize.shortestSide / 7.2;
@@ -280,6 +541,7 @@ class GameMapPainter extends CustomPainter {
     }
   }
 
+  // ignore: unused_element
   void _drawTerrainTextureLayer(Canvas canvas, Size size) {
     if (terrainTiles.isEmpty) return;
     final tileWidth = camera.viewportSize.shortestSide / 7.2;
@@ -497,6 +759,7 @@ class GameMapPainter extends CustomPainter {
       ..close();
   }
 
+  // ignore: unused_element
   void _drawLandLayer(Canvas canvas, Size size) {
     for (final feature in terrainFeatures) {
       if (feature.kind != TerrainKind.land &&
@@ -642,6 +905,7 @@ class GameMapPainter extends CustomPainter {
     }
   }
 
+  // ignore: unused_element
   void _drawCoastlineLayer(Canvas canvas, Size size) {
     for (final feature in terrainFeatures) {
       if (feature.kind != TerrainKind.water &&
@@ -673,6 +937,7 @@ class GameMapPainter extends CustomPainter {
     }
   }
 
+  // ignore: unused_element
   void _drawCoastlineGlowLayer(Canvas canvas, Size size) {
     for (final feature in terrainFeatures) {
       if (feature.kind != TerrainKind.water &&
@@ -695,6 +960,7 @@ class GameMapPainter extends CustomPainter {
     }
   }
 
+  // ignore: unused_element
   void _drawRoadLayer(Canvas canvas, Size size) {
     for (final feature in terrainFeatures) {
       if (feature.kind != TerrainKind.road) continue;
@@ -758,6 +1024,7 @@ class GameMapPainter extends CustomPainter {
     );
   }
 
+  // ignore: unused_element
   void _drawPierLayer(Canvas canvas, Size size) {
     for (final feature in terrainFeatures) {
       if (feature.kind != TerrainKind.pier) continue;

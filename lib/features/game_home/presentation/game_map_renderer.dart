@@ -19,23 +19,32 @@ class GameMapTexturePack {
   const GameMapTexturePack({
     this.water,
     this.land,
+    this.grassMicro,
     this.shore,
     this.road,
   });
 
   final ui.Image? water;
   final ui.Image? land;
+  final ui.Image? grassMicro;
   final ui.Image? shore;
   final ui.Image? road;
 
   ui.Image? imageFor(TerrainKind kind) {
     return switch (kind) {
       TerrainKind.water => water,
-      TerrainKind.land => land,
+      TerrainKind.land => grassMicro ?? land,
       TerrainKind.shore => shore,
       TerrainKind.road => road,
       TerrainKind.pier => road,
       TerrainKind.fishingNode => null,
+    };
+  }
+
+  ui.Image? microImageFor(TerrainKind kind) {
+    return switch (kind) {
+      TerrainKind.land => grassMicro,
+      _ => imageFor(kind),
     };
   }
 }
@@ -61,6 +70,7 @@ class GameMapRenderer extends StatefulWidget {
 class _GameMapRendererState extends State<GameMapRenderer> {
   static const _waterTexture = 'assets/maps/textures/water_tile.jpg';
   static const _landTexture = 'assets/maps/textures/land_tile.jpg';
+  static const _grassMicroTexture = 'assets/maps/textures/grass_micro_tile.jpg';
   static const _shoreTexture = 'assets/maps/textures/shore_tile.jpg';
   static const _roadTexture = 'assets/maps/textures/road_tile.jpg';
 
@@ -77,6 +87,7 @@ class _GameMapRendererState extends State<GameMapRenderer> {
       final textures = GameMapTexturePack(
         water: await _loadTexture(_waterTexture),
         land: await _loadTexture(_landTexture),
+        grassMicro: await _loadTexture(_grassMicroTexture),
         shore: await _loadTexture(_shoreTexture),
         road: await _loadTexture(_roadTexture),
       );
@@ -349,6 +360,11 @@ class GameMapPainter extends CustomPainter {
           variant,
         );
       case TerrainKind.land:
+        _drawSeedreamLandMicroTile(
+          canvas,
+          rect,
+          variant,
+        );
         _drawLandTileBrush(
             canvas, rect.center, rect.width, rect.height, variant);
         _drawFlowerFlecks(canvas, rect, variant);
@@ -390,6 +406,44 @@ class GameMapPainter extends CustomPainter {
               colors[(i + variant) % colors.length].withValues(alpha: 0.42),
       );
     }
+  }
+
+  void _drawSeedreamLandMicroTile(Canvas canvas, Rect rect, int variant) {
+    final image = texturePack.microImageFor(TerrainKind.land);
+    if (image == null) return;
+    final tileScale = (0.16 + (variant % 3) * 0.018).toDouble();
+    final matrix = Matrix4.identity()
+      ..translateByDouble((variant % 7) * 29.0, (variant % 5) * 37.0, 0, 1)
+      ..scaleByDouble(tileScale, tileScale, 1, 1);
+    canvas.drawRect(
+      rect,
+      Paint()
+        ..shader = ui.ImageShader(
+          image,
+          ui.TileMode.repeated,
+          ui.TileMode.repeated,
+          matrix.storage,
+        )
+        ..colorFilter = ColorFilter.mode(
+          const Color(0xFFFFFFFF).withValues(alpha: 0.86),
+          BlendMode.modulate,
+        )
+        ..style = PaintingStyle.fill,
+    );
+    canvas.drawRect(
+      rect,
+      Paint()
+        ..shader = LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            const Color(0xFFFFFFFF).withValues(alpha: 0.12),
+            Colors.transparent,
+            const Color(0xFF0B5B3A).withValues(alpha: 0.16),
+          ],
+        ).createShader(rect)
+        ..style = PaintingStyle.fill,
+    );
   }
 
   Color _cellEdgeColor(TerrainKind kind) {

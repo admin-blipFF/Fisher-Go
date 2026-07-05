@@ -85,6 +85,10 @@ void main() {
     expect(rendererSource, contains('_drawPerspectiveTerrainCell'));
     expect(rendererSource, contains('_paintForTerrainCell'));
     expect(rendererSource, contains('_drawPerspectiveRoadCells'));
+    expect(rendererSource, contains('_drawTerrainDetailLayer'));
+    expect(rendererSource, contains('_drawLandDetailTufts'));
+    expect(rendererSource, contains('_drawShoreReedDetails'));
+    expect(rendererSource, contains('_drawWaterSparkleDetails'));
     expect(rendererSource, contains('_drawHorizonLayer'));
     expect(rendererSource, contains('_drawWaterTileRipples'));
     expect(rendererSource, contains('_drawSeedreamLandMicroTile'));

@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
@@ -177,6 +178,7 @@ class GameMapPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     _drawHorizonLayer(canvas, size);
     _drawPerspectiveMicroTileLayer(canvas, size);
+    _drawTerrainDetailLayer(canvas, size);
     _drawRoadLayer(canvas, size);
     _drawPierLayer(canvas, size);
     _drawLandmarkLabelLayer(canvas, size);
@@ -416,6 +418,165 @@ class GameMapPainter extends CustomPainter {
           ..strokeWidth = 1.2,
       );
     }
+  }
+
+  void _drawTerrainDetailLayer(Canvas canvas, Size size) {
+    if (terrainTiles.isEmpty) return;
+    final visibleTiles = terrainTiles
+        .where((tile) => camera.isVisible(tile.centerLatLng, paddingMeters: 80))
+        .toList(growable: false);
+    for (final tile in visibleTiles) {
+      if (tile.kind == TerrainKind.road ||
+          tile.kind == TerrainKind.pier ||
+          tile.kind == TerrainKind.fishingNode) {
+        continue;
+      }
+      final rect = _projectTileToPerspective(size, tile);
+      if (rect == null) continue;
+      final path = _terrainCellPathFromCamera(rect, tile);
+      canvas.save();
+      canvas.clipPath(path);
+      switch (tile.kind) {
+        case TerrainKind.land:
+          _drawLandDetailTufts(canvas, rect, tile.row, tile.col);
+        case TerrainKind.shore:
+          _drawShoreReedDetails(canvas, rect, tile.row, tile.col);
+        case TerrainKind.water:
+          _drawWaterSparkleDetails(canvas, rect, tile.row, tile.col);
+        case TerrainKind.road:
+        case TerrainKind.pier:
+        case TerrainKind.fishingNode:
+          break;
+      }
+      canvas.restore();
+    }
+  }
+
+  void _drawLandDetailTufts(Canvas canvas, Rect rect, int row, int col) {
+    final tuftPaint = Paint()
+      ..color = const Color(0xFFE3FF8F).withValues(alpha: 0.36)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = (rect.width * 0.022).clamp(0.8, 1.55)
+      ..strokeCap = StrokeCap.round;
+    final shadowPaint = Paint()
+      ..color = const Color(0xFF0A5C3D).withValues(alpha: 0.16)
+      ..style = PaintingStyle.fill
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2);
+
+    for (var i = 0; i < 7; i++) {
+      final seed = row * 37 + col * 17 + i * 11;
+      final x = rect.left + rect.width * (0.18 + _detailNoise(seed) * 0.64);
+      final y = rect.top + rect.height * (0.2 + _detailNoise(seed + 5) * 0.62);
+      final base = Offset(x, y);
+      final size = rect.shortestSide * (0.07 + _detailNoise(seed + 9) * 0.04);
+      canvas.drawOval(
+        Rect.fromCenter(
+          center: base.translate(0, size * 0.32),
+          width: size * 1.9,
+          height: size * 0.72,
+        ),
+        shadowPaint,
+      );
+      canvas.drawLine(base, base.translate(-size * 0.38, -size), tuftPaint);
+      canvas.drawLine(base, base.translate(size * 0.1, -size * 1.1), tuftPaint);
+      canvas.drawLine(
+          base, base.translate(size * 0.42, -size * 0.72), tuftPaint);
+      if ((row + col + i) % 5 == 0) {
+        final flowerPaint = Paint()
+          ..color = _flowerColor(seed)
+          ..style = PaintingStyle.fill;
+        canvas.drawCircle(
+          base.translate(size * 0.18, -size * 0.86),
+          (size * 0.24).clamp(1.6, 3.2),
+          flowerPaint,
+        );
+      }
+    }
+  }
+
+  void _drawShoreReedDetails(Canvas canvas, Rect rect, int row, int col) {
+    final reedPaint = Paint()
+      ..color = const Color(0xFFEFFF9B).withValues(alpha: 0.32)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = (rect.width * 0.014).clamp(0.45, 1.0)
+      ..strokeCap = StrokeCap.round;
+    final basePaint = Paint()
+      ..color = const Color(0xFF12684B).withValues(alpha: 0.14)
+      ..style = PaintingStyle.fill;
+
+    for (var i = 0; i < 5; i++) {
+      final seed = row * 43 + col * 19 + i * 13;
+      final x = rect.left + rect.width * (0.12 + _detailNoise(seed) * 0.76);
+      final y = rect.top + rect.height * (0.3 + _detailNoise(seed + 7) * 0.56);
+      final height = rect.shortestSide * (0.08 + _detailNoise(seed + 3) * 0.05);
+      final lean = (0.5 - _detailNoise(seed + 11)) * rect.width * 0.05;
+      canvas.drawCircle(Offset(x, y + height * 0.18), height * 0.28, basePaint);
+      canvas.drawLine(
+        Offset(x, y),
+        Offset(x + lean, y - height),
+        reedPaint,
+      );
+    }
+  }
+
+  void _drawWaterSparkleDetails(Canvas canvas, Rect rect, int row, int col) {
+    final sparklePaint = Paint()
+      ..color = const Color(0xFFFFFFFF).withValues(alpha: 0.18)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = (rect.width * 0.012).clamp(0.45, 1.1)
+      ..strokeCap = StrokeCap.round;
+    final crossSparklePaint = Paint()
+      ..color = const Color(0xFFFFFFFF).withValues(alpha: 0.12)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = (rect.width * 0.012).clamp(0.45, 1.1)
+      ..strokeCap = StrokeCap.round;
+    final glowPaint = Paint()
+      ..color = const Color(0xFFB8FFFA).withValues(alpha: 0.1)
+      ..style = PaintingStyle.fill
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3);
+
+    for (var i = 0; i < 3; i++) {
+      final seed = row * 29 + col * 31 + i * 17;
+      final center = Offset(
+        rect.left + rect.width * (0.16 + _detailNoise(seed) * 0.68),
+        rect.top + rect.height * (0.22 + _detailNoise(seed + 4) * 0.58),
+      );
+      final width = rect.width * (0.08 + _detailNoise(seed + 8) * 0.06);
+      canvas.drawOval(
+        Rect.fromCenter(
+          center: center,
+          width: width * 1.7,
+          height: width * 0.6,
+        ),
+        glowPaint,
+      );
+      canvas.drawLine(
+        center.translate(-width * 0.5, 0),
+        center.translate(width * 0.5, 0),
+        sparklePaint,
+      );
+      if ((row + col + i) % 3 == 0) {
+        canvas.drawLine(
+          center.translate(0, -width * 0.26),
+          center.translate(0, width * 0.26),
+          crossSparklePaint,
+        );
+      }
+    }
+  }
+
+  double _detailNoise(int seed) {
+    final value = math.sin(seed * 12.9898 + 78.233) * 43758.5453;
+    return value - value.floorToDouble();
+  }
+
+  Color _flowerColor(int seed) {
+    return switch (seed.abs() % 4) {
+      0 => const Color(0xFFFFF36C).withValues(alpha: 0.72),
+      1 => const Color(0xFFFFFFFF).withValues(alpha: 0.62),
+      2 => const Color(0xFFFF9FCB).withValues(alpha: 0.58),
+      _ => const Color(0xFFB8F7FF).withValues(alpha: 0.56),
+    };
   }
 
   void _drawPerspectiveCellTexture(

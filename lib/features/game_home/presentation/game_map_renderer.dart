@@ -20,6 +20,11 @@ class GameMapTexturePack {
     this.water,
     this.land,
     this.grassMicro,
+    this.grassLight,
+    this.grassMid,
+    this.grassDark,
+    this.groundMoss,
+    this.shoreGrass,
     this.shore,
     this.road,
   });
@@ -27,6 +32,11 @@ class GameMapTexturePack {
   final ui.Image? water;
   final ui.Image? land;
   final ui.Image? grassMicro;
+  final ui.Image? grassLight;
+  final ui.Image? grassMid;
+  final ui.Image? grassDark;
+  final ui.Image? groundMoss;
+  final ui.Image? shoreGrass;
   final ui.Image? shore;
   final ui.Image? road;
 
@@ -46,6 +56,18 @@ class GameMapTexturePack {
       TerrainKind.land => grassMicro,
       _ => imageFor(kind),
     };
+  }
+
+  ui.Image? landMicroImageForVariant(int variant) {
+    final palette = [
+      grassMid ?? grassMicro,
+      grassLight ?? grassMicro,
+      grassMid ?? grassMicro,
+      grassDark ?? grassMicro,
+      groundMoss ?? grassDark ?? grassMicro,
+    ].whereType<ui.Image>().toList(growable: false);
+    if (palette.isEmpty) return grassMicro ?? land;
+    return palette[variant.abs() % palette.length];
   }
 }
 
@@ -71,6 +93,11 @@ class _GameMapRendererState extends State<GameMapRenderer> {
   static const _waterTexture = 'assets/maps/textures/water_tile.jpg';
   static const _landTexture = 'assets/maps/textures/land_tile.jpg';
   static const _grassMicroTexture = 'assets/maps/textures/grass_micro_tile.jpg';
+  static const _grassLightTexture = 'assets/maps/textures/grass_light_tile.jpg';
+  static const _grassMidTexture = 'assets/maps/textures/grass_mid_tile.jpg';
+  static const _grassDarkTexture = 'assets/maps/textures/grass_dark_tile.jpg';
+  static const _groundMossTexture = 'assets/maps/textures/ground_moss_tile.jpg';
+  static const _shoreGrassTexture = 'assets/maps/textures/shore_grass_tile.jpg';
   static const _shoreTexture = 'assets/maps/textures/shore_tile.jpg';
   static const _roadTexture = 'assets/maps/textures/road_tile.jpg';
 
@@ -88,6 +115,11 @@ class _GameMapRendererState extends State<GameMapRenderer> {
         water: await _loadTexture(_waterTexture),
         land: await _loadTexture(_landTexture),
         grassMicro: await _loadTexture(_grassMicroTexture),
+        grassLight: await _loadTexture(_grassLightTexture),
+        grassMid: await _loadTexture(_grassMidTexture),
+        grassDark: await _loadTexture(_grassDarkTexture),
+        groundMoss: await _loadTexture(_groundMossTexture),
+        shoreGrass: await _loadTexture(_shoreGrassTexture),
         shore: await _loadTexture(_shoreTexture),
         road: await _loadTexture(_roadTexture),
       );
@@ -408,6 +440,7 @@ class GameMapPainter extends CustomPainter {
           variant,
         );
       case TerrainKind.shore:
+        _drawShoreGrassMicroTile(canvas, rect, variant);
         _drawShoreTilePebbles(
             canvas, rect.center, rect.width, rect.height, variant);
       case TerrainKind.road:
@@ -426,8 +459,9 @@ class GameMapPainter extends CustomPainter {
   }
 
   void _drawSeedreamLandMicroTile(Canvas canvas, Rect rect, int variant) {
-    final image = texturePack.microImageFor(TerrainKind.land);
-    if (image == null) return;
+    final baseImage =
+        texturePack.grassMicro ?? texturePack.grassMid ?? texturePack.land;
+    if (baseImage == null) return;
     const tileScale = 0.032;
     final matrix = Matrix4.identity()
       ..translateByDouble(
@@ -441,13 +475,67 @@ class GameMapPainter extends CustomPainter {
       rect,
       Paint()
         ..shader = ui.ImageShader(
+          baseImage,
+          ui.TileMode.repeated,
+          ui.TileMode.repeated,
+          matrix.storage,
+        )
+        ..colorFilter = ColorFilter.mode(
+          const Color(0xFFE8FFC0).withValues(alpha: 0.9),
+          BlendMode.modulate,
+        )
+        ..style = PaintingStyle.fill,
+    );
+    final toneImage = _landMicroImageForVariant(variant);
+    if (toneImage == null || identical(toneImage, baseImage)) return;
+    final toneAlpha = switch (variant.abs() % 6) {
+      0 => 0.10,
+      1 => 0.14,
+      2 => 0.08,
+      3 => 0.16,
+      4 => 0.12,
+      _ => 0.06,
+    };
+    canvas.drawRect(
+      rect,
+      Paint()
+        ..shader = ui.ImageShader(
+          toneImage,
+          ui.TileMode.repeated,
+          ui.TileMode.repeated,
+          matrix.storage,
+        )
+        ..colorFilter = ColorFilter.mode(
+          Color.fromRGBO(255, 255, 255, toneAlpha),
+          BlendMode.modulate,
+        )
+        ..style = PaintingStyle.fill,
+    );
+  }
+
+  ui.Image? _landMicroImageForVariant(int variant) {
+    return texturePack.landMicroImageForVariant(variant);
+  }
+
+  void _drawShoreGrassMicroTile(Canvas canvas, Rect rect, int variant) {
+    final image =
+        texturePack.shoreGrass ?? texturePack.groundMoss ?? texturePack.shore;
+    if (image == null) return;
+    const tileScale = 0.04;
+    final matrix = Matrix4.identity()
+      ..translateByDouble((variant % 5) * 41.0, (variant % 7) * 31.0, 0, 1)
+      ..scaleByDouble(tileScale, tileScale, 1, 1);
+    canvas.drawRect(
+      rect,
+      Paint()
+        ..shader = ui.ImageShader(
           image,
           ui.TileMode.repeated,
           ui.TileMode.repeated,
           matrix.storage,
         )
         ..colorFilter = ColorFilter.mode(
-          const Color(0xFFE6FFB9).withValues(alpha: 0.82),
+          const Color(0xFFFFF0B6).withValues(alpha: 0.62),
           BlendMode.modulate,
         )
         ..style = PaintingStyle.fill,

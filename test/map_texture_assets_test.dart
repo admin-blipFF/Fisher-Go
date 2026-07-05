@@ -53,6 +53,51 @@ void main() {
     expect(horizontalDelta, lessThan(24));
     expect(verticalDelta, lessThan(24));
   });
+
+  test('grass palette micro textures are square seamless tile assets',
+      () async {
+    const assetPaths = [
+      'assets/maps/textures/grass_light_tile.jpg',
+      'assets/maps/textures/grass_mid_tile.jpg',
+      'assets/maps/textures/grass_dark_tile.jpg',
+      'assets/maps/textures/ground_moss_tile.jpg',
+      'assets/maps/textures/shore_grass_tile.jpg',
+    ];
+
+    for (final assetPath in assetPaths) {
+      final bytes = File(assetPath).readAsBytesSync();
+      final codec = await ui.instantiateImageCodec(bytes);
+      final frame = await codec.getNextFrame();
+      final image = frame.image;
+      final data = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
+      final pixels = data!.buffer.asUint8List();
+
+      expect(image.width, 1024, reason: assetPath);
+      expect(image.height, 1024, reason: assetPath);
+      expect(
+        _averageEdgeDelta(
+          pixels,
+          width: image.width,
+          height: image.height,
+          firstEdge: _Edge.left,
+          secondEdge: _Edge.right,
+        ),
+        lessThan(24),
+        reason: assetPath,
+      );
+      expect(
+        _averageEdgeDelta(
+          pixels,
+          width: image.width,
+          height: image.height,
+          firstEdge: _Edge.top,
+          secondEdge: _Edge.bottom,
+        ),
+        lessThan(24),
+        reason: assetPath,
+      );
+    }
+  });
 }
 
 enum _Edge { left, right, top, bottom }

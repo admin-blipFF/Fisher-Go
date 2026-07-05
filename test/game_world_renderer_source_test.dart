@@ -58,6 +58,15 @@ void main() {
     expect(rendererSource, contains('assets/maps/textures/land_tile.jpg'));
     expect(
         rendererSource, contains('assets/maps/textures/grass_micro_tile.jpg'));
+    expect(
+        rendererSource, contains('assets/maps/textures/grass_light_tile.jpg'));
+    expect(rendererSource, contains('assets/maps/textures/grass_mid_tile.jpg'));
+    expect(
+        rendererSource, contains('assets/maps/textures/grass_dark_tile.jpg'));
+    expect(
+        rendererSource, contains('assets/maps/textures/ground_moss_tile.jpg'));
+    expect(
+        rendererSource, contains('assets/maps/textures/shore_grass_tile.jpg'));
     expect(rendererSource, contains('assets/maps/textures/shore_tile.jpg'));
     expect(rendererSource, contains('assets/maps/textures/road_tile.jpg'));
     expect(rendererSource, contains('ImageShader'));
@@ -79,6 +88,8 @@ void main() {
     expect(rendererSource, contains('_drawHorizonLayer'));
     expect(rendererSource, contains('_drawWaterTileRipples'));
     expect(rendererSource, contains('_drawSeedreamLandMicroTile'));
+    expect(rendererSource, contains('_landMicroImageForVariant'));
+    expect(rendererSource, contains('_drawShoreGrassMicroTile'));
     expect(rendererSource, contains('_drawLandTileBrush'));
     expect(rendererSource, contains('_drawShoreTilePebbles'));
     expect(rendererSource, contains('_drawTileLightBreakup'));

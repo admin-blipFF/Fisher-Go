@@ -18,6 +18,8 @@ void main() {
     expect(source, contains('GameMapRenderer'));
     expect(source, contains('GameMapCamera'));
     expect(source, contains('GameMapFeatureStore'));
+    expect(source, contains('static const bool _debugDisableTutorial = true'));
+    expect(source, contains('if (_debugDisableTutorial) return'));
     expect(source, contains('_mapBearingDegrees'));
     expect(source, contains('_RotateMapButton'));
     expect(
@@ -69,6 +71,8 @@ void main() {
     expect(rendererSource, contains('_drawTerrainTileTexture'));
     expect(rendererSource, contains('_drawPerspectiveMicroTileLayer'));
     expect(rendererSource, contains('_projectTileToPerspective'));
+    expect(rendererSource, contains('_projectTerrainCellFromCamera'));
+    expect(rendererSource, contains('_terrainCellPathFromCamera'));
     expect(rendererSource, contains('_drawPerspectiveTerrainCell'));
     expect(rendererSource, contains('_paintForTerrainCell'));
     expect(rendererSource, contains('_drawPerspectiveRoadCells'));

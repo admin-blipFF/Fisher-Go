@@ -49,6 +49,7 @@ class _GameHomeScreenState extends State<GameHomeScreen>
     with TickerProviderStateMixin {
   // 無 GPS 權限時用青馬附近做可視 fallback，保留有道路、水域的首屏。
   static const _hkTerritoryCenter = LatLng(22.3517, 114.0743);
+  static const bool _debugDisableTutorial = true;
 
   bool _autoMode = false;
   LatLng _playerLatLng = _hkTerritoryCenter;
@@ -311,6 +312,7 @@ class _GameHomeScreenState extends State<GameHomeScreen>
   }
 
   Future<void> _checkAndShowTutorial() async {
+    if (_debugDisableTutorial) return;
     final done = await TutorialService.isCompleted();
     if (!done && mounted) {
       _showTutorialOverlay();

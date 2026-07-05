@@ -145,6 +145,8 @@ class GameMapPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     _drawHorizonLayer(canvas, size);
     _drawPerspectiveMicroTileLayer(canvas, size);
+    _drawRoadLayer(canvas, size);
+    _drawPierLayer(canvas, size);
     _drawLandmarkLabelLayer(canvas, size);
     _drawFishingSpotLayer(canvas, size);
     _drawAtmosphereLayer(canvas, size);
@@ -198,14 +200,28 @@ class GameMapPainter extends CustomPainter {
         if (rowCompare != 0) return rowCompare;
         return a.col.compareTo(b.col);
       });
+    final hasVectorRoadLayer = terrainFeatures.any((feature) =>
+        feature.kind == TerrainKind.road || feature.kind == TerrainKind.pier);
 
     for (final tile in orderedTiles) {
-      if (tile.kind == TerrainKind.road || tile.kind == TerrainKind.pier) {
+      if ((tile.kind == TerrainKind.road || tile.kind == TerrainKind.pier) &&
+          !hasVectorRoadLayer) {
         continue;
       }
-      _drawPerspectiveTerrainCell(canvas, size, tile);
+      final renderTile = hasVectorRoadLayer &&
+              (tile.kind == TerrainKind.road || tile.kind == TerrainKind.pier)
+          ? TerrainTile(
+              kind: TerrainKind.land,
+              row: tile.row,
+              col: tile.col,
+              centerLatLng: tile.centerLatLng,
+            )
+          : tile;
+      _drawPerspectiveTerrainCell(canvas, size, renderTile);
     }
-    _drawPerspectiveRoadCells(canvas, size, orderedTiles);
+    if (!hasVectorRoadLayer) {
+      _drawPerspectiveRoadCells(canvas, size, orderedTiles);
+    }
   }
 
   void _drawPerspectiveTerrainCell(
@@ -215,7 +231,7 @@ class GameMapPainter extends CustomPainter {
   ) {
     final rect = _projectTileToPerspective(size, tile);
     if (rect == null) return;
-    final path = _perspectiveCellPath(rect);
+    final path = _terrainCellPathFromCamera(rect, tile);
     canvas.drawPath(path, _paintForTerrainCell(tile.kind, rect));
     canvas.save();
     canvas.clipPath(path);
@@ -226,11 +242,15 @@ class GameMapPainter extends CustomPainter {
       Paint()
         ..color = _cellEdgeColor(tile.kind)
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 0.35,
+        ..strokeWidth = tile.kind == TerrainKind.land ? 0 : 0.28,
     );
   }
 
   Rect? _projectTileToPerspective(Size size, TerrainTile tile) {
+    return _projectTerrainCellFromCamera(size, tile);
+  }
+
+  Rect? _projectTerrainCellFromCamera(Size size, TerrainTile tile) {
     final rowCount = terrainTiles.map((tile) => tile.row).fold<int>(
               0,
               (max, row) => row > max ? row : max,
@@ -242,22 +262,41 @@ class GameMapPainter extends CustomPainter {
             ) +
         1;
     if (rowCount <= 0 || colCount <= 0) return null;
-    final rowT = rowCount <= 1 ? 0.5 : tile.row / (rowCount - 1);
-    final colT = colCount <= 1 ? 0.5 : tile.col / (colCount - 1);
-    final depth = rowT.clamp(0.0, 1.0);
-    final perspective = 0.34 + depth * depth * 1.24;
-    final horizonY = size.height * 0.2;
-    final groundHeight = size.height * 0.84;
-    final y = horizonY + groundHeight * (depth * depth);
-    final centerX = size.width * 0.5 + (colT - 0.5) * size.width * perspective;
-    final cellWidth = size.width / colCount * perspective * 1.42;
-    final cellHeight = size.height / rowCount * (2.25 + depth * 4.8);
-    if (y < -cellHeight || y > size.height + cellHeight) return null;
+    final center = camera.project(tile.centerLatLng);
+    final depth = (center.dy / size.height).clamp(0.0, 1.0);
+    final baseWidth = size.height / (colCount - 1);
+    final baseHeight = size.height / (rowCount - 1);
+    final perspective = 1.18 + depth * 0.42;
+    final cellWidth = baseWidth * perspective * 1.46;
+    final cellHeight = baseHeight * perspective * 1.72;
+    if (center.dx < -cellWidth ||
+        center.dx > size.width + cellWidth ||
+        center.dy < -cellHeight ||
+        center.dy > size.height + cellHeight) {
+      return null;
+    }
     return Rect.fromCenter(
-      center: Offset(centerX, y),
+      center: center,
       width: cellWidth,
       height: cellHeight,
     );
+  }
+
+  Path _terrainCellPathFromCamera(Rect rect, TerrainTile tile) {
+    final isWater = tile.kind == TerrainKind.water;
+    final isRoad =
+        tile.kind == TerrainKind.road || tile.kind == TerrainKind.pier;
+    if (isWater || isRoad) {
+      return _perspectiveCellPath(rect);
+    }
+    final topInset = rect.width * 0.06;
+    final sideInset = rect.width * 0.025;
+    return Path()
+      ..moveTo(rect.left + topInset, rect.top)
+      ..lineTo(rect.right - topInset, rect.top)
+      ..lineTo(rect.right - sideInset, rect.bottom)
+      ..lineTo(rect.left + sideInset, rect.bottom)
+      ..close();
   }
 
   Path _perspectiveCellPath(Rect rect) {
@@ -287,9 +326,9 @@ class GameMapPainter extends CustomPainter {
               Color(0xFF56C67B),
             ],
           TerrainKind.land => const [
-              Color(0xFF8EE35F),
-              Color(0xFF46C968),
-              Color(0xFF238F60),
+              Color(0xFF57CB68),
+              Color(0xFF50C765),
+              Color(0xFF49BF61),
             ],
           TerrainKind.road || TerrainKind.pier => const [
               Color(0xFFFFF8D8),
@@ -316,7 +355,10 @@ class GameMapPainter extends CustomPainter {
     for (final tile in roadTiles) {
       final rect = _projectTileToPerspective(size, tile);
       if (rect == null) continue;
-      final path = _perspectiveCellPath(rect.inflate(rect.width * 0.14));
+      final path = _terrainCellPathFromCamera(
+        rect.inflate(rect.width * 0.14),
+        tile,
+      );
       canvas.drawPath(
         path,
         Paint()
@@ -365,9 +407,6 @@ class GameMapPainter extends CustomPainter {
           rect,
           variant,
         );
-        _drawLandTileBrush(
-            canvas, rect.center, rect.width, rect.height, variant);
-        _drawFlowerFlecks(canvas, rect, variant);
       case TerrainKind.shore:
         _drawShoreTilePebbles(
             canvas, rect.center, rect.width, rect.height, variant);
@@ -386,34 +425,17 @@ class GameMapPainter extends CustomPainter {
     }
   }
 
-  void _drawFlowerFlecks(Canvas canvas, Rect rect, int variant) {
-    final colors = const [
-      Color(0xFFFFF36D),
-      Color(0xFFFFFFFF),
-      Color(0xFFFF8BCB),
-      Color(0xFF9DFF8B),
-    ];
-    for (var i = 0; i < 4; i++) {
-      final x =
-          rect.left + rect.width * (0.18 + ((i * 17 + variant) % 64) / 90);
-      final y =
-          rect.top + rect.height * (0.18 + ((i * 11 + variant) % 58) / 86);
-      canvas.drawCircle(
-        Offset(x, y),
-        (rect.width * 0.018).clamp(1.2, 3.4).toDouble(),
-        Paint()
-          ..color =
-              colors[(i + variant) % colors.length].withValues(alpha: 0.42),
-      );
-    }
-  }
-
   void _drawSeedreamLandMicroTile(Canvas canvas, Rect rect, int variant) {
     final image = texturePack.microImageFor(TerrainKind.land);
     if (image == null) return;
-    final tileScale = (0.16 + (variant % 3) * 0.018).toDouble();
+    const tileScale = 0.032;
     final matrix = Matrix4.identity()
-      ..translateByDouble((variant % 7) * 29.0, (variant % 5) * 37.0, 0, 1)
+      ..translateByDouble(
+        -camera.project(camera.center).dx * 0.18,
+        -camera.project(camera.center).dy * 0.18,
+        0,
+        1,
+      )
       ..scaleByDouble(tileScale, tileScale, 1, 1);
     canvas.drawRect(
       rect,
@@ -425,23 +447,9 @@ class GameMapPainter extends CustomPainter {
           matrix.storage,
         )
         ..colorFilter = ColorFilter.mode(
-          const Color(0xFFFFFFFF).withValues(alpha: 0.86),
+          const Color(0xFFE6FFB9).withValues(alpha: 0.82),
           BlendMode.modulate,
         )
-        ..style = PaintingStyle.fill,
-    );
-    canvas.drawRect(
-      rect,
-      Paint()
-        ..shader = LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            const Color(0xFFFFFFFF).withValues(alpha: 0.12),
-            Colors.transparent,
-            const Color(0xFF0B5B3A).withValues(alpha: 0.16),
-          ],
-        ).createShader(rect)
         ..style = PaintingStyle.fill,
     );
   }
@@ -450,7 +458,7 @@ class GameMapPainter extends CustomPainter {
     return switch (kind) {
       TerrainKind.water => const Color(0xFFD8FFFB).withValues(alpha: 0.1),
       TerrainKind.shore => const Color(0xFFFFFFC8).withValues(alpha: 0.18),
-      TerrainKind.land => const Color(0xFFE8FFAE).withValues(alpha: 0.12),
+      TerrainKind.land => Colors.transparent,
       TerrainKind.road ||
       TerrainKind.pier =>
         const Color(0xFFFFFFFF).withValues(alpha: 0.3),

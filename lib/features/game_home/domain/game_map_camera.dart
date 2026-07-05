@@ -33,7 +33,7 @@ class GameMapCamera {
     );
   }
 
-  bool isVisible(LatLng point, {double paddingMeters = 120}) {
+  bool isVisible(LatLng point, {double paddingMeters = 450}) {
     final projected = project(point);
     final paddingPixels = _paddingPixels(paddingMeters);
     return projected.dx >= -paddingPixels &&
@@ -42,9 +42,7 @@ class GameMapCamera {
         projected.dy <= viewportSize.height + paddingPixels;
   }
 
-  double get _pixelsPerMeter =>
-      math.min(viewportSize.width, viewportSize.height) /
-      (visibleRadiusMeters * 2);
+  double get _pixelsPerMeter => viewportSize.height / (visibleRadiusMeters * 2);
 
   double _paddingPixels(double paddingMeters) =>
       paddingMeters * _pixelsPerMeter;

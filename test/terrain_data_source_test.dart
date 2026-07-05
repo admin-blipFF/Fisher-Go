@@ -224,5 +224,22 @@ void main() {
           features.map((feature) => feature.kind), contains(TerrainKind.water));
       expect(features.every((feature) => feature.points.length >= 2), isTrue);
     });
+
+    test('exposes Sha Tin Hilton road vectors for the debug fishing spot', () {
+      final json = File('assets/maps/hk_terrain_mvp.json').readAsStringSync();
+      final source = GeoTerrainDataSource(GeoTerrainDataset.fromJson(json));
+
+      final features = source.visibleVectorFeatures(
+        playerLatLng: const LatLng(22.3819, 114.1874),
+        radiusMeters: 900,
+      );
+      final names = features.map((feature) => feature.name).toSet();
+
+      expect(
+          features.map((feature) => feature.kind), contains(TerrainKind.road));
+      expect(names, contains('沙田正街'));
+      expect(names, contains('源禾路'));
+      expect(names, contains('大涌橋路'));
+    });
   });
 }

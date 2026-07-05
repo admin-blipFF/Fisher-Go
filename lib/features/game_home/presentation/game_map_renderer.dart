@@ -458,81 +458,8 @@ class GameMapPainter extends CustomPainter {
     final visibleTiles = terrainTiles
         .where((tile) => camera.isVisible(tile.centerLatLng, paddingMeters: 80))
         .toList(growable: false);
-    _drawCoastalParkPaths(canvas, size, visibleTiles);
     _drawTreeCanopyClusters(canvas, size, visibleTiles);
     _drawShoreRockDetails(canvas, size, visibleTiles);
-  }
-
-  void _drawCoastalParkPaths(
-    Canvas canvas,
-    Size size,
-    List<TerrainTile> visibleTiles,
-  ) {
-    final candidateTiles = visibleTiles
-        .where((tile) =>
-            tile.kind == TerrainKind.land || tile.kind == TerrainKind.shore)
-        .toList(growable: false);
-    if (candidateTiles.length < 3) return;
-    final sorted = [...candidateTiles]..sort((a, b) {
-        final rowCompare = a.row.compareTo(b.row);
-        if (rowCompare != 0) return rowCompare;
-        return a.col.compareTo(b.col);
-      });
-    final stride = (sorted.length / 9).ceil().clamp(1, 8);
-    final anchors = <Offset>[];
-    for (var i = 0; i < sorted.length; i += stride) {
-      final rect = _projectTileToPerspective(size, sorted[i]);
-      if (rect == null) continue;
-      anchors.add(rect.center.translate(
-        (0.5 - _detailNoise(sorted[i].row * 19 + sorted[i].col * 7)) *
-            rect.width *
-            0.42,
-        (0.5 - _detailNoise(sorted[i].row * 11 + sorted[i].col * 13)) *
-            rect.height *
-            0.34,
-      ));
-    }
-    if (anchors.length < 3) return;
-
-    final path = Path()..moveTo(anchors.first.dx, anchors.first.dy);
-    for (var i = 1; i < anchors.length; i++) {
-      final previous = anchors[i - 1];
-      final current = anchors[i];
-      final control = Offset(
-        (previous.dx + current.dx) * 0.5,
-        (previous.dy + current.dy) * 0.5 - size.height * 0.018,
-      );
-      path.quadraticBezierTo(control.dx, control.dy, current.dx, current.dy);
-    }
-    canvas.drawPath(
-      path,
-      Paint()
-        ..color = const Color(0xFF0B5D45).withValues(alpha: 0.1)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 5.4
-        ..strokeCap = StrokeCap.round
-        ..strokeJoin = StrokeJoin.round
-        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2),
-    );
-    canvas.drawPath(
-      path,
-      Paint()
-        ..shader = const LinearGradient(
-          colors: [Color(0xE6FFF7C9), Color(0xD9E7E7B7)],
-        ).createShader(Offset.zero & size)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 2.7
-        ..strokeCap = StrokeCap.round
-        ..strokeJoin = StrokeJoin.round,
-    );
-    canvas.drawPath(
-      path,
-      Paint()
-        ..color = const Color(0xFFFFFFFF).withValues(alpha: 0.22)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 0.7
-        ..strokeCap = StrokeCap.round,
-    );
   }
 
   void _drawTreeCanopyClusters(

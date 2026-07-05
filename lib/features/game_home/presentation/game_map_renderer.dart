@@ -179,6 +179,7 @@ class GameMapPainter extends CustomPainter {
     _drawHorizonLayer(canvas, size);
     _drawPerspectiveMicroTileLayer(canvas, size);
     _drawTerrainDetailLayer(canvas, size);
+    _drawImagegenInspiredMapLayer(canvas, size);
     _drawRoadLayer(canvas, size);
     _drawPierLayer(canvas, size);
     _drawLandmarkLabelLayer(canvas, size);
@@ -449,6 +450,188 @@ class GameMapPainter extends CustomPainter {
           break;
       }
       canvas.restore();
+    }
+  }
+
+  void _drawImagegenInspiredMapLayer(Canvas canvas, Size size) {
+    if (terrainTiles.isEmpty) return;
+    final visibleTiles = terrainTiles
+        .where((tile) => camera.isVisible(tile.centerLatLng, paddingMeters: 80))
+        .toList(growable: false);
+    _drawCoastalParkPaths(canvas, size, visibleTiles);
+    _drawTreeCanopyClusters(canvas, size, visibleTiles);
+    _drawShoreRockDetails(canvas, size, visibleTiles);
+  }
+
+  void _drawCoastalParkPaths(
+    Canvas canvas,
+    Size size,
+    List<TerrainTile> visibleTiles,
+  ) {
+    final candidateTiles = visibleTiles
+        .where((tile) =>
+            tile.kind == TerrainKind.land || tile.kind == TerrainKind.shore)
+        .toList(growable: false);
+    if (candidateTiles.length < 3) return;
+    final sorted = [...candidateTiles]..sort((a, b) {
+        final rowCompare = a.row.compareTo(b.row);
+        if (rowCompare != 0) return rowCompare;
+        return a.col.compareTo(b.col);
+      });
+    final stride = (sorted.length / 9).ceil().clamp(1, 8);
+    final anchors = <Offset>[];
+    for (var i = 0; i < sorted.length; i += stride) {
+      final rect = _projectTileToPerspective(size, sorted[i]);
+      if (rect == null) continue;
+      anchors.add(rect.center.translate(
+        (0.5 - _detailNoise(sorted[i].row * 19 + sorted[i].col * 7)) *
+            rect.width *
+            0.42,
+        (0.5 - _detailNoise(sorted[i].row * 11 + sorted[i].col * 13)) *
+            rect.height *
+            0.34,
+      ));
+    }
+    if (anchors.length < 3) return;
+
+    final path = Path()..moveTo(anchors.first.dx, anchors.first.dy);
+    for (var i = 1; i < anchors.length; i++) {
+      final previous = anchors[i - 1];
+      final current = anchors[i];
+      final control = Offset(
+        (previous.dx + current.dx) * 0.5,
+        (previous.dy + current.dy) * 0.5 - size.height * 0.018,
+      );
+      path.quadraticBezierTo(control.dx, control.dy, current.dx, current.dy);
+    }
+    canvas.drawPath(
+      path,
+      Paint()
+        ..color = const Color(0xFF0B5D45).withValues(alpha: 0.1)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 5.4
+        ..strokeCap = StrokeCap.round
+        ..strokeJoin = StrokeJoin.round
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2),
+    );
+    canvas.drawPath(
+      path,
+      Paint()
+        ..shader = const LinearGradient(
+          colors: [Color(0xE6FFF7C9), Color(0xD9E7E7B7)],
+        ).createShader(Offset.zero & size)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2.7
+        ..strokeCap = StrokeCap.round
+        ..strokeJoin = StrokeJoin.round,
+    );
+    canvas.drawPath(
+      path,
+      Paint()
+        ..color = const Color(0xFFFFFFFF).withValues(alpha: 0.22)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 0.7
+        ..strokeCap = StrokeCap.round,
+    );
+  }
+
+  void _drawTreeCanopyClusters(
+    Canvas canvas,
+    Size size,
+    List<TerrainTile> visibleTiles,
+  ) {
+    final landTiles = visibleTiles
+        .where((tile) => tile.kind == TerrainKind.land)
+        .toList(growable: false);
+    for (final tile in landTiles) {
+      if ((tile.row * 5 + tile.col * 3) % 7 > 2) continue;
+      final rect = _projectTileToPerspective(size, tile);
+      if (rect == null) continue;
+      final center = rect.center.translate(
+        (0.5 - _detailNoise(tile.row * 31 + tile.col)) * rect.width * 0.5,
+        (0.5 - _detailNoise(tile.col * 29 + tile.row)) * rect.height * 0.5,
+      );
+      final radius = rect.shortestSide * (0.06 + _detailNoise(tile.row) * 0.03);
+      final trunkPaint = Paint()
+        ..color = const Color(0xFF6B8B45).withValues(alpha: 0.28)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = (radius * 0.24).clamp(1.2, 2.4)
+        ..strokeCap = StrokeCap.round;
+      final shadowPaint = Paint()
+        ..color = const Color(0xFF073B2E).withValues(alpha: 0.18)
+        ..style = PaintingStyle.fill
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3);
+      canvas.drawOval(
+        Rect.fromCenter(
+          center: center.translate(0, radius * 0.62),
+          width: radius * 2.5,
+          height: radius * 0.92,
+        ),
+        shadowPaint,
+      );
+      canvas.drawLine(
+        center.translate(0, radius * 0.45),
+        center.translate(0, -radius * 0.4),
+        trunkPaint,
+      );
+      final canopyColors = [
+        const Color(0xFF69D96C).withValues(alpha: 0.72),
+        const Color(0xFF95EF73).withValues(alpha: 0.7),
+        const Color(0xFF38B85F).withValues(alpha: 0.64),
+      ];
+      for (var i = 0; i < 3; i++) {
+        final bubble = center.translate(
+          math.cos(i * math.pi * 2 / 3) * radius * 0.5,
+          -radius * 0.46 + math.sin(i * math.pi * 2 / 3) * radius * 0.32,
+        );
+        canvas.drawCircle(
+          bubble,
+          radius * (0.7 + i * 0.08),
+          Paint()..color = canopyColors[i],
+        );
+      }
+      canvas.drawCircle(
+        center.translate(-radius * 0.18, -radius * 0.78),
+        radius * 0.38,
+        Paint()..color = const Color(0xFFE8FFD2).withValues(alpha: 0.22),
+      );
+    }
+  }
+
+  void _drawShoreRockDetails(
+    Canvas canvas,
+    Size size,
+    List<TerrainTile> visibleTiles,
+  ) {
+    final shoreTiles = visibleTiles
+        .where((tile) => tile.kind == TerrainKind.shore)
+        .toList(growable: false);
+    final rockPaint = Paint()
+      ..color = const Color(0xFFF3E4B2).withValues(alpha: 0.52)
+      ..style = PaintingStyle.fill;
+    final darkRockPaint = Paint()
+      ..color = const Color(0xFF62836D).withValues(alpha: 0.32)
+      ..style = PaintingStyle.fill;
+    for (final tile in shoreTiles) {
+      final rect = _projectTileToPerspective(size, tile);
+      if (rect == null) continue;
+      for (var i = 0; i < 3; i++) {
+        final seed = tile.row * 23 + tile.col * 41 + i * 5;
+        final center = Offset(
+          rect.left + rect.width * (0.18 + _detailNoise(seed) * 0.64),
+          rect.top + rect.height * (0.52 + _detailNoise(seed + 3) * 0.34),
+        );
+        final radius =
+            rect.shortestSide * (0.025 + _detailNoise(seed + 9) * 0.02);
+        canvas.drawOval(
+          Rect.fromCenter(
+            center: center,
+            width: radius * 2.4,
+            height: radius * 1.35,
+          ),
+          i.isEven ? rockPaint : darkRockPaint,
+        );
+      }
     }
   }
 
@@ -1374,8 +1557,41 @@ class GameMapPainter extends CustomPainter {
 
   void _drawFishingSpotLayer(Canvas canvas, Size size) {
     for (final spot in fishingSpots) {
+      _drawFishingSpotWaterReflection(canvas, spot.screenPosition);
       _drawFishingSpotMarker(canvas, spot.screenPosition);
     }
+  }
+
+  void _drawFishingSpotWaterReflection(Canvas canvas, Offset center) {
+    final reflectionCenter = center.translate(0, 7);
+    canvas.drawOval(
+      Rect.fromCenter(
+        center: reflectionCenter,
+        width: 54,
+        height: 17,
+      ),
+      Paint()
+        ..shader = RadialGradient(
+          colors: [
+            const Color(0xFFFFF36D).withValues(alpha: 0.35),
+            const Color(0xFF12D6C6).withValues(alpha: 0.16),
+            const Color(0xFF12D6C6).withValues(alpha: 0),
+          ],
+          stops: const [0, 0.48, 1],
+        ).createShader(
+          Rect.fromCenter(center: reflectionCenter, width: 58, height: 20),
+        ),
+    );
+    canvas.drawOval(
+      Rect.fromCenter(
+        center: reflectionCenter.translate(0, 2),
+        width: 34,
+        height: 7,
+      ),
+      Paint()
+        ..color = const Color(0xFF05343B).withValues(alpha: 0.18)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2),
+    );
   }
 
   void _drawLandmarkLabelLayer(Canvas canvas, Size size) {

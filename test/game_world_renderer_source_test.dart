@@ -86,6 +86,10 @@ void main() {
     expect(rendererSource, contains('_paintForTerrainCell'));
     expect(rendererSource, contains('_drawPerspectiveRoadCells'));
     expect(rendererSource, contains('_drawTerrainDetailLayer'));
+    expect(rendererSource, contains('_drawImagegenInspiredMapLayer'));
+    expect(rendererSource, contains('_drawCoastalParkPaths'));
+    expect(rendererSource, contains('_drawTreeCanopyClusters'));
+    expect(rendererSource, contains('_drawShoreRockDetails'));
     expect(rendererSource, contains('_drawLandDetailTufts'));
     expect(rendererSource, contains('_drawShoreReedDetails'));
     expect(rendererSource, contains('_drawWaterSparkleDetails'));
@@ -106,6 +110,7 @@ void main() {
     expect(rendererSource, contains('_drawPierLayer'));
     expect(rendererSource, contains('_drawLandmarkLabelLayer'));
     expect(rendererSource, contains('_drawFishingSpotLayer'));
+    expect(rendererSource, contains('_drawFishingSpotWaterReflection'));
     expect(rendererSource, contains('_drawAtmosphereLayer'));
     expect(rendererSource, contains('_labelForFeature'));
     expect(rendererSource, contains('_fallbackLabelForTile'));

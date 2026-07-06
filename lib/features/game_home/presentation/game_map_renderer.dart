@@ -183,6 +183,7 @@ class GameMapPainter extends CustomPainter {
     _drawReadableTerrainToneLayer(canvas, size);
     _drawTerrainBoundaryBlendLayer(canvas, size);
     _drawTerrainDetailLayer(canvas, size);
+    _drawWorldDecorationLayer(canvas, size);
     _drawImagegenInspiredMapLayer(canvas, size);
     _drawRoadLayer(canvas, size);
     _drawPierLayer(canvas, size);
@@ -730,6 +731,148 @@ class GameMapPainter extends CustomPainter {
     _drawShoreRockDetails(canvas, size, visibleTiles);
   }
 
+  void _drawWorldDecorationLayer(Canvas canvas, Size size) {
+    if (terrainTiles.isEmpty) return;
+    final visibleTiles = terrainTiles
+        .where((tile) => camera.isVisible(tile.centerLatLng, paddingMeters: 80))
+        .toList(growable: false);
+    for (final tile in visibleTiles) {
+      if (tile.kind != TerrainKind.land && tile.kind != TerrainKind.shore) {
+        continue;
+      }
+      final seedBase = tile.row * 101 + tile.col * 79;
+      if (tile.kind == TerrainKind.land) {
+        if ((tile.row + tile.col) % 2 != 0) continue;
+        for (var i = 0; i < 1; i++) {
+          final point = _decorLatLngFromTile(tile, seedBase + i * 17);
+          if (!camera.isVisible(point, paddingMeters: 60)) continue;
+          final projected = camera.project(point);
+          if (!_isScreenDecorationVisible(projected, size)) continue;
+          _drawWorldGrassCluster(canvas, projected, seedBase + i * 17);
+        }
+        if ((tile.row * 3 + tile.col * 5) % 11 == 0) {
+          final point = _decorLatLngFromTile(tile, seedBase + 47);
+          if (!camera.isVisible(point, paddingMeters: 60)) continue;
+          final projected = camera.project(point);
+          if (_isScreenDecorationVisible(projected, size)) {
+            _drawWorldTreeCluster(canvas, projected, seedBase + 47);
+          }
+        }
+      } else if ((tile.row + tile.col) % 3 == 0) {
+        final point = _decorLatLngFromTile(tile, seedBase + 23);
+        if (!camera.isVisible(point, paddingMeters: 60)) continue;
+        final projected = camera.project(point);
+        if (_isScreenDecorationVisible(projected, size)) {
+          _drawWorldReedCluster(canvas, projected, seedBase + 23);
+        }
+      }
+    }
+  }
+
+  LatLng _decorLatLngFromTile(TerrainTile tile, int seed) {
+    final eastMeters = (_detailNoise(seed) - 0.5) * 34;
+    final northMeters = (_detailNoise(seed + 13) - 0.5) * 34;
+    final metersPerDegreeLng =
+        111320.0 * math.cos(camera.center.latitude * math.pi / 180);
+    return LatLng(
+      tile.centerLatLng.latitude + northMeters / 111320.0,
+      tile.centerLatLng.longitude + eastMeters / metersPerDegreeLng,
+    );
+  }
+
+  bool _isScreenDecorationVisible(Offset point, Size size) {
+    return point.dx >= -32 &&
+        point.dx <= size.width + 32 &&
+        point.dy >= 74 &&
+        point.dy <= size.height - 92;
+  }
+
+  void _drawWorldGrassCluster(Canvas canvas, Offset center, int seed) {
+    final scale = 0.76 + _detailNoise(seed + 3) * 0.55;
+    final shadowPaint = Paint()
+      ..color = const Color(0xFF0D6A43).withValues(alpha: 0.08)
+      ..style = PaintingStyle.fill
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2);
+    canvas.drawOval(
+      Rect.fromCenter(
+          center: center.translate(0, 4), width: 20 * scale, height: 8 * scale),
+      shadowPaint,
+    );
+    final bladePaint = Paint()
+      ..color = const Color(0xFFE7FF91).withValues(alpha: 0.24)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.1 * scale
+      ..strokeCap = StrokeCap.round;
+    for (var i = 0; i < 4; i++) {
+      final x = center.dx + (i - 2) * 3.4 * scale;
+      final height = (7 + _detailNoise(seed + i * 5) * 7) * scale;
+      final lean = (_detailNoise(seed + i * 7) - 0.5) * 5 * scale;
+      canvas.drawLine(
+        Offset(x, center.dy + 2 * scale),
+        Offset(x + lean, center.dy - height),
+        bladePaint,
+      );
+    }
+    if (seed % 4 == 0) {
+      canvas.drawCircle(
+        center.translate(4 * scale, -8 * scale),
+        2.2 * scale,
+        Paint()..color = _flowerColor(seed).withValues(alpha: 0.5),
+      );
+    }
+  }
+
+  void _drawWorldTreeCluster(Canvas canvas, Offset center, int seed) {
+    final radius = 7.0 + _detailNoise(seed) * 4;
+    canvas.drawOval(
+      Rect.fromCenter(
+        center: center.translate(0, radius * 0.76),
+        width: radius * 3.0,
+        height: radius * 0.9,
+      ),
+      Paint()
+        ..color = const Color(0xFF084332).withValues(alpha: 0.18)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3),
+    );
+    final trunkPaint = Paint()
+      ..color = const Color(0xFF6E8D42).withValues(alpha: 0.32)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.8
+      ..strokeCap = StrokeCap.round;
+    canvas.drawLine(
+      center.translate(0, radius * 0.5),
+      center.translate(0, -radius * 0.45),
+      trunkPaint,
+    );
+    final paints = [
+      Paint()..color = const Color(0xFF50C966).withValues(alpha: 0.62),
+      Paint()..color = const Color(0xFF83EA70).withValues(alpha: 0.62),
+      Paint()..color = const Color(0xFF2EA85A).withValues(alpha: 0.54),
+    ];
+    for (var i = 0; i < 3; i++) {
+      final bubble = center.translate(
+        math.cos(i * math.pi * 2 / 3) * radius * 0.46,
+        -radius * 0.48 + math.sin(i * math.pi * 2 / 3) * radius * 0.32,
+      );
+      canvas.drawCircle(bubble, radius * (0.66 + i * 0.08), paints[i]);
+    }
+  }
+
+  void _drawWorldReedCluster(Canvas canvas, Offset center, int seed) {
+    final reedPaint = Paint()
+      ..color = const Color(0xFFFFF1A0).withValues(alpha: 0.22)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.0
+      ..strokeCap = StrokeCap.round;
+    for (var i = 0; i < 3; i++) {
+      final base =
+          center.translate((i - 1.5) * 3.2, _detailNoise(seed + i) * 4);
+      final height = 9 + _detailNoise(seed + i * 9) * 7;
+      final lean = (_detailNoise(seed + i * 11) - 0.5) * 5;
+      canvas.drawLine(base, base.translate(lean, -height), reedPaint);
+    }
+  }
+
   void _drawTreeCanopyClusters(
     Canvas canvas,
     Size size,
@@ -739,7 +882,7 @@ class GameMapPainter extends CustomPainter {
         .where((tile) => tile.kind == TerrainKind.land)
         .toList(growable: false);
     for (final tile in landTiles) {
-      if ((tile.row * 5 + tile.col * 3) % 7 > 2) continue;
+      if ((tile.row * 5 + tile.col * 3) % 13 > 1) continue;
       final rect = _projectTileToPerspective(size, tile);
       if (rect == null) continue;
       final center = rect.center.translate(
@@ -841,7 +984,7 @@ class GameMapPainter extends CustomPainter {
       ..style = PaintingStyle.fill
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2);
 
-    for (var i = 0; i < 7; i++) {
+    for (var i = 0; i < 3; i++) {
       final seed = row * 37 + col * 17 + i * 11;
       final x = rect.left + rect.width * (0.18 + _detailNoise(seed) * 0.64);
       final y = rect.top + rect.height * (0.2 + _detailNoise(seed + 5) * 0.62);

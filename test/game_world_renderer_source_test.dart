@@ -93,6 +93,10 @@ void main() {
     expect(rendererSource, contains('_paintForTerrainCell'));
     expect(rendererSource, contains('_drawPerspectiveRoadCells'));
     expect(rendererSource, contains('_drawTerrainDetailLayer'));
+    expect(rendererSource, contains('_drawWorldDecorationLayer'));
+    expect(rendererSource, contains('_decorLatLngFromTile'));
+    expect(rendererSource, contains('_drawWorldGrassCluster'));
+    expect(rendererSource, contains('_drawWorldTreeCluster'));
     expect(rendererSource, contains('_drawImagegenInspiredMapLayer'));
     expect(rendererSource, isNot(contains('_drawCoastalParkPaths')));
     expect(rendererSource, contains('_drawTreeCanopyClusters'));

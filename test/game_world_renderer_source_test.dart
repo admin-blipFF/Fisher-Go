@@ -106,11 +106,16 @@ void main() {
     expect(rendererSource, contains('_drawCoastlineLayer'));
     expect(rendererSource, contains('_drawRoadLayer'));
     expect(rendererSource, contains('_drawRoadCasing'));
+    expect(rendererSource, contains('_drawRoadBevelShadow'));
+    expect(rendererSource, contains('_drawRoadLaneMarkings'));
     expect(rendererSource, contains('_drawRoadCenterHighlight'));
     expect(rendererSource, contains('_drawPierLayer'));
     expect(rendererSource, contains('_drawLandmarkLabelLayer'));
     expect(rendererSource, contains('_drawFishingSpotLayer'));
     expect(rendererSource, contains('_drawFishingSpotWaterReflection'));
+    expect(rendererSource, contains('_drawFishingSpot3DBase'));
+    expect(rendererSource, contains('_drawFishingSpotBuoyColumn'));
+    expect(rendererSource, contains('_drawFishingSpotHookBadge'));
     expect(rendererSource, contains('_drawAtmosphereLayer'));
     expect(rendererSource, contains('_labelForFeature'));
     expect(rendererSource, contains('_fallbackLabelForTile'));

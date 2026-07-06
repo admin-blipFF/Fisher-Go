@@ -1388,6 +1388,7 @@ class GameMapPainter extends CustomPainter {
       final path = _pathForFeature(feature);
       if (path == null) continue;
 
+      _drawRoadBevelShadow(canvas, path);
       _drawRoadCasing(canvas, path, width: 12.5);
       canvas.drawPath(
         path,
@@ -1399,7 +1400,31 @@ class GameMapPainter extends CustomPainter {
         ),
       );
       _drawRoadCenterHighlight(canvas, path);
+      _drawRoadLaneMarkings(canvas, path);
     }
+  }
+
+  void _drawRoadBevelShadow(Canvas canvas, Path path) {
+    canvas.drawPath(
+      path.shift(const Offset(1.8, 2.8)),
+      Paint()
+        ..color = const Color(0xFF01252D).withValues(alpha: 0.24)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 18
+        ..strokeCap = StrokeCap.round
+        ..strokeJoin = StrokeJoin.round
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3.5),
+    );
+    canvas.drawPath(
+      path.shift(const Offset(-0.8, -1.0)),
+      Paint()
+        ..color = const Color(0xFFFFFFFF).withValues(alpha: 0.18)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 15
+        ..strokeCap = StrokeCap.round
+        ..strokeJoin = StrokeJoin.round
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2),
+    );
   }
 
   void _drawRoadCasing(Canvas canvas, Path path, {required double width}) {
@@ -1443,6 +1468,33 @@ class GameMapPainter extends CustomPainter {
         ..strokeCap = StrokeCap.round
         ..strokeJoin = StrokeJoin.round,
     );
+  }
+
+  void _drawRoadLaneMarkings(Canvas canvas, Path path) {
+    final markPaint = Paint()
+      ..color = const Color(0xFFFFF8DE).withValues(alpha: 0.5)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.35
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+    final glowPaint = Paint()
+      ..color = const Color(0xFFFFFFFF).withValues(alpha: 0.18)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3.2
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 1.4);
+
+    for (final metric in path.computeMetrics()) {
+      var distance = 12.0;
+      while (distance < metric.length) {
+        final end = math.min(distance + 9, metric.length);
+        final dash = metric.extractPath(distance, end);
+        canvas.drawPath(dash, glowPaint);
+        canvas.drawPath(dash, markPaint);
+        distance += 26;
+      }
+    }
   }
 
   // ignore: unused_element
@@ -1860,6 +1912,8 @@ class GameMapPainter extends CustomPainter {
   }
 
   void _drawFishingSpotMarker(Canvas canvas, Offset center) {
+    _drawFishingSpot3DBase(canvas, center);
+    _drawFishingSpotBuoyColumn(canvas, center);
     canvas.drawPath(
       Path()
         ..moveTo(center.dx, center.dy - 36)
@@ -1907,6 +1961,132 @@ class GameMapPainter extends CustomPainter {
             const Color(0xFFFFF36D).withValues(alpha: 0),
           ],
         ).createShader(Rect.fromCircle(center: center, radius: 16)),
+    );
+    _drawFishingSpotHookBadge(canvas, center);
+  }
+
+  void _drawFishingSpot3DBase(Canvas canvas, Offset center) {
+    final shadowRect = Rect.fromCenter(
+      center: center.translate(0, 8),
+      width: 48,
+      height: 15,
+    );
+    canvas.drawOval(
+      shadowRect,
+      Paint()
+        ..color = const Color(0xFF01323A).withValues(alpha: 0.28)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4),
+    );
+    canvas.drawOval(
+      Rect.fromCenter(center: center.translate(0, 3), width: 40, height: 18),
+      Paint()
+        ..shader = const LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Color(0xFFFFF8A5), Color(0xFF20D9CF), Color(0xFF087985)],
+        ).createShader(Rect.fromCenter(
+          center: center.translate(0, 3),
+          width: 40,
+          height: 18,
+        )),
+    );
+    canvas.drawOval(
+      Rect.fromCenter(center: center.translate(0, 1), width: 29, height: 12),
+      Paint()
+        ..color = const Color(0xFFFFF6A6).withValues(alpha: 0.72)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2,
+    );
+  }
+
+  void _drawFishingSpotBuoyColumn(Canvas canvas, Offset center) {
+    final poleRect = Rect.fromLTWH(center.dx - 4, center.dy - 40, 8, 39);
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        poleRect.shift(const Offset(2, 2)),
+        const Radius.circular(5),
+      ),
+      Paint()
+        ..color = const Color(0xFF02313A).withValues(alpha: 0.22)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2),
+    );
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(poleRect, const Radius.circular(5)),
+      Paint()
+        ..shader = const LinearGradient(
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
+          colors: [Color(0xFF0BAEA9), Color(0xFFFFF275), Color(0xFFFFFDF0)],
+          stops: [0, 0.56, 1],
+        ).createShader(poleRect),
+    );
+    final capCenter = center.translate(0, -39);
+    canvas.drawCircle(
+      capCenter,
+      12,
+      Paint()
+        ..shader = RadialGradient(
+          center: const Alignment(-0.35, -0.42),
+          colors: [
+            Colors.white.withValues(alpha: 0.92),
+            const Color(0xFFFFF36E),
+            const Color(0xFF0E9DA7),
+          ],
+          stops: const [0, 0.48, 1],
+        ).createShader(Rect.fromCircle(center: capCenter, radius: 13)),
+    );
+    canvas.drawCircle(
+      capCenter,
+      12,
+      Paint()
+        ..color = const Color(0xFF07313A).withValues(alpha: 0.78)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2.4,
+    );
+  }
+
+  void _drawFishingSpotHookBadge(Canvas canvas, Offset center) {
+    final badgeCenter = center.translate(17, -39);
+    canvas.drawCircle(
+      badgeCenter,
+      10,
+      Paint()
+        ..color = const Color(0xFF052E38).withValues(alpha: 0.96)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 0.6),
+    );
+    canvas.drawCircle(
+      badgeCenter,
+      9,
+      Paint()
+        ..shader = const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF0CE9E0), Color(0xFF075D6A)],
+        ).createShader(Rect.fromCircle(center: badgeCenter, radius: 9)),
+    );
+    final hookPath = Path()
+      ..moveTo(badgeCenter.dx + 1.2, badgeCenter.dy - 5)
+      ..lineTo(badgeCenter.dx + 1.2, badgeCenter.dy + 1.8)
+      ..cubicTo(
+        badgeCenter.dx + 1.2,
+        badgeCenter.dy + 6.5,
+        badgeCenter.dx - 5,
+        badgeCenter.dy + 5.8,
+        badgeCenter.dx - 4.5,
+        badgeCenter.dy + 1.8,
+      );
+    canvas.drawPath(
+      hookPath,
+      Paint()
+        ..color = Colors.white.withValues(alpha: 0.92)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.8
+        ..strokeCap = StrokeCap.round,
+    );
+    canvas.drawCircle(
+      badgeCenter.translate(1.2, -5),
+      1.6,
+      Paint()..color = Colors.white.withValues(alpha: 0.92),
     );
   }
 

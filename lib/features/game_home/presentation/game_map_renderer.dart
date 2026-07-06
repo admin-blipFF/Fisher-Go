@@ -2464,9 +2464,42 @@ class GameMapPainter extends CustomPainter {
 
   void _drawFishingSpotLayer(Canvas canvas, Size size) {
     for (final spot in fishingSpots) {
+      _drawFishingSpotInteractionAura(canvas, spot.screenPosition);
       _drawFishingSpotWaterReflection(canvas, spot.screenPosition);
       _drawFishingSpotMarker(canvas, spot.screenPosition);
     }
+  }
+
+  void _drawFishingSpotInteractionAura(Canvas canvas, Offset center) {
+    final auraCenter = center.translate(0, 10);
+    final auraRect = Rect.fromCenter(center: auraCenter, width: 94, height: 46);
+    canvas.drawOval(
+      auraRect,
+      Paint()
+        ..shader = RadialGradient(
+          colors: [
+            const Color(0xFFE9FFF9).withValues(alpha: 0.22),
+            const Color(0xFF18E0D1).withValues(alpha: 0.11),
+            const Color(0xFF0A5F70).withValues(alpha: 0),
+          ],
+          stops: const [0, 0.58, 1],
+        ).createShader(auraRect)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3),
+    );
+    canvas.drawOval(
+      auraRect.deflate(5),
+      Paint()
+        ..color = const Color(0xFFECFFFB).withValues(alpha: 0.22)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.2,
+    );
+    canvas.drawOval(
+      Rect.fromCenter(center: auraCenter, width: 54, height: 22),
+      Paint()
+        ..color = const Color(0xFFFFF36D).withValues(alpha: 0.18)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.5,
+    );
   }
 
   void _drawFishingSpotWaterReflection(Canvas canvas, Offset center) {
@@ -2499,6 +2532,24 @@ class GameMapPainter extends CustomPainter {
         ..color = const Color(0xFF05343B).withValues(alpha: 0.18)
         ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2),
     );
+    _drawFishingSpotRippleRings(canvas, center);
+  }
+
+  void _drawFishingSpotRippleRings(Canvas canvas, Offset center) {
+    for (var i = 0; i < 3; i++) {
+      final alpha = 0.2 - i * 0.045;
+      canvas.drawOval(
+        Rect.fromCenter(
+          center: center.translate(0, 11 + i * 1.6),
+          width: 44 + i * 17,
+          height: 14 + i * 6,
+        ),
+        Paint()
+          ..color = const Color(0xFFDBFFFA).withValues(alpha: alpha)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.1,
+      );
+    }
   }
 
   void _drawLandmarkLabelLayer(Canvas canvas, Size size) {
@@ -2840,6 +2891,7 @@ class GameMapPainter extends CustomPainter {
   }
 
   void _drawFishingSpotMarker(Canvas canvas, Offset center) {
+    _drawFishingSpotBeaconGlow(canvas, center);
     _drawFishingSpot3DBase(canvas, center);
     _drawFishingSpotBuoyColumn(canvas, center);
     canvas.drawPath(
@@ -2891,6 +2943,40 @@ class GameMapPainter extends CustomPainter {
         ).createShader(Rect.fromCircle(center: center, radius: 16)),
     );
     _drawFishingSpotHookBadge(canvas, center);
+  }
+
+  void _drawFishingSpotBeaconGlow(Canvas canvas, Offset center) {
+    final beamRect = Rect.fromLTWH(center.dx - 16, center.dy - 82, 32, 74);
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(beamRect, const Radius.circular(16)),
+      Paint()
+        ..shader = LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            const Color(0xFFFFF36D).withValues(alpha: 0),
+            const Color(0xFFFFF36D).withValues(alpha: 0.3),
+            const Color(0xFF12D6C6).withValues(alpha: 0.08),
+            const Color(0xFF12D6C6).withValues(alpha: 0),
+          ],
+          stops: const [0, 0.42, 0.76, 1],
+        ).createShader(beamRect)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 5),
+    );
+    final glowCenter = center.translate(0, -38);
+    canvas.drawCircle(
+      glowCenter,
+      25,
+      Paint()
+        ..shader = RadialGradient(
+          colors: [
+            Colors.white.withValues(alpha: 0.3),
+            const Color(0xFFFFF36D).withValues(alpha: 0.22),
+            const Color(0xFF12D6C6).withValues(alpha: 0),
+          ],
+          stops: const [0, 0.5, 1],
+        ).createShader(Rect.fromCircle(center: glowCenter, radius: 25)),
+    );
   }
 
   void _drawFishingSpot3DBase(Canvas canvas, Offset center) {

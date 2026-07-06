@@ -74,8 +74,8 @@ Map<String, Object> _featureFromOsmCache(Map<String, dynamic> raw) {
   return _feature(
     kind: raw['kind'] as String,
     name: raw['name'] as String,
-    lat: center.$1,
-    lng: center.$2,
+    lat: (raw['lat'] as num?)?.toDouble() ?? center.$1,
+    lng: (raw['lng'] as num?)?.toDouble() ?? center.$2,
     radiusMeters: raw['radiusMeters'] as num,
     geometry: {
       'type': geometry['type'] as String,

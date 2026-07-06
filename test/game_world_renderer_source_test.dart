@@ -141,6 +141,9 @@ void main() {
     expect(rendererSource, contains('_drawLandmarkLabelLayer'));
     expect(rendererSource, contains('_drawFishingSpotLayer'));
     expect(rendererSource, contains('_drawFishingSpotWaterReflection'));
+    expect(rendererSource, contains('_drawFishingSpotInteractionAura'));
+    expect(rendererSource, contains('_drawFishingSpotRippleRings'));
+    expect(rendererSource, contains('_drawFishingSpotBeaconGlow'));
     expect(rendererSource, contains('_drawFishingSpot3DBase'));
     expect(rendererSource, contains('_drawFishingSpotBuoyColumn'));
     expect(rendererSource, contains('_drawFishingSpotHookBadge'));

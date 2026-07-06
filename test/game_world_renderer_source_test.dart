@@ -79,6 +79,12 @@ void main() {
     expect(rendererSource, contains('_drawTerrainTextureLayer'));
     expect(rendererSource, contains('_drawTerrainTileTexture'));
     expect(rendererSource, contains('_drawPerspectiveMicroTileLayer'));
+    expect(rendererSource, contains('_drawGameTerrainZoneLayer'));
+    expect(rendererSource, contains('_terrainZoneLatLngFromTile'));
+    expect(rendererSource, contains('_drawGameGrassZone'));
+    expect(rendererSource, contains('_drawGameWaterZone'));
+    expect(rendererSource, contains('_drawGameShoreZone'));
+    expect(rendererSource, contains('_gameTerrainZonePath'));
     expect(rendererSource, contains('_drawReadableTerrainToneLayer'));
     expect(rendererSource, contains('_drawWorldTerrainWashLayer'));
     expect(rendererSource, contains('_terrainWashLatLngFromTile'));

@@ -180,6 +180,7 @@ class GameMapPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     _drawHorizonLayer(canvas, size);
     _drawPerspectiveMicroTileLayer(canvas, size);
+    _drawGameTerrainZoneLayer(canvas, size);
     _drawWorldTerrainWashLayer(canvas, size);
     _drawWorldTextureVeilLayer(canvas, size);
     _drawReadableTerrainToneLayer(canvas, size);
@@ -428,6 +429,198 @@ class GameMapPainter extends CustomPainter {
     }
   }
 
+  void _drawGameTerrainZoneLayer(Canvas canvas, Size size) {
+    if (terrainTiles.isEmpty) return;
+    final visibleTiles = terrainTiles
+        .where(
+            (tile) => camera.isVisible(tile.centerLatLng, paddingMeters: 120))
+        .toList(growable: false);
+    for (final tile in visibleTiles) {
+      if (tile.kind == TerrainKind.road ||
+          tile.kind == TerrainKind.pier ||
+          tile.kind == TerrainKind.fishingNode) {
+        continue;
+      }
+      final seed = tile.row * 211 + tile.col * 157;
+      if (tile.kind == TerrainKind.land && (tile.row + tile.col) % 3 == 1) {
+        continue;
+      }
+      final point = _terrainZoneLatLngFromTile(tile, seed);
+      if (!camera.isVisible(point, paddingMeters: 120)) continue;
+      final projected = camera.project(point);
+      if (!_isScreenDecorationVisible(projected, size)) continue;
+      switch (tile.kind) {
+        case TerrainKind.land:
+          _drawGameGrassZone(canvas, projected, seed);
+        case TerrainKind.water:
+          _drawGameWaterZone(canvas, projected, seed);
+        case TerrainKind.shore:
+          _drawGameShoreZone(canvas, projected, seed);
+        case TerrainKind.road:
+        case TerrainKind.pier:
+        case TerrainKind.fishingNode:
+          break;
+      }
+    }
+  }
+
+  LatLng _terrainZoneLatLngFromTile(TerrainTile tile, int seed) {
+    final eastMeters = (_detailNoise(seed) - 0.5) * 46;
+    final northMeters = (_detailNoise(seed + 23) - 0.5) * 46;
+    final metersPerDegreeLng =
+        111320.0 * math.cos(camera.center.latitude * math.pi / 180);
+    return LatLng(
+      tile.centerLatLng.latitude + northMeters / 111320.0,
+      tile.centerLatLng.longitude + eastMeters / metersPerDegreeLng,
+    );
+  }
+
+  void _drawGameGrassZone(Canvas canvas, Offset center, int seed) {
+    final width = 156 + _detailNoise(seed) * 92;
+    final height = 92 + _detailNoise(seed + 7) * 60;
+    final angle = (_detailNoise(seed + 17) - 0.5) * 0.68;
+    final path = _gameTerrainZonePath(width, height, seed);
+    final bounds = Rect.fromCenter(
+      center: Offset.zero,
+      width: width,
+      height: height,
+    );
+    canvas.save();
+    canvas.translate(center.dx, center.dy);
+    canvas.rotate(angle);
+    canvas.drawPath(
+      path,
+      Paint()
+        ..shader = const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color(0x5534B95F),
+            Color(0x2EE6FF83),
+            Color(0x33177A4D),
+          ],
+          stops: [0, 0.58, 1],
+        ).createShader(bounds)
+        ..style = PaintingStyle.fill,
+    );
+    canvas.drawPath(
+      path,
+      Paint()
+        ..color = const Color(0xFFE9FF9C).withValues(alpha: 0.08)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2.2
+        ..strokeJoin = StrokeJoin.round,
+    );
+    canvas.restore();
+  }
+
+  void _drawGameWaterZone(Canvas canvas, Offset center, int seed) {
+    final width = 176 + _detailNoise(seed) * 104;
+    final height = 96 + _detailNoise(seed + 7) * 62;
+    final angle = (_detailNoise(seed + 17) - 0.5) * 0.5;
+    final path = _gameTerrainZonePath(width, height, seed);
+    final bounds = Rect.fromCenter(
+      center: Offset.zero,
+      width: width,
+      height: height,
+    );
+    canvas.save();
+    canvas.translate(center.dx, center.dy);
+    canvas.rotate(angle);
+    canvas.drawPath(
+      path,
+      Paint()
+        ..shader = const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color(0x49B8FFF7),
+            Color(0x3326C9D0),
+            Color(0x26046F91),
+          ],
+        ).createShader(bounds)
+        ..style = PaintingStyle.fill,
+    );
+    canvas.drawPath(
+      path,
+      Paint()
+        ..color = Colors.white.withValues(alpha: 0.08)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.8
+        ..strokeJoin = StrokeJoin.round,
+    );
+    canvas.restore();
+  }
+
+  void _drawGameShoreZone(Canvas canvas, Offset center, int seed) {
+    final width = 146 + _detailNoise(seed) * 88;
+    final height = 78 + _detailNoise(seed + 7) * 54;
+    final angle = (_detailNoise(seed + 17) - 0.5) * 0.6;
+    final path = _gameTerrainZonePath(width, height, seed);
+    final bounds = Rect.fromCenter(
+      center: Offset.zero,
+      width: width,
+      height: height,
+    );
+    canvas.save();
+    canvas.translate(center.dx, center.dy);
+    canvas.rotate(angle);
+    canvas.drawPath(
+      path,
+      Paint()
+        ..shader = const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color(0x4DFFF1A8),
+            Color(0x338EDB79),
+            Color(0x2633A274),
+          ],
+        ).createShader(bounds)
+        ..style = PaintingStyle.fill,
+    );
+    canvas.drawPath(
+      path,
+      Paint()
+        ..color = const Color(0xFFFFF7BE).withValues(alpha: 0.09)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.9
+        ..strokeJoin = StrokeJoin.round,
+    );
+    canvas.restore();
+  }
+
+  Path _gameTerrainZonePath(double width, double height, int seed) {
+    final path = Path();
+    const count = 8;
+    for (var i = 0; i < count; i++) {
+      final angle = -math.pi / 2 + i * math.pi * 2 / count;
+      final noise = 0.86 + _detailNoise(seed + i * 19) * 0.22;
+      final x = math.cos(angle) * width * 0.5 * noise;
+      final y = math.sin(angle) * height * 0.5 * noise;
+      if (i == 0) {
+        path.moveTo(x, y);
+      } else {
+        final previousAngle = -math.pi / 2 + (i - 0.5) * math.pi * 2 / count;
+        final controlNoise = 0.92 + _detailNoise(seed + i * 23) * 0.14;
+        path.quadraticBezierTo(
+          math.cos(previousAngle) * width * 0.54 * controlNoise,
+          math.sin(previousAngle) * height * 0.54 * controlNoise,
+          x,
+          y,
+        );
+      }
+    }
+    final closingAngle = -math.pi / 2 + (count - 0.5) * math.pi * 2 / count;
+    path.quadraticBezierTo(
+      math.cos(closingAngle) * width * 0.54,
+      math.sin(closingAngle) * height * 0.54,
+      0,
+      -height * 0.5 * (0.86 + _detailNoise(seed) * 0.22),
+    );
+    return path..close();
+  }
+
   void _drawTerrainDetailLayer(Canvas canvas, Size size) {
     if (terrainTiles.isEmpty) return;
     final visibleTiles = terrainTiles
@@ -642,11 +835,11 @@ class GameMapPainter extends CustomPainter {
         ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3),
     );
     final bladePaint = Paint()
-      ..color = const Color(0xFFF1FF9A).withValues(alpha: 0.16)
+      ..color = const Color(0xFFF1FF9A).withValues(alpha: 0.1)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.0
       ..strokeCap = StrokeCap.round;
-    for (var i = 0; i < 9; i++) {
+    for (var i = 0; i < 5; i++) {
       final localSeed = seed + i * 13;
       final x = -width * 0.42 + width * _detailNoise(localSeed);
       final y = -height * 0.34 + height * _detailNoise(localSeed + 3);
@@ -1411,7 +1604,7 @@ class GameMapPainter extends CustomPainter {
           matrix.storage,
         )
         ..colorFilter = ColorFilter.mode(
-          const Color(0xFFD6FFB0).withValues(alpha: 0.44),
+          const Color(0xFFD6FFB0).withValues(alpha: 0.28),
           BlendMode.modulate,
         )
         ..style = PaintingStyle.fill,
@@ -1419,12 +1612,12 @@ class GameMapPainter extends CustomPainter {
     final toneImage = _landMicroImageForVariant(variant);
     if (toneImage == null || identical(toneImage, baseImage)) return;
     final toneAlpha = switch (variant.abs() % 6) {
-      0 => 0.035,
-      1 => 0.045,
-      2 => 0.03,
-      3 => 0.05,
-      4 => 0.04,
-      _ => 0.025,
+      0 => 0.02,
+      1 => 0.026,
+      2 => 0.018,
+      3 => 0.03,
+      4 => 0.024,
+      _ => 0.016,
     };
     canvas.drawRect(
       rect,

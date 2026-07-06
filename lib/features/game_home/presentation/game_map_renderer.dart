@@ -178,6 +178,7 @@ class GameMapPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     _drawHorizonLayer(canvas, size);
     _drawPerspectiveMicroTileLayer(canvas, size);
+    _drawReadableTerrainToneLayer(canvas, size);
     _drawTerrainDetailLayer(canvas, size);
     _drawImagegenInspiredMapLayer(canvas, size);
     _drawRoadLayer(canvas, size);
@@ -451,6 +452,136 @@ class GameMapPainter extends CustomPainter {
       }
       canvas.restore();
     }
+  }
+
+  void _drawReadableTerrainToneLayer(Canvas canvas, Size size) {
+    if (terrainTiles.isEmpty) return;
+    final visibleTiles = terrainTiles
+        .where((tile) => camera.isVisible(tile.centerLatLng, paddingMeters: 80))
+        .toList(growable: false);
+    for (final tile in visibleTiles) {
+      if (tile.kind == TerrainKind.road ||
+          tile.kind == TerrainKind.pier ||
+          tile.kind == TerrainKind.fishingNode) {
+        continue;
+      }
+      final rect = _projectTileToPerspective(size, tile);
+      if (rect == null) continue;
+      final path = _terrainCellPathFromCamera(rect, tile);
+      canvas.save();
+      canvas.clipPath(path);
+      switch (tile.kind) {
+        case TerrainKind.land:
+          _drawLowFrequencyGrassWash(canvas, rect, tile.row, tile.col);
+        case TerrainKind.water:
+          _drawReadableWaterWash(canvas, rect, tile.row, tile.col);
+        case TerrainKind.shore:
+          _drawReadableShoreWash(canvas, rect, tile.row, tile.col);
+        case TerrainKind.road:
+        case TerrainKind.pier:
+        case TerrainKind.fishingNode:
+          break;
+      }
+      canvas.restore();
+    }
+  }
+
+  void _drawLowFrequencyGrassWash(Canvas canvas, Rect rect, int row, int col) {
+    final seed = row * 53 + col * 71;
+    canvas.drawRect(
+      rect,
+      Paint()
+        ..shader = LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            const Color(0xFF86EA72).withValues(alpha: 0.28),
+            const Color(0xFF36B866).withValues(alpha: 0.34),
+          ],
+        ).createShader(rect),
+    );
+    for (var i = 0; i < 2; i++) {
+      _drawLandColorPatch(canvas, rect, seed + i * 37);
+    }
+  }
+
+  void _drawLandColorPatch(Canvas canvas, Rect rect, int seed) {
+    final patchCenter = Offset(
+      rect.left + rect.width * (0.16 + _detailNoise(seed) * 0.68),
+      rect.top + rect.height * (0.18 + _detailNoise(seed + 11) * 0.58),
+    );
+    final radius = rect.longestSide * (0.26 + _detailNoise(seed + 23) * 0.18);
+    final patchRect = Rect.fromCircle(center: patchCenter, radius: radius);
+    final isLight = seed.isEven;
+    canvas.drawOval(
+      patchRect,
+      Paint()
+        ..shader = RadialGradient(
+          colors: [
+            (isLight ? const Color(0xFFC6FF81) : const Color(0xFF188E59))
+                .withValues(alpha: isLight ? 0.1 : 0.08),
+            Colors.transparent,
+          ],
+        ).createShader(patchRect),
+    );
+  }
+
+  void _drawReadableWaterWash(Canvas canvas, Rect rect, int row, int col) {
+    final waterRect = rect.inflate(rect.shortestSide * 0.05);
+    canvas.drawRect(
+      waterRect,
+      Paint()
+        ..shader = LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            const Color(0xFF7CECE4).withValues(alpha: 0.34),
+            const Color(0xFF0AA8BD).withValues(alpha: 0.44),
+            const Color(0xFF087896).withValues(alpha: 0.36),
+          ],
+        ).createShader(waterRect),
+    );
+    final shimmerPaint = Paint()
+      ..color = const Color(0xFFFFFFFF).withValues(alpha: 0.1)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.0
+      ..strokeCap = StrokeCap.round;
+    for (var i = 0; i < 2; i++) {
+      final y = rect.top + rect.height * (0.32 + i * 0.24);
+      final xOffset = _detailNoise(row * 17 + col * 13 + i) * rect.width * 0.16;
+      canvas.drawLine(
+        Offset(rect.left + rect.width * 0.18 + xOffset, y),
+        Offset(
+            rect.right - rect.width * 0.16 + xOffset, y + rect.height * 0.03),
+        shimmerPaint,
+      );
+    }
+  }
+
+  void _drawReadableShoreWash(Canvas canvas, Rect rect, int row, int col) {
+    canvas.drawRect(
+      rect,
+      Paint()
+        ..shader = LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            const Color(0xFFFFF2B4).withValues(alpha: 0.34),
+            const Color(0xFF83D989).withValues(alpha: 0.28),
+          ],
+        ).createShader(rect),
+    );
+    final edgePaint = Paint()
+      ..color = const Color(0xFFFFF4BF).withValues(alpha: 0.18)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.2
+      ..strokeCap = StrokeCap.round;
+    final y = rect.top + rect.height * (0.55 + _detailNoise(row + col) * 0.16);
+    canvas.drawLine(
+      Offset(rect.left + rect.width * 0.12, y),
+      Offset(rect.right - rect.width * 0.08, y - rect.height * 0.06),
+      edgePaint,
+    );
   }
 
   void _drawImagegenInspiredMapLayer(Canvas canvas, Size size) {
@@ -733,7 +864,7 @@ class GameMapPainter extends CustomPainter {
     final baseImage =
         texturePack.grassMicro ?? texturePack.grassMid ?? texturePack.land;
     if (baseImage == null) return;
-    const tileScale = 0.032;
+    const tileScale = 0.082;
     final matrix = Matrix4.identity()
       ..translateByDouble(
         -camera.project(camera.center).dx * 0.18,
@@ -752,7 +883,7 @@ class GameMapPainter extends CustomPainter {
           matrix.storage,
         )
         ..colorFilter = ColorFilter.mode(
-          const Color(0xFFE8FFC0).withValues(alpha: 0.9),
+          const Color(0xFFD6FFB0).withValues(alpha: 0.44),
           BlendMode.modulate,
         )
         ..style = PaintingStyle.fill,
@@ -760,12 +891,12 @@ class GameMapPainter extends CustomPainter {
     final toneImage = _landMicroImageForVariant(variant);
     if (toneImage == null || identical(toneImage, baseImage)) return;
     final toneAlpha = switch (variant.abs() % 6) {
-      0 => 0.10,
-      1 => 0.14,
-      2 => 0.08,
-      3 => 0.16,
-      4 => 0.12,
-      _ => 0.06,
+      0 => 0.035,
+      1 => 0.045,
+      2 => 0.03,
+      3 => 0.05,
+      4 => 0.04,
+      _ => 0.025,
     };
     canvas.drawRect(
       rect,
@@ -792,7 +923,7 @@ class GameMapPainter extends CustomPainter {
     final image =
         texturePack.shoreGrass ?? texturePack.groundMoss ?? texturePack.shore;
     if (image == null) return;
-    const tileScale = 0.04;
+    const tileScale = 0.075;
     final matrix = Matrix4.identity()
       ..translateByDouble((variant % 5) * 41.0, (variant % 7) * 31.0, 0, 1)
       ..scaleByDouble(tileScale, tileScale, 1, 1);

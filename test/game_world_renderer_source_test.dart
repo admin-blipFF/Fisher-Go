@@ -79,6 +79,9 @@ void main() {
     expect(rendererSource, contains('_drawTerrainTextureLayer'));
     expect(rendererSource, contains('_drawTerrainTileTexture'));
     expect(rendererSource, contains('_drawPerspectiveMicroTileLayer'));
+    expect(rendererSource, contains('_drawReadableTerrainToneLayer'));
+    expect(rendererSource, contains('_drawLowFrequencyGrassWash'));
+    expect(rendererSource, contains('_drawLandColorPatch'));
     expect(rendererSource, contains('_projectTileToPerspective'));
     expect(rendererSource, contains('_projectTerrainCellFromCamera'));
     expect(rendererSource, contains('_terrainCellPathFromCamera'));

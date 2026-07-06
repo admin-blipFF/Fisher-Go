@@ -181,6 +181,7 @@ class GameMapPainter extends CustomPainter {
     _drawHorizonLayer(canvas, size);
     _drawPerspectiveMicroTileLayer(canvas, size);
     _drawWorldTerrainWashLayer(canvas, size);
+    _drawWorldTextureVeilLayer(canvas, size);
     _drawReadableTerrainToneLayer(canvas, size);
     _drawTerrainBoundaryBlendLayer(canvas, size);
     _drawTerrainDetailLayer(canvas, size);
@@ -572,6 +573,171 @@ class GameMapPainter extends CustomPainter {
     );
   }
 
+  void _drawWorldTextureVeilLayer(Canvas canvas, Size size) {
+    if (terrainTiles.isEmpty) return;
+    final visibleTiles = terrainTiles
+        .where((tile) => camera.isVisible(tile.centerLatLng, paddingMeters: 90))
+        .toList(growable: false);
+    for (final tile in visibleTiles) {
+      if (tile.kind == TerrainKind.road ||
+          tile.kind == TerrainKind.pier ||
+          tile.kind == TerrainKind.fishingNode) {
+        continue;
+      }
+      final seedBase = tile.row * 149 + tile.col * 193;
+      final patchTotal = tile.kind == TerrainKind.land ? 2 : 1;
+      for (var i = 0; i < patchTotal; i++) {
+        final point = _terrainVeilLatLngFromTile(tile, seedBase + i * 43);
+        if (!camera.isVisible(point, paddingMeters: 90)) continue;
+        final projected = camera.project(point);
+        if (!_isScreenDecorationVisible(projected, size)) continue;
+        switch (tile.kind) {
+          case TerrainKind.land:
+            _drawWorldGrassVeilPatch(canvas, projected, seedBase + i * 43);
+          case TerrainKind.water:
+            _drawWorldWaterVeilPatch(canvas, projected, seedBase + i * 43);
+          case TerrainKind.shore:
+            _drawWorldShoreVeilPatch(canvas, projected, seedBase + i * 43);
+          case TerrainKind.road:
+          case TerrainKind.pier:
+          case TerrainKind.fishingNode:
+            break;
+        }
+      }
+    }
+  }
+
+  LatLng _terrainVeilLatLngFromTile(TerrainTile tile, int seed) {
+    final eastMeters = (_detailNoise(seed) - 0.5) * 86;
+    final northMeters = (_detailNoise(seed + 17) - 0.5) * 86;
+    final metersPerDegreeLng =
+        111320.0 * math.cos(camera.center.latitude * math.pi / 180);
+    return LatLng(
+      tile.centerLatLng.latitude + northMeters / 111320.0,
+      tile.centerLatLng.longitude + eastMeters / metersPerDegreeLng,
+    );
+  }
+
+  void _drawWorldGrassVeilPatch(Canvas canvas, Offset center, int seed) {
+    final width = 148 + _detailNoise(seed) * 96;
+    final height = 82 + _detailNoise(seed + 5) * 56;
+    final angle = (_detailNoise(seed + 11) - 0.5) * 0.9;
+    final rect =
+        Rect.fromCenter(center: Offset.zero, width: width, height: height);
+    canvas.save();
+    canvas.translate(center.dx, center.dy);
+    canvas.rotate(angle);
+    canvas.drawOval(
+      rect,
+      Paint()
+        ..shader = RadialGradient(
+          colors: [
+            const Color(0xFFD9FF85).withValues(alpha: 0.12),
+            const Color(0xFF55D46D).withValues(alpha: 0.075),
+            const Color(0xFF087046).withValues(alpha: 0.035),
+            Colors.transparent,
+          ],
+          stops: const [0, 0.45, 0.78, 1],
+        ).createShader(rect)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3),
+    );
+    final bladePaint = Paint()
+      ..color = const Color(0xFFF1FF9A).withValues(alpha: 0.16)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.0
+      ..strokeCap = StrokeCap.round;
+    for (var i = 0; i < 9; i++) {
+      final localSeed = seed + i * 13;
+      final x = -width * 0.42 + width * _detailNoise(localSeed);
+      final y = -height * 0.34 + height * _detailNoise(localSeed + 3);
+      final length = 8 + _detailNoise(localSeed + 7) * 12;
+      final lean = (_detailNoise(localSeed + 9) - 0.5) * 8;
+      canvas.drawLine(
+          Offset(x, y + length * 0.34), Offset(x + lean, y), bladePaint);
+    }
+    canvas.restore();
+  }
+
+  void _drawWorldWaterVeilPatch(Canvas canvas, Offset center, int seed) {
+    final width = 176 + _detailNoise(seed) * 110;
+    final height = 92 + _detailNoise(seed + 5) * 64;
+    final angle = (_detailNoise(seed + 11) - 0.5) * 0.56;
+    final rect =
+        Rect.fromCenter(center: Offset.zero, width: width, height: height);
+    canvas.save();
+    canvas.translate(center.dx, center.dy);
+    canvas.rotate(angle);
+    canvas.drawOval(
+      rect,
+      Paint()
+        ..shader = RadialGradient(
+          colors: [
+            const Color(0xFFC9FFF8).withValues(alpha: 0.16),
+            const Color(0xFF37D6D3).withValues(alpha: 0.095),
+            const Color(0xFF077E9A).withValues(alpha: 0.04),
+            Colors.transparent,
+          ],
+          stops: const [0, 0.48, 0.8, 1],
+        ).createShader(rect)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4),
+    );
+    final ripplePaint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.12)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.1
+      ..strokeCap = StrokeCap.round;
+    for (var i = 0; i < 4; i++) {
+      final y = -height * 0.24 + i * height * 0.16;
+      final x = -width * (0.34 - i * 0.03);
+      final path = Path()
+        ..moveTo(x, y)
+        ..quadraticBezierTo(-width * 0.12, y - 5, width * 0.08, y + 1.5)
+        ..quadraticBezierTo(width * 0.24, y + 7, width * 0.38, y - 1);
+      canvas.drawPath(path, ripplePaint);
+    }
+    canvas.restore();
+  }
+
+  void _drawWorldShoreVeilPatch(Canvas canvas, Offset center, int seed) {
+    final width = 132 + _detailNoise(seed) * 88;
+    final height = 72 + _detailNoise(seed + 5) * 50;
+    final angle = (_detailNoise(seed + 11) - 0.5) * 0.72;
+    final rect =
+        Rect.fromCenter(center: Offset.zero, width: width, height: height);
+    canvas.save();
+    canvas.translate(center.dx, center.dy);
+    canvas.rotate(angle);
+    canvas.drawOval(
+      rect,
+      Paint()
+        ..shader = RadialGradient(
+          colors: [
+            const Color(0xFFFFF2A8).withValues(alpha: 0.13),
+            const Color(0xFFA2E681).withValues(alpha: 0.08),
+            const Color(0xFF1AA073).withValues(alpha: 0.035),
+            Colors.transparent,
+          ],
+          stops: const [0, 0.52, 0.82, 1],
+        ).createShader(rect)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3),
+    );
+    final reedPaint = Paint()
+      ..color = const Color(0xFFFFF4A0).withValues(alpha: 0.14)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.0
+      ..strokeCap = StrokeCap.round;
+    for (var i = 0; i < 5; i++) {
+      final localSeed = seed + i * 17;
+      final x = -width * 0.38 + width * _detailNoise(localSeed);
+      final y = -height * 0.18 + height * _detailNoise(localSeed + 3);
+      final length = 8 + _detailNoise(localSeed + 7) * 10;
+      final lean = (_detailNoise(localSeed + 9) - 0.5) * 7;
+      canvas.drawLine(
+          Offset(x, y + length * 0.3), Offset(x + lean, y), reedPaint);
+    }
+    canvas.restore();
+  }
+
   void _drawLowFrequencyGrassWash(Canvas canvas, Rect rect, int row, int col) {
     final seed = row * 53 + col * 71;
     final washRect = Rect.fromCenter(
@@ -584,8 +750,8 @@ class GameMapPainter extends CustomPainter {
       Paint()
         ..shader = RadialGradient(
           colors: [
-            const Color(0xFF86EA72).withValues(alpha: 0.24),
-            const Color(0xFF36B866).withValues(alpha: 0.1),
+            const Color(0xFF86EA72).withValues(alpha: 0.16),
+            const Color(0xFF36B866).withValues(alpha: 0.06),
             Colors.transparent,
           ],
           stops: const [0, 0.58, 1],
@@ -610,7 +776,7 @@ class GameMapPainter extends CustomPainter {
         ..shader = RadialGradient(
           colors: [
             (isLight ? const Color(0xFFC6FF81) : const Color(0xFF188E59))
-                .withValues(alpha: isLight ? 0.1 : 0.08),
+                .withValues(alpha: isLight ? 0.055 : 0.045),
             Colors.transparent,
           ],
         ).createShader(patchRect),
@@ -627,8 +793,8 @@ class GameMapPainter extends CustomPainter {
           end: Alignment.bottomCenter,
           colors: [
             const Color(0xFF7CECE4).withValues(alpha: 0.34),
-            const Color(0xFF0AA8BD).withValues(alpha: 0.26),
-            const Color(0xFF087896).withValues(alpha: 0.2),
+            const Color(0xFF0AA8BD).withValues(alpha: 0.18),
+            const Color(0xFF087896).withValues(alpha: 0.12),
           ],
         ).createShader(waterRect),
     );
@@ -657,8 +823,8 @@ class GameMapPainter extends CustomPainter {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            const Color(0xFFFFF2B4).withValues(alpha: 0.34),
-            const Color(0xFF83D989).withValues(alpha: 0.18),
+            const Color(0xFFFFF2B4).withValues(alpha: 0.22),
+            const Color(0xFF83D989).withValues(alpha: 0.1),
           ],
         ).createShader(rect),
     );

@@ -83,6 +83,11 @@ void main() {
     expect(rendererSource, contains('_drawWorldTerrainWashLayer'));
     expect(rendererSource, contains('_terrainWashLatLngFromTile'));
     expect(rendererSource, contains('_drawWorldTerrainWashPatch'));
+    expect(rendererSource, contains('_drawWorldTextureVeilLayer'));
+    expect(rendererSource, contains('_terrainVeilLatLngFromTile'));
+    expect(rendererSource, contains('_drawWorldGrassVeilPatch'));
+    expect(rendererSource, contains('_drawWorldWaterVeilPatch'));
+    expect(rendererSource, contains('_drawWorldShoreVeilPatch'));
     expect(rendererSource, contains('_drawLowFrequencyGrassWash'));
     expect(rendererSource, contains('_drawLandColorPatch'));
     expect(rendererSource, contains('_drawTerrainBoundaryBlendLayer'));

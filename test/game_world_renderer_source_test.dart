@@ -80,6 +80,9 @@ void main() {
     expect(rendererSource, contains('_drawTerrainTileTexture'));
     expect(rendererSource, contains('_drawPerspectiveMicroTileLayer'));
     expect(rendererSource, contains('_drawReadableTerrainToneLayer'));
+    expect(rendererSource, contains('_drawWorldTerrainWashLayer'));
+    expect(rendererSource, contains('_terrainWashLatLngFromTile'));
+    expect(rendererSource, contains('_drawWorldTerrainWashPatch'));
     expect(rendererSource, contains('_drawLowFrequencyGrassWash'));
     expect(rendererSource, contains('_drawLandColorPatch'));
     expect(rendererSource, contains('_drawTerrainBoundaryBlendLayer'));

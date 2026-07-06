@@ -180,6 +180,7 @@ class GameMapPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     _drawHorizonLayer(canvas, size);
     _drawPerspectiveMicroTileLayer(canvas, size);
+    _drawWorldTerrainWashLayer(canvas, size);
     _drawReadableTerrainToneLayer(canvas, size);
     _drawTerrainBoundaryBlendLayer(canvas, size);
     _drawTerrainDetailLayer(canvas, size);
@@ -490,6 +491,87 @@ class GameMapPainter extends CustomPainter {
     }
   }
 
+  void _drawWorldTerrainWashLayer(Canvas canvas, Size size) {
+    if (terrainTiles.isEmpty) return;
+    final visibleTiles = terrainTiles
+        .where((tile) => camera.isVisible(tile.centerLatLng, paddingMeters: 80))
+        .toList(growable: false);
+    for (final tile in visibleTiles) {
+      if (tile.kind == TerrainKind.road ||
+          tile.kind == TerrainKind.pier ||
+          tile.kind == TerrainKind.fishingNode) {
+        continue;
+      }
+      final seedBase = tile.row * 89 + tile.col * 127;
+      final patchCount = tile.kind == TerrainKind.land ? 1 : 2;
+      for (var i = 0; i < patchCount; i++) {
+        final point = _terrainWashLatLngFromTile(tile, seedBase + i * 31);
+        if (!camera.isVisible(point, paddingMeters: 80)) continue;
+        final projected = camera.project(point);
+        if (!_isScreenDecorationVisible(projected, size)) continue;
+        _drawWorldTerrainWashPatch(
+          canvas,
+          projected,
+          tile.kind,
+          seedBase + i * 31,
+        );
+      }
+    }
+  }
+
+  LatLng _terrainWashLatLngFromTile(TerrainTile tile, int seed) {
+    final eastMeters = (_detailNoise(seed) - 0.5) * 54;
+    final northMeters = (_detailNoise(seed + 19) - 0.5) * 54;
+    final metersPerDegreeLng =
+        111320.0 * math.cos(camera.center.latitude * math.pi / 180);
+    return LatLng(
+      tile.centerLatLng.latitude + northMeters / 111320.0,
+      tile.centerLatLng.longitude + eastMeters / metersPerDegreeLng,
+    );
+  }
+
+  void _drawWorldTerrainWashPatch(
+    Canvas canvas,
+    Offset center,
+    TerrainKind kind,
+    int seed,
+  ) {
+    final width = 96 + _detailNoise(seed) * 62;
+    final height = 70 + _detailNoise(seed + 7) * 54;
+    final rect = Rect.fromCenter(center: center, width: width, height: height);
+    final colors = switch (kind) {
+      TerrainKind.land => [
+          const Color(0xFFB5F76C).withValues(alpha: 0.1),
+          const Color(0xFF37B966).withValues(alpha: 0.08),
+          Colors.transparent,
+        ],
+      TerrainKind.water => [
+          const Color(0xFFB9FFF8).withValues(alpha: 0.12),
+          const Color(0xFF1DBBCD).withValues(alpha: 0.11),
+          Colors.transparent,
+        ],
+      TerrainKind.shore => [
+          const Color(0xFFFFF0A8).withValues(alpha: 0.12),
+          const Color(0xFF8DDE8D).withValues(alpha: 0.08),
+          Colors.transparent,
+        ],
+      TerrainKind.road || TerrainKind.pier || TerrainKind.fishingNode => [
+          Colors.transparent,
+          Colors.transparent,
+          Colors.transparent,
+        ],
+    };
+    canvas.drawOval(
+      rect,
+      Paint()
+        ..shader = RadialGradient(
+          colors: colors,
+          stops: const [0, 0.58, 1],
+        ).createShader(rect)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2),
+    );
+  }
+
   void _drawLowFrequencyGrassWash(Canvas canvas, Rect rect, int row, int col) {
     final seed = row * 53 + col * 71;
     final washRect = Rect.fromCenter(
@@ -503,7 +585,7 @@ class GameMapPainter extends CustomPainter {
         ..shader = RadialGradient(
           colors: [
             const Color(0xFF86EA72).withValues(alpha: 0.24),
-            const Color(0xFF36B866).withValues(alpha: 0.16),
+            const Color(0xFF36B866).withValues(alpha: 0.1),
             Colors.transparent,
           ],
           stops: const [0, 0.58, 1],
@@ -545,8 +627,8 @@ class GameMapPainter extends CustomPainter {
           end: Alignment.bottomCenter,
           colors: [
             const Color(0xFF7CECE4).withValues(alpha: 0.34),
-            const Color(0xFF0AA8BD).withValues(alpha: 0.44),
-            const Color(0xFF087896).withValues(alpha: 0.36),
+            const Color(0xFF0AA8BD).withValues(alpha: 0.26),
+            const Color(0xFF087896).withValues(alpha: 0.2),
           ],
         ).createShader(waterRect),
     );
@@ -576,7 +658,7 @@ class GameMapPainter extends CustomPainter {
           end: Alignment.bottomCenter,
           colors: [
             const Color(0xFFFFF2B4).withValues(alpha: 0.34),
-            const Color(0xFF83D989).withValues(alpha: 0.28),
+            const Color(0xFF83D989).withValues(alpha: 0.18),
           ],
         ).createShader(rect),
     );

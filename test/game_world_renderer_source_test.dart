@@ -82,6 +82,10 @@ void main() {
     expect(rendererSource, contains('_drawReadableTerrainToneLayer'));
     expect(rendererSource, contains('_drawLowFrequencyGrassWash'));
     expect(rendererSource, contains('_drawLandColorPatch'));
+    expect(rendererSource, contains('_drawTerrainBoundaryBlendLayer'));
+    expect(rendererSource, contains('_drawTerrainBoundaryEdgeBlend'));
+    expect(rendererSource, contains('_terrainTileByGrid'));
+    expect(rendererSource, contains('_boundaryBlendColorFor'));
     expect(rendererSource, contains('_projectTileToPerspective'));
     expect(rendererSource, contains('_projectTerrainCellFromCamera'));
     expect(rendererSource, contains('_terrainCellPathFromCamera'));

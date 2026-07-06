@@ -16,6 +16,8 @@ class _ProjectedTerrainTile {
   final Offset center;
 }
 
+enum _TerrainCellEdge { top, right, bottom, left }
+
 class GameMapTexturePack {
   const GameMapTexturePack({
     this.water,
@@ -179,6 +181,7 @@ class GameMapPainter extends CustomPainter {
     _drawHorizonLayer(canvas, size);
     _drawPerspectiveMicroTileLayer(canvas, size);
     _drawReadableTerrainToneLayer(canvas, size);
+    _drawTerrainBoundaryBlendLayer(canvas, size);
     _drawTerrainDetailLayer(canvas, size);
     _drawImagegenInspiredMapLayer(canvas, size);
     _drawRoadLayer(canvas, size);
@@ -488,17 +491,22 @@ class GameMapPainter extends CustomPainter {
 
   void _drawLowFrequencyGrassWash(Canvas canvas, Rect rect, int row, int col) {
     final seed = row * 53 + col * 71;
-    canvas.drawRect(
-      rect,
+    final washRect = Rect.fromCenter(
+      center: rect.center,
+      width: rect.width * 1.34,
+      height: rect.height * 1.34,
+    );
+    canvas.drawOval(
+      washRect,
       Paint()
-        ..shader = LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
+        ..shader = RadialGradient(
           colors: [
-            const Color(0xFF86EA72).withValues(alpha: 0.28),
-            const Color(0xFF36B866).withValues(alpha: 0.34),
+            const Color(0xFF86EA72).withValues(alpha: 0.24),
+            const Color(0xFF36B866).withValues(alpha: 0.16),
+            Colors.transparent,
           ],
-        ).createShader(rect),
+          stops: const [0, 0.58, 1],
+        ).createShader(washRect),
     );
     for (var i = 0; i < 2; i++) {
       _drawLandColorPatch(canvas, rect, seed + i * 37);
@@ -582,6 +590,135 @@ class GameMapPainter extends CustomPainter {
       Offset(rect.right - rect.width * 0.08, y - rect.height * 0.06),
       edgePaint,
     );
+  }
+
+  void _drawTerrainBoundaryBlendLayer(Canvas canvas, Size size) {
+    if (terrainTiles.isEmpty) return;
+    final grid = {
+      for (final tile in terrainTiles) '${tile.row}:${tile.col}': tile,
+    };
+    final visibleTiles = terrainTiles
+        .where((tile) => camera.isVisible(tile.centerLatLng, paddingMeters: 80))
+        .toList(growable: false);
+
+    for (final tile in visibleTiles) {
+      if (_isOverlayTerrain(tile.kind)) continue;
+      final rect = _projectTileToPerspective(size, tile);
+      if (rect == null) continue;
+      final right = _terrainTileByGrid(grid, tile.row, tile.col + 1);
+      final bottom = _terrainTileByGrid(grid, tile.row + 1, tile.col);
+      if (right != null && !_isOverlayTerrain(right.kind)) {
+        _drawTerrainBoundaryEdgeBlend(
+          canvas,
+          _terrainCellEdgePath(rect, tile, _TerrainCellEdge.right),
+          tile.kind,
+          right.kind,
+          rect.shortestSide,
+        );
+      }
+      if (bottom != null && !_isOverlayTerrain(bottom.kind)) {
+        _drawTerrainBoundaryEdgeBlend(
+          canvas,
+          _terrainCellEdgePath(rect, tile, _TerrainCellEdge.bottom),
+          tile.kind,
+          bottom.kind,
+          rect.shortestSide,
+        );
+      }
+    }
+  }
+
+  TerrainTile? _terrainTileByGrid(
+    Map<String, TerrainTile> grid,
+    int row,
+    int col,
+  ) {
+    return grid['$row:$col'];
+  }
+
+  bool _isOverlayTerrain(TerrainKind kind) {
+    return kind == TerrainKind.road ||
+        kind == TerrainKind.pier ||
+        kind == TerrainKind.fishingNode;
+  }
+
+  Path _terrainCellEdgePath(
+    Rect rect,
+    TerrainTile tile,
+    _TerrainCellEdge edge,
+  ) {
+    final isPerspective = tile.kind == TerrainKind.water ||
+        tile.kind == TerrainKind.road ||
+        tile.kind == TerrainKind.pier;
+    final topInset = rect.width * (isPerspective ? 0.08 : 0.06);
+    final sideInset = isPerspective ? 0.0 : rect.width * 0.025;
+    final topLeft = Offset(rect.left + topInset, rect.top);
+    final topRight = Offset(rect.right - topInset, rect.top);
+    final bottomRight = Offset(rect.right - sideInset, rect.bottom);
+    final bottomLeft = Offset(rect.left + sideInset, rect.bottom);
+    final path = Path();
+
+    switch (edge) {
+      case _TerrainCellEdge.top:
+        path
+          ..moveTo(topLeft.dx, topLeft.dy)
+          ..lineTo(topRight.dx, topRight.dy);
+      case _TerrainCellEdge.right:
+        path
+          ..moveTo(topRight.dx, topRight.dy)
+          ..lineTo(bottomRight.dx, bottomRight.dy);
+      case _TerrainCellEdge.bottom:
+        path
+          ..moveTo(bottomLeft.dx, bottomLeft.dy)
+          ..lineTo(bottomRight.dx, bottomRight.dy);
+      case _TerrainCellEdge.left:
+        path
+          ..moveTo(topLeft.dx, topLeft.dy)
+          ..lineTo(bottomLeft.dx, bottomLeft.dy);
+    }
+    return path;
+  }
+
+  void _drawTerrainBoundaryEdgeBlend(
+    Canvas canvas,
+    Path edgePath,
+    TerrainKind current,
+    TerrainKind neighbor,
+    double tileSize,
+  ) {
+    if (current == neighbor) return;
+    final baseColor = _boundaryBlendColorFor(current, neighbor);
+    final width = tileSize * 0.28;
+    canvas.drawPath(
+      edgePath,
+      Paint()
+        ..color = baseColor.withValues(alpha: 0.22)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = width.clamp(7.0, 18.0)
+        ..strokeCap = StrokeCap.round
+        ..strokeJoin = StrokeJoin.round
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 5),
+    );
+    canvas.drawPath(
+      edgePath,
+      Paint()
+        ..color = Colors.white.withValues(alpha: 0.09)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = (width * 0.32).clamp(2.0, 5.0)
+        ..strokeCap = StrokeCap.round
+        ..strokeJoin = StrokeJoin.round,
+    );
+  }
+
+  Color _boundaryBlendColorFor(TerrainKind a, TerrainKind b) {
+    final hasWater = a == TerrainKind.water || b == TerrainKind.water;
+    final hasShore = a == TerrainKind.shore || b == TerrainKind.shore;
+    final hasLand = a == TerrainKind.land || b == TerrainKind.land;
+    if (hasWater && hasShore) return const Color(0xFFBFF9E8);
+    if (hasWater && hasLand) return const Color(0xFF8DE7C2);
+    if (hasShore && hasLand) return const Color(0xFFDDF79A);
+    if (hasLand) return const Color(0xFF7EE678);
+    return const Color(0xFFC4FFF6);
   }
 
   void _drawImagegenInspiredMapLayer(Canvas canvas, Size size) {

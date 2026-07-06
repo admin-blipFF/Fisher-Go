@@ -98,6 +98,9 @@ void main() {
     expect(rendererSource, contains('_drawLandColorPatch'));
     expect(rendererSource, contains('_drawTerrainBoundaryBlendLayer'));
     expect(rendererSource, contains('_drawTerrainBoundaryEdgeBlend'));
+    expect(rendererSource, contains('_drawTerrainReliefLayer'));
+    expect(rendererSource, contains('_drawTerrainCellRelief'));
+    expect(rendererSource, contains('_terrainReliefPaletteFor'));
     expect(rendererSource, contains('_terrainTileByGrid'));
     expect(rendererSource, contains('_boundaryBlendColorFor'));
     expect(rendererSource, contains('_projectTileToPerspective'));

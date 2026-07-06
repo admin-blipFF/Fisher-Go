@@ -185,6 +185,7 @@ class GameMapPainter extends CustomPainter {
     _drawWorldTextureVeilLayer(canvas, size);
     _drawReadableTerrainToneLayer(canvas, size);
     _drawTerrainBoundaryBlendLayer(canvas, size);
+    _drawTerrainReliefLayer(canvas, size);
     _drawTerrainDetailLayer(canvas, size);
     _drawWorldDecorationLayer(canvas, size);
     _drawImagegenInspiredMapLayer(canvas, size);
@@ -1068,6 +1069,113 @@ class GameMapPainter extends CustomPainter {
         );
       }
     }
+  }
+
+  void _drawTerrainReliefLayer(Canvas canvas, Size size) {
+    if (terrainTiles.isEmpty) return;
+    final visibleTiles = terrainTiles
+        .where((tile) => camera.isVisible(tile.centerLatLng, paddingMeters: 80))
+        .toList(growable: false);
+
+    for (final tile in visibleTiles) {
+      if (_isOverlayTerrain(tile.kind)) continue;
+      final rect = _projectTileToPerspective(size, tile);
+      if (rect == null) continue;
+      _drawTerrainCellRelief(canvas, size, tile, rect);
+    }
+  }
+
+  void _drawTerrainCellRelief(
+    Canvas canvas,
+    Size size,
+    TerrainTile tile,
+    Rect rect,
+  ) {
+    final path = _terrainCellPathFromCamera(rect, tile);
+    final colors = _terrainReliefPaletteFor(tile.kind);
+    final depth = (rect.center.dy / size.height).clamp(0.0, 1.0);
+    final edgeWidth = (rect.shortestSide * 0.07).clamp(1.8, 4.8).toDouble();
+    final edgeAlpha = 0.055 + depth * 0.035;
+
+    canvas.save();
+    canvas.clipPath(path);
+    canvas.drawRect(
+      rect.inflate(rect.shortestSide * 0.04),
+      Paint()
+        ..shader = LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            colors[0].withValues(alpha: 0.08),
+            Colors.transparent,
+            colors[1].withValues(alpha: 0.06 + depth * 0.025),
+          ],
+          stops: const [0, 0.52, 1],
+        ).createShader(rect),
+    );
+    canvas.restore();
+
+    final sideShadowPaint = Paint()
+      ..color = colors[1].withValues(alpha: edgeAlpha)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = edgeWidth
+      ..strokeCap = StrokeCap.round
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2.4);
+    canvas.drawPath(
+      _terrainCellEdgePath(rect, tile, _TerrainCellEdge.right),
+      sideShadowPaint,
+    );
+    canvas.drawPath(
+      _terrainCellEdgePath(rect, tile, _TerrainCellEdge.bottom),
+      sideShadowPaint,
+    );
+    canvas.drawPath(
+      _terrainCellEdgePath(rect, tile, _TerrainCellEdge.top),
+      Paint()
+        ..color = colors[0].withValues(alpha: 0.11)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.1
+        ..strokeCap = StrokeCap.round,
+    );
+    canvas.drawPath(
+      _terrainCellEdgePath(rect, tile, _TerrainCellEdge.bottom),
+      Paint()
+        ..color = colors[2].withValues(alpha: 0.1 + depth * 0.04)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = (edgeWidth * 0.72).clamp(1.4, 3.5)
+        ..strokeCap = StrokeCap.round
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 1.8),
+    );
+  }
+
+  List<Color> _terrainReliefPaletteFor(TerrainKind kind) {
+    return switch (kind) {
+      TerrainKind.land => const [
+          Color(0xFFE6FF91),
+          Color(0xFF0B6F48),
+          Color(0xFF0C7A50),
+        ],
+      TerrainKind.shore => const [
+          Color(0xFFFFF1A8),
+          Color(0xFF5C9852),
+          Color(0xFF7AA85D),
+        ],
+      TerrainKind.water => const [
+          Color(0xFFCFFFF8),
+          Color(0xFF035B7B),
+          Color(0xFF047A9A),
+        ],
+      TerrainKind.road || TerrainKind.pier => const [
+          Color(0xFFFFFFFF),
+          Color(0xFF746D5F),
+          Color(0xFF8B8168),
+        ],
+      TerrainKind.fishingNode => const [
+          Color(0xFFE9FF94),
+          Color(0xFF0B714F),
+          Color(0xFF0E8056),
+        ],
+    };
   }
 
   TerrainTile? _terrainTileByGrid(

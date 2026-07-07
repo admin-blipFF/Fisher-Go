@@ -3379,6 +3379,9 @@ class GameMapPainter extends CustomPainter {
 
   void _drawFishingSpotMarker(Canvas canvas, Offset center) {
     _drawFishingSpotBeaconGlow(canvas, center);
+    _drawFishingSpotDepthShadow(canvas, center);
+    _drawFishingSpotProximityRing(canvas, center);
+    _drawFishingSpotFloatingPlatform(canvas, center);
     _drawFishingSpot3DBase(canvas, center);
     _drawFishingSpotBuoyColumn(canvas, center);
     canvas.drawPath(
@@ -3429,6 +3432,7 @@ class GameMapPainter extends CustomPainter {
           ],
         ).createShader(Rect.fromCircle(center: center, radius: 16)),
     );
+    _drawFishingSpotRarityCrown(canvas, center);
     _drawFishingSpotHookBadge(canvas, center);
   }
 
@@ -3500,6 +3504,99 @@ class GameMapPainter extends CustomPainter {
     );
   }
 
+  void _drawFishingSpotDepthShadow(Canvas canvas, Offset center) {
+    final shadowCenter = center.translate(0, 15);
+    canvas.drawOval(
+      Rect.fromCenter(center: shadowCenter, width: 64, height: 18),
+      Paint()
+        ..shader = RadialGradient(
+          colors: [
+            const Color(0xFF01252C).withValues(alpha: 0.34),
+            const Color(0xFF01252C).withValues(alpha: 0.12),
+            Colors.transparent,
+          ],
+          stops: const [0, 0.54, 1],
+        ).createShader(
+          Rect.fromCenter(center: shadowCenter, width: 64, height: 18),
+        )
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3),
+    );
+  }
+
+  void _drawFishingSpotProximityRing(Canvas canvas, Offset center) {
+    final ringCenter = center.translate(0, 8);
+    final outer = Rect.fromCenter(center: ringCenter, width: 76, height: 28);
+    canvas.drawArc(
+      outer,
+      math.pi * 0.08,
+      math.pi * 1.34,
+      false,
+      Paint()
+        ..shader = const LinearGradient(
+          colors: [Color(0xFFFFF178), Color(0xFF18E2D5), Color(0xFF0B7987)],
+        ).createShader(outer)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2.4
+        ..strokeCap = StrokeCap.round,
+    );
+    canvas.drawArc(
+      outer.deflate(7),
+      math.pi * 1.18,
+      math.pi * 0.52,
+      false,
+      Paint()
+        ..color = Colors.white.withValues(alpha: 0.34)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.2
+        ..strokeCap = StrokeCap.round,
+    );
+  }
+
+  void _drawFishingSpotFloatingPlatform(Canvas canvas, Offset center) {
+    final platformCenter = center.translate(0, 4);
+    final platformRect =
+        Rect.fromCenter(center: platformCenter, width: 48, height: 21);
+    canvas.drawOval(
+      platformRect.shift(const Offset(2, 4)),
+      Paint()
+        ..color = const Color(0xFF012E36).withValues(alpha: 0.26)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2.8),
+    );
+    canvas.drawOval(
+      platformRect,
+      Paint()
+        ..shader = const LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Color(0xFFFFF7A6), Color(0xFF22D6C8), Color(0xFF066A78)],
+          stops: [0, 0.5, 1],
+        ).createShader(platformRect),
+    );
+    canvas.drawOval(
+      platformRect.deflate(5),
+      Paint()
+        ..color = const Color(0xFFFFF7C7).withValues(alpha: 0.5)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.4,
+    );
+    for (final xOffset in const [-14.0, 14.0]) {
+      final floatRect = Rect.fromCenter(
+        center: platformCenter.translate(xOffset, 1),
+        width: 9,
+        height: 14,
+      );
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(floatRect, const Radius.circular(5)),
+        Paint()
+          ..shader = const LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Color(0xFFFFFFFF), Color(0xFFFFE85D), Color(0xFF0D8C96)],
+          ).createShader(floatRect),
+      );
+    }
+  }
+
   void _drawFishingSpotBuoyColumn(Canvas canvas, Offset center) {
     final poleRect = Rect.fromLTWH(center.dx - 4, center.dy - 40, 8, 39);
     canvas.drawRRect(
@@ -3543,6 +3640,42 @@ class GameMapPainter extends CustomPainter {
         ..color = const Color(0xFF07313A).withValues(alpha: 0.78)
         ..style = PaintingStyle.stroke
         ..strokeWidth = 2.4,
+    );
+  }
+
+  void _drawFishingSpotRarityCrown(Canvas canvas, Offset center) {
+    final crownCenter = center.translate(-15, -42);
+    final crownPath = Path()
+      ..moveTo(crownCenter.dx - 9, crownCenter.dy + 5)
+      ..lineTo(crownCenter.dx - 7, crownCenter.dy - 4)
+      ..lineTo(crownCenter.dx - 2, crownCenter.dy + 1)
+      ..lineTo(crownCenter.dx + 2, crownCenter.dy - 7)
+      ..lineTo(crownCenter.dx + 7, crownCenter.dy + 1)
+      ..lineTo(crownCenter.dx + 10, crownCenter.dy - 4)
+      ..lineTo(crownCenter.dx + 9, crownCenter.dy + 5)
+      ..close();
+    canvas.drawPath(
+      crownPath.shift(const Offset(1.2, 1.8)),
+      Paint()
+        ..color = const Color(0xFF032F37).withValues(alpha: 0.28)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 1.2),
+    );
+    canvas.drawPath(
+      crownPath,
+      Paint()
+        ..shader = const LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Color(0xFFFFFFFF), Color(0xFFFFF36D), Color(0xFFFF9F1C)],
+        ).createShader(Rect.fromCircle(center: crownCenter, radius: 12)),
+    );
+    canvas.drawPath(
+      crownPath,
+      Paint()
+        ..color = const Color(0xFF07313A).withValues(alpha: 0.52)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.1
+        ..strokeJoin = StrokeJoin.round,
     );
   }
 

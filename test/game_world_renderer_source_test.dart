@@ -161,6 +161,10 @@ void main() {
     expect(rendererSource, contains('_drawFishingSpotBeaconGlow'));
     expect(rendererSource, contains('_drawFishingSpot3DBase'));
     expect(rendererSource, contains('_drawFishingSpotBuoyColumn'));
+    expect(rendererSource, contains('_drawFishingSpotFloatingPlatform'));
+    expect(rendererSource, contains('_drawFishingSpotRarityCrown'));
+    expect(rendererSource, contains('_drawFishingSpotProximityRing'));
+    expect(rendererSource, contains('_drawFishingSpotDepthShadow'));
     expect(rendererSource, contains('_drawFishingSpotHookBadge'));
     expect(rendererSource, contains('_drawAtmosphereLayer'));
     expect(rendererSource, contains('_labelForFeature'));

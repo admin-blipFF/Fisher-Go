@@ -98,6 +98,9 @@ void main() {
     expect(rendererSource, contains('_drawLandColorPatch'));
     expect(rendererSource, contains('_drawTerrainBoundaryBlendLayer'));
     expect(rendererSource, contains('_drawTerrainBoundaryEdgeBlend'));
+    expect(rendererSource, contains('_drawWorldSeamFusionLayer'));
+    expect(rendererSource, contains('_drawVectorTerrainTransition'));
+    expect(rendererSource, contains('_drawRoadVergeDetail'));
     expect(rendererSource, contains('_drawTerrainReliefLayer'));
     expect(rendererSource, contains('_drawTerrainCellRelief'));
     expect(rendererSource, contains('_terrainReliefPaletteFor'));

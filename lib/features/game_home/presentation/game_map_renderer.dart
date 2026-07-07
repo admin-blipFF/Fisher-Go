@@ -185,6 +185,7 @@ class GameMapPainter extends CustomPainter {
     _drawWorldTextureVeilLayer(canvas, size);
     _drawReadableTerrainToneLayer(canvas, size);
     _drawTerrainBoundaryBlendLayer(canvas, size);
+    _drawWorldSeamFusionLayer(canvas, size);
     _drawTerrainReliefLayer(canvas, size);
     _drawCoastalWaterSceneLayer(canvas, size);
     _drawTerrainDetailLayer(canvas, size);
@@ -1448,6 +1449,121 @@ class GameMapPainter extends CustomPainter {
     if (hasShore && hasLand) return const Color(0xFFDDF79A);
     if (hasLand) return const Color(0xFF7EE678);
     return const Color(0xFFC4FFF6);
+  }
+
+  void _drawWorldSeamFusionLayer(Canvas canvas, Size size) {
+    for (final feature in terrainFeatures) {
+      if (feature.kind == TerrainKind.fishingNode) continue;
+      final path = _pathForFeature(feature);
+      if (path == null) continue;
+      if (feature.kind == TerrainKind.road) {
+        _drawRoadVergeDetail(canvas, path);
+      } else {
+        _drawVectorTerrainTransition(canvas, path, feature.kind);
+      }
+    }
+  }
+
+  void _drawVectorTerrainTransition(
+    Canvas canvas,
+    Path path,
+    TerrainKind kind,
+  ) {
+    final colors = _vectorTransitionColors(kind);
+    if (colors == null) return;
+    final baseWidth = switch (kind) {
+      TerrainKind.water => 18.0,
+      TerrainKind.shore => 16.0,
+      TerrainKind.land => 13.0,
+      TerrainKind.pier => 10.0,
+      TerrainKind.road || TerrainKind.fishingNode => 0.0,
+    };
+    canvas.drawPath(
+      path,
+      Paint()
+        ..color = colors.$1
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = baseWidth
+        ..strokeCap = StrokeCap.round
+        ..strokeJoin = StrokeJoin.round
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8),
+    );
+    canvas.drawPath(
+      path,
+      Paint()
+        ..color = colors.$2
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = baseWidth * 0.36
+        ..strokeCap = StrokeCap.round
+        ..strokeJoin = StrokeJoin.round,
+    );
+  }
+
+  (Color, Color)? _vectorTransitionColors(TerrainKind kind) {
+    return switch (kind) {
+      TerrainKind.water => (
+          const Color(0xFF8DFFF4).withValues(alpha: 0.12),
+          const Color(0xFFFFFFFF).withValues(alpha: 0.07),
+        ),
+      TerrainKind.shore => (
+          const Color(0xFFFFEFA8).withValues(alpha: 0.14),
+          const Color(0xFF96E188).withValues(alpha: 0.08),
+        ),
+      TerrainKind.land => (
+          const Color(0xFFB9FF79).withValues(alpha: 0.09),
+          const Color(0xFF2FB66C).withValues(alpha: 0.06),
+        ),
+      TerrainKind.pier => (
+          const Color(0xFF174751).withValues(alpha: 0.1),
+          const Color(0xFFE7FFF8).withValues(alpha: 0.07),
+        ),
+      TerrainKind.road || TerrainKind.fishingNode => null,
+    };
+  }
+
+  void _drawRoadVergeDetail(Canvas canvas, Path path) {
+    canvas.drawPath(
+      path,
+      Paint()
+        ..color = const Color(0xFFC7FF77).withValues(alpha: 0.12)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 30
+        ..strokeCap = StrokeCap.round
+        ..strokeJoin = StrokeJoin.round
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8),
+    );
+    canvas.drawPath(
+      path.shift(const Offset(0, 2.8)),
+      Paint()
+        ..color = const Color(0xFF06343A).withValues(alpha: 0.09)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 26
+        ..strokeCap = StrokeCap.round
+        ..strokeJoin = StrokeJoin.round
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 5),
+    );
+
+    final grassPaint = Paint()
+      ..color = const Color(0xFFE9FF90).withValues(alpha: 0.18)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1
+      ..strokeCap = StrokeCap.round;
+    for (final metric in path.computeMetrics()) {
+      if (metric.length < 24) continue;
+      var distance = 10.0;
+      var index = 0;
+      while (distance < metric.length) {
+        final tangent = metric.getTangentForOffset(distance);
+        if (tangent == null) break;
+        final normal = Offset(-tangent.vector.dy, tangent.vector.dx);
+        final side = index.isEven ? 1.0 : -1.0;
+        final root = tangent.position + normal * side * 11.0;
+        final tip = root - tangent.vector * 2.0 - normal * side * 4.0;
+        canvas.drawLine(root, tip, grassPaint);
+        distance += 19 + (index % 3) * 4;
+        index++;
+      }
+    }
   }
 
   void _drawImagegenInspiredMapLayer(Canvas canvas, Size size) {

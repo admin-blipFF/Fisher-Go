@@ -101,6 +101,13 @@ void main() {
     expect(rendererSource, contains('_drawTerrainReliefLayer'));
     expect(rendererSource, contains('_drawTerrainCellRelief'));
     expect(rendererSource, contains('_terrainReliefPaletteFor'));
+    expect(rendererSource, contains('_drawCoastalWaterSceneLayer'));
+    expect(rendererSource, contains('_drawOpenWaterSurfaceUnifier'));
+    expect(rendererSource, contains('_isOpenWaterReliefSuppressed'));
+    expect(rendererSource, contains('_isOpenWaterReadableWashSuppressed'));
+    expect(rendererSource, contains('_isOpenWaterTextureSuppressed'));
+    expect(rendererSource, contains('_drawWaterCurrentHighlights'));
+    expect(rendererSource, contains('_drawShoreFoamAndWetRocks'));
     expect(rendererSource, contains('_terrainTileByGrid'));
     expect(rendererSource, contains('_boundaryBlendColorFor'));
     expect(rendererSource, contains('_projectTileToPerspective'));

@@ -186,6 +186,7 @@ class GameMapPainter extends CustomPainter {
     _drawReadableTerrainToneLayer(canvas, size);
     _drawTerrainBoundaryBlendLayer(canvas, size);
     _drawTerrainReliefLayer(canvas, size);
+    _drawCoastalWaterSceneLayer(canvas, size);
     _drawTerrainDetailLayer(canvas, size);
     _drawWorldDecorationLayer(canvas, size);
     _drawImagegenInspiredMapLayer(canvas, size);
@@ -286,7 +287,10 @@ class GameMapPainter extends CustomPainter {
       Paint()
         ..color = _cellEdgeColor(tile.kind)
         ..style = PaintingStyle.stroke
-        ..strokeWidth = tile.kind == TerrainKind.land ? 0 : 0.28,
+        ..strokeWidth =
+            tile.kind == TerrainKind.land || tile.kind == TerrainKind.water
+                ? 0
+                : 0.28,
     );
   }
 
@@ -674,7 +678,9 @@ class GameMapPainter extends CustomPainter {
         case TerrainKind.land:
           _drawLowFrequencyGrassWash(canvas, rect, tile.row, tile.col);
         case TerrainKind.water:
-          _drawReadableWaterWash(canvas, rect, tile.row, tile.col);
+          if (!_isOpenWaterReadableWashSuppressed(tile.kind)) {
+            _drawReadableWaterWash(canvas, rect, tile.row, tile.col);
+          }
         case TerrainKind.shore:
           _drawReadableShoreWash(canvas, rect, tile.row, tile.col);
         case TerrainKind.road:
@@ -1085,12 +1091,173 @@ class GameMapPainter extends CustomPainter {
     }
   }
 
+  void _drawCoastalWaterSceneLayer(Canvas canvas, Size size) {
+    if (terrainTiles.isEmpty) return;
+    final visibleTiles = terrainTiles
+        .where((tile) => camera.isVisible(tile.centerLatLng, paddingMeters: 80))
+        .toList(growable: false);
+    _drawOpenWaterSurfaceUnifier(canvas, size, visibleTiles);
+
+    for (final tile in visibleTiles) {
+      if (tile.kind != TerrainKind.water && tile.kind != TerrainKind.shore) {
+        continue;
+      }
+      final rect = _projectTileToPerspective(size, tile);
+      if (rect == null) continue;
+      final path = _terrainCellPathFromCamera(rect, tile);
+      canvas.save();
+      canvas.clipPath(path);
+      switch (tile.kind) {
+        case TerrainKind.water:
+          _drawWaterCurrentHighlights(canvas, rect, tile.row, tile.col);
+        case TerrainKind.shore:
+          _drawShoreFoamAndWetRocks(canvas, rect, tile.row, tile.col);
+        case TerrainKind.land:
+        case TerrainKind.road:
+        case TerrainKind.pier:
+        case TerrainKind.fishingNode:
+          break;
+      }
+      canvas.restore();
+    }
+  }
+
+  void _drawOpenWaterSurfaceUnifier(
+    Canvas canvas,
+    Size size,
+    List<TerrainTile> visibleTiles,
+  ) {
+    final screenRect = Offset.zero & size;
+    final paint = Paint()
+      ..shader = LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [
+          const Color(0xFF9DFFF4).withValues(alpha: 0.16),
+          const Color(0xFF16C8D5).withValues(alpha: 0.1),
+          const Color(0xFF026F91).withValues(alpha: 0.18),
+        ],
+        stops: const [0, 0.46, 1],
+      ).createShader(screenRect);
+    for (final tile in visibleTiles) {
+      if (tile.kind != TerrainKind.water) continue;
+      final rect = _projectTileToPerspective(size, tile);
+      if (rect == null) continue;
+      canvas.drawPath(_terrainCellPathFromCamera(rect, tile), paint);
+    }
+  }
+
+  void _drawWaterCurrentHighlights(Canvas canvas, Rect rect, int row, int col) {
+    final seed = row * 131 + col * 173;
+    if ((row + col) % 3 == 1) return;
+    final glowRect = Rect.fromCenter(
+      center: rect.center.translate(
+        (_detailNoise(seed) - 0.5) * rect.width * 0.28,
+        (_detailNoise(seed + 7) - 0.5) * rect.height * 0.22,
+      ),
+      width: rect.width * (0.74 + _detailNoise(seed + 11) * 0.24),
+      height: rect.height * 0.34,
+    );
+    canvas.drawOval(
+      glowRect,
+      Paint()
+        ..shader = RadialGradient(
+          colors: [
+            const Color(0xFFE9FFFA).withValues(alpha: 0.12),
+            const Color(0xFF81F6EA).withValues(alpha: 0.055),
+            Colors.transparent,
+          ],
+          stops: const [0, 0.48, 1],
+        ).createShader(glowRect)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2),
+    );
+
+    for (var i = 0; i < 4; i++) {
+      final localSeed = seed + i * 29;
+      final y = rect.top + rect.height * (0.22 + i * 0.15);
+      final startX =
+          rect.left + rect.width * (0.08 + _detailNoise(localSeed) * 0.18);
+      final endX =
+          rect.right - rect.width * (0.12 + _detailNoise(localSeed + 5) * 0.2);
+      final lift = (_detailNoise(localSeed + 9) - 0.5) * rect.height * 0.12;
+      final path = Path()
+        ..moveTo(startX, y)
+        ..quadraticBezierTo(
+          rect.center.dx,
+          y + lift,
+          endX,
+          y + rect.height * (0.02 + _detailNoise(localSeed + 13) * 0.04),
+        );
+      canvas.drawPath(
+        path,
+        Paint()
+          ..color = Colors.white.withValues(alpha: 0.08 - i * 0.01)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.0
+          ..strokeCap = StrokeCap.round
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 0.6),
+      );
+    }
+  }
+
+  void _drawShoreFoamAndWetRocks(Canvas canvas, Rect rect, int row, int col) {
+    final seed = row * 181 + col * 97;
+    final foamPaint = Paint()
+      ..color = const Color(0xFFFFF8CF).withValues(alpha: 0.18)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.4
+      ..strokeCap = StrokeCap.round;
+    for (var i = 0; i < 2; i++) {
+      final y = rect.top + rect.height * (0.42 + i * 0.13);
+      final path = Path()
+        ..moveTo(rect.left + rect.width * 0.12, y)
+        ..quadraticBezierTo(
+          rect.center.dx +
+              (_detailNoise(seed + i * 19) - 0.5) * rect.width * 0.16,
+          y - rect.height * (0.06 + _detailNoise(seed + i * 23) * 0.06),
+          rect.right - rect.width * 0.1,
+          y + rect.height * 0.02,
+        );
+      canvas.drawPath(path, foamPaint);
+    }
+
+    for (var i = 0; i < 5; i++) {
+      final localSeed = seed + i * 31;
+      final center = Offset(
+        rect.left + rect.width * (0.14 + _detailNoise(localSeed) * 0.72),
+        rect.top + rect.height * (0.48 + _detailNoise(localSeed + 7) * 0.32),
+      );
+      final rockRect = Rect.fromCenter(
+        center: center,
+        width: rect.width * (0.045 + _detailNoise(localSeed + 11) * 0.04),
+        height: rect.height * (0.035 + _detailNoise(localSeed + 17) * 0.035),
+      );
+      canvas.drawOval(
+        rockRect,
+        Paint()
+          ..shader = const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFFEFE7B4), Color(0xFF4F7C68)],
+          ).createShader(rockRect)
+          ..style = PaintingStyle.fill,
+      );
+      canvas.drawOval(
+        rockRect.translate(0, rockRect.height * 0.28),
+        Paint()
+          ..color = const Color(0xFF073E49).withValues(alpha: 0.14)
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 1.4),
+      );
+    }
+  }
+
   void _drawTerrainCellRelief(
     Canvas canvas,
     Size size,
     TerrainTile tile,
     Rect rect,
   ) {
+    if (_isOpenWaterReliefSuppressed(tile.kind)) return;
     final path = _terrainCellPathFromCamera(rect, tile);
     final colors = _terrainReliefPaletteFor(tile.kind);
     final depth = (rect.center.dy / size.height).clamp(0.0, 1.0);
@@ -1146,6 +1313,18 @@ class GameMapPainter extends CustomPainter {
         ..strokeCap = StrokeCap.round
         ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 1.8),
     );
+  }
+
+  bool _isOpenWaterReliefSuppressed(TerrainKind kind) {
+    return kind == TerrainKind.water;
+  }
+
+  bool _isOpenWaterReadableWashSuppressed(TerrainKind kind) {
+    return kind == TerrainKind.water;
+  }
+
+  bool _isOpenWaterTextureSuppressed(TerrainKind kind) {
+    return kind == TerrainKind.water;
   }
 
   List<Color> _terrainReliefPaletteFor(TerrainKind kind) {
@@ -1657,13 +1836,15 @@ class GameMapPainter extends CustomPainter {
   ) {
     switch (kind) {
       case TerrainKind.water:
-        _drawWaterTileRipples(
-          canvas,
-          rect.center,
-          rect.width,
-          rect.height,
-          variant,
-        );
+        if (!_isOpenWaterTextureSuppressed(kind)) {
+          _drawWaterTileRipples(
+            canvas,
+            rect.center,
+            rect.width,
+            rect.height,
+            variant,
+          );
+        }
       case TerrainKind.land:
         _drawSeedreamLandMicroTile(
           canvas,

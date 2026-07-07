@@ -155,6 +155,9 @@ void main() {
     expect(rendererSource, contains('_drawPierLayer'));
     expect(rendererSource, contains('_drawLandmarkLabelLayer'));
     expect(rendererSource, contains('_drawFishingSpotLayer'));
+    expect(rendererSource, contains('_FishingSpotMarkerDetail'));
+    expect(rendererSource, contains('_detailForFishingSpot'));
+    expect(rendererSource, contains('_drawFishingSpotCompactMarker'));
     expect(rendererSource, contains('_drawFishingSpotWaterReflection'));
     expect(rendererSource, contains('_drawFishingSpotInteractionAura'));
     expect(rendererSource, contains('_drawFishingSpotRippleRings'));

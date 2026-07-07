@@ -18,6 +18,8 @@ class _ProjectedTerrainTile {
 
 enum _TerrainCellEdge { top, right, bottom, left }
 
+enum _FishingSpotMarkerDetail { compact, full }
+
 class GameMapTexturePack {
   const GameMapTexturePack({
     this.water,
@@ -2951,10 +2953,77 @@ class GameMapPainter extends CustomPainter {
 
   void _drawFishingSpotLayer(Canvas canvas, Size size) {
     for (final spot in fishingSpots) {
-      _drawFishingSpotInteractionAura(canvas, spot.screenPosition);
-      _drawFishingSpotWaterReflection(canvas, spot.screenPosition);
-      _drawFishingSpotMarker(canvas, spot.screenPosition);
+      final detail = _detailForFishingSpot(spot, size);
+      if (detail == _FishingSpotMarkerDetail.full) {
+        _drawFishingSpotInteractionAura(canvas, spot.screenPosition);
+        _drawFishingSpotWaterReflection(canvas, spot.screenPosition);
+        _drawFishingSpotMarker(canvas, spot.screenPosition);
+      } else {
+        _drawFishingSpotCompactMarker(canvas, spot.screenPosition);
+      }
     }
+  }
+
+  _FishingSpotMarkerDetail _detailForFishingSpot(
+    ProjectedFishingSpot spot,
+    Size size,
+  ) {
+    final playerCenter = Offset(size.width * 0.5, size.height * 0.55);
+    final screenDistance = (spot.screenPosition - playerCenter).distance;
+    final fullDetailRadius =
+        math.min(size.shortestSide * 0.48, camera.visibleRadiusMeters * 0.42);
+    return screenDistance <= fullDetailRadius
+        ? _FishingSpotMarkerDetail.full
+        : _FishingSpotMarkerDetail.compact;
+  }
+
+  void _drawFishingSpotCompactMarker(Canvas canvas, Offset center) {
+    _drawFishingSpotDepthShadow(canvas, center);
+    final baseRect = Rect.fromCenter(
+      center: center.translate(0, 2),
+      width: 34,
+      height: 15,
+    );
+    canvas.drawOval(
+      baseRect,
+      Paint()
+        ..shader = const LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Color(0xFFFFF58D), Color(0xFF19D7CA), Color(0xFF075D69)],
+        ).createShader(baseRect),
+    );
+    canvas.drawCircle(
+      center.translate(0, -12),
+      12,
+      Paint()
+        ..shader = RadialGradient(
+          center: const Alignment(-0.28, -0.35),
+          colors: [
+            Colors.white.withValues(alpha: 0.92),
+            const Color(0xFFFFF36D),
+            const Color(0xFF0EA7AD),
+          ],
+          stops: const [0, 0.5, 1],
+        ).createShader(
+            Rect.fromCircle(center: center.translate(0, -12), radius: 13)),
+    );
+    canvas.drawCircle(
+      center.translate(0, -12),
+      12,
+      Paint()
+        ..color = const Color(0xFF07313A).withValues(alpha: 0.72)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2.2,
+    );
+    canvas.drawOval(
+      Rect.fromCenter(center: center.translate(0, 5), width: 48, height: 18),
+      Paint()
+        ..color = const Color(0xFFDBFFFA).withValues(alpha: 0.22)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.2,
+    );
+    _drawFishingSpotHookBadge(canvas, center.translate(0, 14));
   }
 
   void _drawFishingSpotInteractionAura(Canvas canvas, Offset center) {

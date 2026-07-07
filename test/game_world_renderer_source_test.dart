@@ -144,6 +144,8 @@ void main() {
     expect(rendererSource, contains('_drawRoadBevelShadow'));
     expect(rendererSource, contains('_drawRoadShoulderBlend'));
     expect(rendererSource, contains('_drawRoadIntersectionGlow'));
+    expect(rendererSource, contains('_drawRoadJunctionCaps'));
+    expect(rendererSource, contains('_drawRoadSurfaceGrain'));
     expect(rendererSource, contains('_drawRoadEdgeRim'));
     expect(rendererSource, contains('_drawRoadLaneMarkings'));
     expect(rendererSource, contains('_drawRoadCenterHighlight'));

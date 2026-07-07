@@ -2541,9 +2541,11 @@ class GameMapPainter extends CustomPainter {
           width: 6.6,
         ),
       );
+      _drawRoadSurfaceGrain(canvas, path);
       _drawRoadEdgeRim(canvas, path);
       _drawRoadCenterHighlight(canvas, path);
       _drawRoadLaneMarkings(canvas, path);
+      _drawRoadJunctionCaps(canvas, path);
       _drawRoadIntersectionGlow(canvas, path);
     }
   }
@@ -2679,6 +2681,86 @@ class GameMapPainter extends CustomPainter {
         canvas.drawPath(dash, glowPaint);
         canvas.drawPath(dash, markPaint);
         distance += 26;
+      }
+    }
+  }
+
+  void _drawRoadSurfaceGrain(Canvas canvas, Path path) {
+    final grainPaint = Paint()
+      ..color = const Color(0xFF0B5360).withValues(alpha: 0.13)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 0.85
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+    final glintPaint = Paint()
+      ..color = const Color(0xFFFFFFFF).withValues(alpha: 0.15)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 0.65
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+
+    for (final metric in path.computeMetrics()) {
+      if (metric.length < 28) continue;
+      var distance = 8.0;
+      var index = 0;
+      while (distance < metric.length) {
+        final tangent = metric.getTangentForOffset(distance);
+        if (tangent == null) break;
+        final normal = Offset(-tangent.vector.dy, tangent.vector.dx);
+        final side = index.isEven ? 1.0 : -1.0;
+        final center = tangent.position + normal * side * 2.0;
+        final segment = Path()
+          ..moveTo(center.dx - tangent.vector.dx * 2.4,
+              center.dy - tangent.vector.dy * 2.4)
+          ..lineTo(center.dx + tangent.vector.dx * 2.4,
+              center.dy + tangent.vector.dy * 2.4);
+        canvas.drawPath(segment, index % 3 == 0 ? glintPaint : grainPaint);
+        distance += 13 + (index % 4) * 3;
+        index++;
+      }
+    }
+  }
+
+  void _drawRoadJunctionCaps(Canvas canvas, Path path) {
+    for (final metric in path.computeMetrics()) {
+      if (metric.length < 34) continue;
+      final capOffsets = <double>[
+        0,
+        metric.length * 0.5,
+        metric.length,
+      ];
+      for (final offset in capOffsets) {
+        final tangent =
+            metric.getTangentForOffset(offset.clamp(0, metric.length));
+        if (tangent == null) continue;
+        final center = tangent.position;
+        final baseRect = Rect.fromCenter(center: center, width: 18, height: 10);
+        canvas.drawOval(
+          baseRect.shift(const Offset(1.4, 2.0)),
+          Paint()
+            ..color = const Color(0xFF012C35).withValues(alpha: 0.18)
+            ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2.2),
+        );
+        canvas.drawOval(
+          baseRect,
+          Paint()
+            ..shader = const RadialGradient(
+              colors: [
+                Color(0xFFFFFFFF),
+                Color(0xFFB9F5EC),
+                Color(0xFF0E7180),
+              ],
+              stops: [0, 0.62, 1],
+            ).createShader(baseRect)
+            ..style = PaintingStyle.fill,
+        );
+        canvas.drawOval(
+          baseRect.deflate(2.4),
+          Paint()
+            ..color = const Color(0xFF07313A).withValues(alpha: 0.28)
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 1.1,
+        );
       }
     }
   }

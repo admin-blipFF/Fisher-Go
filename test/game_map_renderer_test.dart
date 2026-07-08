@@ -70,6 +70,32 @@ void main() {
       isTrue,
     );
   });
+
+  test('uses a low-cost render budget for dense web map scenes', () {
+    final budget = GameMapRenderBudget.forScene(
+      terrainTileCount: 29 * 21,
+      terrainFeatureCount: 80,
+    );
+
+    expect(budget.enableDecorativeOverlays, isFalse);
+    expect(budget.enableVectorTransitions, isFalse);
+    expect(budget.enableRoadMicroDetails, isFalse);
+    expect(budget.maxWashTiles, lessThan(29 * 21));
+    expect(budget.maxVeilTiles, lessThan(budget.maxWashTiles));
+    expect(budget.maxLabels, lessThan(7));
+  });
+
+  test('keeps full visual detail for compact map scenes', () {
+    final budget = GameMapRenderBudget.forScene(
+      terrainTileCount: 15 * 11,
+      terrainFeatureCount: 18,
+    );
+
+    expect(budget.enableDecorativeOverlays, isTrue);
+    expect(budget.enableVectorTransitions, isTrue);
+    expect(budget.enableRoadMicroDetails, isTrue);
+    expect(budget.maxLabels, 7);
+  });
 }
 
 TerrainTile _waterTile() {

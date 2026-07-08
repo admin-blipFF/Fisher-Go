@@ -94,6 +94,28 @@ void main() {
       expect(kinds, contains(TerrainKind.fishingNode));
     });
 
+    test('classifies major Hong Kong sea areas from real terrain features', () {
+      final json = File('assets/maps/hk_terrain_mvp.json').readAsStringSync();
+      final source = GeoTerrainDataSource(GeoTerrainDataset.fromJson(json));
+
+      for (final seaPoint in const [
+        LatLng(22.2936, 114.1698), // Victoria Harbour.
+        LatLng(22.3332, 114.1112), // Rambler Channel.
+        LatLng(22.4489, 114.2261), // Tolo Harbour.
+      ]) {
+        final tiles = source.buildTiles(
+          playerLatLng: seaPoint,
+          rows: 7,
+          cols: 7,
+        );
+        final centerTile = tiles.singleWhere(
+          (tile) => tile.row == 3 && tile.col == 3,
+        );
+
+        expect(centerTile.kind, TerrainKind.water);
+      }
+    });
+
     test('centers generated game tiles on the player GPS position', () {
       final json = File('assets/maps/hk_terrain_mvp.json').readAsStringSync();
       final source = GeoTerrainDataSource(GeoTerrainDataset.fromJson(json));

@@ -20,6 +20,41 @@ enum _TerrainCellEdge { top, right, bottom, left }
 
 enum _FishingSpotMarkerDetail { compact, full }
 
+class GameMapRenderBudget {
+  const GameMapRenderBudget({
+    required this.enableDecorativeOverlays,
+    required this.enableVectorTransitions,
+    required this.enableRoadMicroDetails,
+    required this.maxWashTiles,
+    required this.maxVeilTiles,
+    required this.maxLabels,
+  });
+
+  factory GameMapRenderBudget.forScene({
+    required int terrainTileCount,
+    required int terrainFeatureCount,
+  }) {
+    final heavyTileScene = terrainTileCount > 420;
+    final heavyVectorScene = terrainFeatureCount > 70;
+    final heavyScene = heavyTileScene || heavyVectorScene;
+    return GameMapRenderBudget(
+      enableDecorativeOverlays: !heavyScene,
+      enableVectorTransitions: !heavyVectorScene && terrainTileCount <= 560,
+      enableRoadMicroDetails: !heavyScene,
+      maxWashTiles: heavyScene ? 170 : 360,
+      maxVeilTiles: heavyScene ? 120 : 260,
+      maxLabels: heavyScene ? 4 : 7,
+    );
+  }
+
+  final bool enableDecorativeOverlays;
+  final bool enableVectorTransitions;
+  final bool enableRoadMicroDetails;
+  final int maxWashTiles;
+  final int maxVeilTiles;
+  final int maxLabels;
+}
+
 class GameMapTexturePack {
   const GameMapTexturePack({
     this.water,
@@ -177,6 +212,11 @@ class GameMapPainter extends CustomPainter {
   final List<TerrainVectorFeature> terrainFeatures;
   final List<ProjectedFishingSpot> fishingSpots;
   final GameMapTexturePack texturePack;
+
+  GameMapRenderBudget get _renderBudget => GameMapRenderBudget.forScene(
+        terrainTileCount: terrainTiles.length,
+        terrainFeatureCount: terrainFeatures.length,
+      );
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -697,9 +737,13 @@ class GameMapPainter extends CustomPainter {
 
   void _drawWorldTerrainWashLayer(Canvas canvas, Size size) {
     if (terrainTiles.isEmpty) return;
-    final visibleTiles = terrainTiles
-        .where((tile) => camera.isVisible(tile.centerLatLng, paddingMeters: 80))
-        .toList(growable: false);
+    final budget = _renderBudget;
+    final visibleTiles = _budgetedTiles(
+      terrainTiles
+          .where((tile) => camera.isVisible(tile.centerLatLng, paddingMeters: 80))
+          .toList(growable: false),
+      maxTiles: budget.maxWashTiles,
+    );
     for (final tile in visibleTiles) {
       if (tile.kind == TerrainKind.road ||
           tile.kind == TerrainKind.pier ||
@@ -778,9 +822,13 @@ class GameMapPainter extends CustomPainter {
 
   void _drawWorldTextureVeilLayer(Canvas canvas, Size size) {
     if (terrainTiles.isEmpty) return;
-    final visibleTiles = terrainTiles
-        .where((tile) => camera.isVisible(tile.centerLatLng, paddingMeters: 90))
-        .toList(growable: false);
+    final budget = _renderBudget;
+    final visibleTiles = _budgetedTiles(
+      terrainTiles
+          .where((tile) => camera.isVisible(tile.centerLatLng, paddingMeters: 90))
+          .toList(growable: false),
+      maxTiles: budget.maxVeilTiles,
+    );
     for (final tile in visibleTiles) {
       if (tile.kind == TerrainKind.road ||
           tile.kind == TerrainKind.pier ||
@@ -808,6 +856,17 @@ class GameMapPainter extends CustomPainter {
         }
       }
     }
+  }
+
+  List<TerrainTile> _budgetedTiles(
+    List<TerrainTile> tiles, {
+    required int maxTiles,
+  }) {
+    if (tiles.length <= maxTiles) return tiles;
+    final step = (tiles.length / maxTiles).ceil();
+    return [
+      for (var i = 0; i < tiles.length; i += step) tiles[i],
+    ];
   }
 
   LatLng _terrainVeilLatLngFromTile(TerrainTile tile, int seed) {
@@ -1454,6 +1513,7 @@ class GameMapPainter extends CustomPainter {
   }
 
   void _drawWorldSeamFusionLayer(Canvas canvas, Size size) {
+    if (!_renderBudget.enableVectorTransitions) return;
     for (final feature in terrainFeatures) {
       if (feature.kind == TerrainKind.fishingNode) continue;
       final path = _pathForFeature(feature);
@@ -1570,6 +1630,7 @@ class GameMapPainter extends CustomPainter {
 
   void _drawImagegenInspiredMapLayer(Canvas canvas, Size size) {
     if (terrainTiles.isEmpty) return;
+    if (!_renderBudget.enableDecorativeOverlays) return;
     final visibleTiles = terrainTiles
         .where((tile) => camera.isVisible(tile.centerLatLng, paddingMeters: 80))
         .toList(growable: false);
@@ -1579,6 +1640,7 @@ class GameMapPainter extends CustomPainter {
 
   void _drawWorldDecorationLayer(Canvas canvas, Size size) {
     if (terrainTiles.isEmpty) return;
+    if (!_renderBudget.enableDecorativeOverlays) return;
     final visibleTiles = terrainTiles
         .where((tile) => camera.isVisible(tile.centerLatLng, paddingMeters: 80))
         .toList(growable: false);
@@ -2642,13 +2704,16 @@ class GameMapPainter extends CustomPainter {
 
   // ignore: unused_element
   void _drawRoadLayer(Canvas canvas, Size size) {
+    final budget = _renderBudget;
     for (final feature in terrainFeatures) {
       if (feature.kind != TerrainKind.road) continue;
       final path = _pathForFeature(feature);
       if (path == null) continue;
 
-      _drawRoadShoulderBlend(canvas, path);
-      _drawRoadBevelShadow(canvas, path);
+      if (budget.enableRoadMicroDetails) {
+        _drawRoadShoulderBlend(canvas, path);
+        _drawRoadBevelShadow(canvas, path);
+      }
       _drawRoadCasing(canvas, path, width: 12.5);
       canvas.drawPath(
         path,
@@ -2659,12 +2724,16 @@ class GameMapPainter extends CustomPainter {
           width: 6.6,
         ),
       );
-      _drawRoadSurfaceGrain(canvas, path);
+      if (budget.enableRoadMicroDetails) {
+        _drawRoadSurfaceGrain(canvas, path);
+      }
       _drawRoadEdgeRim(canvas, path);
       _drawRoadCenterHighlight(canvas, path);
       _drawRoadLaneMarkings(canvas, path);
-      _drawRoadJunctionCaps(canvas, path);
-      _drawRoadIntersectionGlow(canvas, path);
+      if (budget.enableRoadMicroDetails) {
+        _drawRoadJunctionCaps(canvas, path);
+        _drawRoadIntersectionGlow(canvas, path);
+      }
     }
   }
 
@@ -3148,7 +3217,7 @@ class GameMapPainter extends CustomPainter {
         ));
 
     final occupied = <Rect>[];
-    for (final label in labels.take(7)) {
+    for (final label in labels.take(_renderBudget.maxLabels)) {
       final rect = _labelRect(label, size);
       if (occupied.any((other) => other.overlaps(rect.inflate(8)))) {
         continue;

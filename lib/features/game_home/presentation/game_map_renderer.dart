@@ -2734,9 +2734,19 @@ class GameMapPainter extends CustomPainter {
         _drawRoadBevelShadow(canvas, path, style);
       }
       if (style.drawsBridgeDeck) {
-        _drawBridgeRoadDeck(canvas, path, style);
+        _drawBridgeRoadDeck(
+          canvas,
+          path,
+          style,
+          enableMicroDetails: budget.enableRoadMicroDetails,
+        );
       }
-      _drawRoadCasing(canvas, path, width: style.casingWidth);
+      _drawRoadCasing(
+        canvas,
+        path,
+        width: style.casingWidth,
+        includeGlow: budget.enableRoadMicroDetails,
+      );
       canvas.drawPath(
         path,
         _texturedStrokePaint(
@@ -2818,7 +2828,12 @@ class GameMapPainter extends CustomPainter {
     );
   }
 
-  void _drawRoadCasing(Canvas canvas, Path path, {required double width}) {
+  void _drawRoadCasing(
+    Canvas canvas,
+    Path path, {
+    required double width,
+    bool includeGlow = true,
+  }) {
     canvas.drawPath(
       path,
       Paint()
@@ -2828,34 +2843,45 @@ class GameMapPainter extends CustomPainter {
         ..strokeCap = StrokeCap.round
         ..strokeJoin = StrokeJoin.round,
     );
-    canvas.drawPath(
-      path,
-      Paint()
-        ..color = const Color(0xFFBFF9EF).withValues(alpha: 0.2)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = width + 4
-        ..strokeCap = StrokeCap.round
-        ..strokeJoin = StrokeJoin.round
-        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 5),
-    );
+    if (includeGlow) {
+      canvas.drawPath(
+        path,
+        Paint()
+          ..color = const Color(0xFFBFF9EF).withValues(alpha: 0.2)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = width + 4
+          ..strokeCap = StrokeCap.round
+          ..strokeJoin = StrokeJoin.round
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 5),
+      );
+    }
   }
 
   void _drawBridgeRoadDeck(
     Canvas canvas,
     Path path,
-    GameRoadStyle style,
-  ) {
-    canvas.drawPath(
-      path.shift(const Offset(1.8, 3.4)),
-      Paint()
-        ..color = const Color(0xFF01252D).withValues(alpha: 0.32)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = style.casingWidth + 8
-        ..strokeCap = StrokeCap.round
-        ..strokeJoin = StrokeJoin.round
-        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3.5),
+    GameRoadStyle style, {
+    required bool enableMicroDetails,
+  }) {
+    if (enableMicroDetails) {
+      canvas.drawPath(
+        path.shift(const Offset(1.8, 3.4)),
+        Paint()
+          ..color = const Color(0xFF01252D).withValues(alpha: 0.32)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = style.casingWidth + 8
+          ..strokeCap = StrokeCap.round
+          ..strokeJoin = StrokeJoin.round
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3.5),
+      );
+    }
+    _drawRoadCasing(
+      canvas,
+      path,
+      width: style.casingWidth + 3,
+      includeGlow: false,
     );
-    _drawRoadCasing(canvas, path, width: style.casingWidth + 3);
+    if (!enableMicroDetails) return;
     final railPaint = Paint()
       ..color = const Color(0xFFF3FFF4).withValues(alpha: 0.74)
       ..style = PaintingStyle.stroke
@@ -2863,8 +2889,38 @@ class GameMapPainter extends CustomPainter {
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round;
     final railOffset = style.casingWidth * 0.5 - 0.5;
-    canvas.drawPath(path.shift(Offset(0, -railOffset)), railPaint);
-    canvas.drawPath(path.shift(Offset(0, railOffset)), railPaint);
+    canvas.drawPath(_bridgeRailPath(path, -railOffset), railPaint);
+    canvas.drawPath(_bridgeRailPath(path, railOffset), railPaint);
+  }
+
+  Path _bridgeRailPath(Path roadPath, double railOffset) {
+    final railPath = Path();
+    for (final metric in roadPath.computeMetrics()) {
+      var hasPoint = false;
+      final sampleStep = math.min(6.0, math.max(2.0, metric.length / 28));
+      void addSample(double distance) {
+        final tangent = metric.getTangentForOffset(distance);
+        if (tangent == null) return;
+        final normal = Offset(-tangent.vector.dy, tangent.vector.dx);
+        final normalLength = normal.distance;
+        if (normalLength == 0) return;
+        final point = tangent.position + normal / normalLength * railOffset;
+        if (hasPoint) {
+          railPath.lineTo(point.dx, point.dy);
+        } else {
+          railPath.moveTo(point.dx, point.dy);
+          hasPoint = true;
+        }
+      }
+
+      for (var distance = 0.0;
+          distance < metric.length;
+          distance += sampleStep) {
+        addSample(distance);
+      }
+      addSample(metric.length);
+    }
+    return railPath;
   }
 
   void _drawRoadEdgeRim(Canvas canvas, Path path, GameRoadStyle style) {

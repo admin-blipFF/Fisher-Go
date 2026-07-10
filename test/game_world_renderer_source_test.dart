@@ -154,6 +154,21 @@ void main() {
     expect(rendererSource, contains('_drawRoadCenterHighlight'));
     expect(rendererSource, contains('GameRoadStyle'));
     expect(rendererSource, contains('_drawBridgeRoadDeck'));
+    expect(rendererSource, contains('_bridgeRailPath'));
+    expect(
+      rendererSource,
+      contains('Offset(-tangent.vector.dy, tangent.vector.dx)'),
+    );
+    expect(
+      rendererSource,
+      isNot(contains('path.shift(Offset(0, -railOffset))')),
+    );
+    expect(
+      rendererSource,
+      contains('enableMicroDetails: budget.enableRoadMicroDetails'),
+    );
+    expect(rendererSource, contains('required bool enableMicroDetails'));
+    expect(rendererSource, contains('if (!enableMicroDetails) return;'));
     expect(rendererSource, contains('_drawRoadIntersectionLayer'));
     expect(rendererSource, contains('_drawPedestrianRoadHighlight'));
     expect(rendererSource, contains('left.roadClass != right.roadClass'));

@@ -912,7 +912,7 @@ Expected: FAIL because the importer does not exist.
 
 - [ ] **Step 2: Add the structured XML dependency and importer**
 
-Add `xml: ^6.5.0` under `dev_dependencies`. Parse XML with `package:xml/xml.dart`; do not use regex. Keep motorway, trunk, primary, secondary, tertiary, residential, unclassified, service, pedestrian, cycleway, footway, and path. Always keep motorway through tertiary; keep minor classes only when they have a name. Map residential/unclassified to `local`. Deduplicate by OSM way id and round coordinates to 7 decimal places.
+Add `xml: ^6.5.0` under `dev_dependencies`. Parse XML with `package:xml/xml.dart`; do not use regex. Keep motorway, trunk, primary, secondary, tertiary, residential, unclassified, service, pedestrian, cycleway, footway, and path, plus `motorway_link`, `trunk_link`, `primary_link`, `secondary_link`, and `tertiary_link`. Normalize each `*_link` value to its parent road class so real interchange ramps remain visible. Always keep motorway through tertiary and their link variants; keep minor classes only when they have a name. Map residential/unclassified to `local`. Deduplicate by OSM way id and round coordinates to 7 decimal places.
 
 - [ ] **Step 3: Fetch compact official snapshots**
 

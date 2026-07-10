@@ -64,22 +64,12 @@ class GameFishingSpotMarker extends StatelessWidget {
             children: [
               Positioned(
                 top: 40,
-                child: Container(
+                child: SizedBox(
                   width: 84,
                   height: 28,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(99),
-                    border: Border.all(
-                      color: rarityColor.withValues(alpha: 0.8),
-                      width: 2,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: rarityColor.withValues(alpha: 0.34),
-                        blurRadius: 20,
-                        spreadRadius: 6,
-                      ),
-                    ],
+                  child: CustomPaint(
+                    key: const ValueKey('fishing-spot-proximity-ring'),
+                    painter: _ProximityRingPainter(color: rarityColor),
                   ),
                 ),
               ),
@@ -181,6 +171,33 @@ class GameFishingSpotMarker extends StatelessWidget {
       ),
     );
   }
+}
+
+class _ProximityRingPainter extends CustomPainter {
+  const _ProximityRingPainter({required this.color});
+
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final oval = Offset.zero & size;
+    final glow = Paint()
+      ..color = color.withValues(alpha: 0.36)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 4
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 5);
+    final stroke = Paint()
+      ..color = color.withValues(alpha: 0.82)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2;
+
+    canvas.drawOval(oval.deflate(2), glow);
+    canvas.drawOval(oval.deflate(1), stroke);
+  }
+
+  @override
+  bool shouldRepaint(covariant _ProximityRingPainter oldDelegate) =>
+      oldDelegate.color != color;
 }
 
 class _NewSpotBadge extends StatelessWidget {

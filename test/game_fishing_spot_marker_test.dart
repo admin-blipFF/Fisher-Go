@@ -68,6 +68,17 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  test('proximity ring uses a dedicated non-filled painter without spread', () {
+    final source = File(
+      'lib/features/game_home/presentation/game_fishing_spot_marker.dart',
+    ).readAsStringSync();
+
+    expect(source, contains("ValueKey('fishing-spot-proximity-ring')"));
+    expect(
+        source, contains('class _ProximityRingPainter extends CustomPainter'));
+    expect(source, isNot(contains('spreadRadius:')));
+  });
+
   test('map renderer leaves visible spot bodies to the projected overlay', () {
     final source = File(
       'lib/features/game_home/presentation/game_home_screen.dart',

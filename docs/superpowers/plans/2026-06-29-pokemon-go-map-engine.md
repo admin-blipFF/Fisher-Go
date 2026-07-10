@@ -732,6 +732,55 @@ Only commit if files changed during verification.
 
 ---
 
+## Task 7: Production 3D Fishing Spot Marker
+
+**Files:**
+- Create: `lib/features/game_home/presentation/game_fishing_spot_marker.dart`
+- Create: `test/game_fishing_spot_marker_test.dart`
+- Modify: `lib/features/game_home/presentation/game_home_screen.dart`
+- Modify: `pubspec.yaml`
+- Add: `assets/fishing/map_markers/fishing_spot_beacon_3d.png`
+
+**Interfaces:**
+- Produces: `GameFishingSpotMarker(name, rarity, isNew)` as the shared visual marker used by both the GPS game map and panoramic map.
+- Consumes: a transparent 512x512 Seedream-generated beacon asset at `assets/fishing/map_markers/fishing_spot_beacon_3d.png`.
+
+- [ ] **Step 1: Write failing widget tests**
+
+Create `test/game_fishing_spot_marker_test.dart` and verify that the widget renders the Seedream beacon asset, the spot name, a rarity-aware semantic label, an optional `NEW` state, and a bounded long-name label without overflow exceptions.
+
+- [ ] **Step 2: Run the test to verify it fails**
+
+Run:
+
+```powershell
+$env:Path = "$env:USERPROFILE\develop\flutter\bin;$env:Path"
+flutter test test\game_fishing_spot_marker_test.dart
+```
+
+Expected: FAIL because `game_fishing_spot_marker.dart` does not exist.
+
+- [ ] **Step 3: Implement the marker widget**
+
+Create `GameFishingSpotMarker` as a stable 118x124 game marker. Use the transparent Seedream beacon as the central 3D body, a rarity-colored elliptical proximity ring and halo behind it, a grounded depth shadow, a compact hook badge, and a maximum-width 112px name label. Keep all text code-native and use `maxLines: 1` with ellipsis. The marker must not animate its layout bounds.
+
+- [ ] **Step 4: Replace the private marker implementation**
+
+Import `game_fishing_spot_marker.dart` in `game_home_screen.dart` and make `_SpotMarker` delegate to `GameFishingSpotMarker(name: spot.name, rarity: spot.rarity, isNew: spot.isNew)`. Both `_buildProjectedSpotButtons` and `_PanoramaMapSheet` continue to use `_SpotMarker`, preserving their existing selection callbacks and real-coordinate projection.
+
+- [ ] **Step 5: Register the asset and verify**
+
+Register `assets/fishing/map_markers/` in `pubspec.yaml`, run the focused marker and map tests, then run `flutter build web --release`.
+
+- [ ] **Step 6: Commit**
+
+```powershell
+git add assets\fishing\map_markers\fishing_spot_beacon_3d.png lib\features\game_home\presentation\game_fishing_spot_marker.dart lib\features\game_home\presentation\game_home_screen.dart pubspec.yaml test\game_fishing_spot_marker_test.dart docs\superpowers\plans\2026-06-29-pokemon-go-map-engine.md
+git commit -m "Upgrade fishing spots with 3D beacon assets"
+```
+
+---
+
 ## Self-Review
 
 - Spec coverage: camera, bearing, real spot projection, feature store, renderer layers, web build, Android APK build, and live web deployment are covered.

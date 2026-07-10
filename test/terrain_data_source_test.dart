@@ -250,6 +250,46 @@ void main() {
       expect(features.every((feature) => feature.points.length >= 2), isTrue);
     });
 
+    test('preserves road metadata from JSON through visible vector features',
+        () {
+      final source = GeoTerrainDataSource(GeoTerrainDataset.fromJson('''
+{
+  "schemaVersion": 3,
+  "features": [
+    {
+      "kind": "road",
+      "name": "大涌橋路",
+      "roadClass": "primary",
+      "isBridge": true,
+      "lanes": 3,
+      "lat": 22.3792,
+      "lng": 114.1923,
+      "radiusMeters": 50,
+      "geometry": {
+        "type": "lineString",
+        "coordinates": [[22.3790, 114.1910], [22.3800, 114.1930]]
+      }
+    }
+  ]
+}
+'''));
+
+      final parsed = source.dataset.features.single;
+      final vectorFeature = source
+          .visibleVectorFeatures(
+            playerLatLng: const LatLng(22.3792, 114.1923),
+            radiusMeters: 500,
+          )
+          .single;
+
+      expect(parsed.roadClass, RoadClass.primary);
+      expect(parsed.isBridge, isTrue);
+      expect(parsed.lanes, 3);
+      expect(vectorFeature.roadClass, RoadClass.primary);
+      expect(vectorFeature.isBridge, isTrue);
+      expect(vectorFeature.lanes, 3);
+    });
+
     test('exposes Sha Tin Hilton road vectors for the debug fishing spot', () {
       final json = File('assets/maps/hk_terrain_mvp.json').readAsStringSync();
       final source = GeoTerrainDataSource(GeoTerrainDataset.fromJson(json));

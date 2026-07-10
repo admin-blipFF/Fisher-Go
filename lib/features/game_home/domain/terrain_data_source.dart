@@ -5,6 +5,19 @@ import 'package:latlong2/latlong.dart';
 
 enum TerrainKind { water, shore, land, road, pier, fishingNode }
 
+enum RoadClass {
+  motorway,
+  trunk,
+  primary,
+  secondary,
+  tertiary,
+  local,
+  service,
+  footway,
+  cycleway,
+  unknown,
+}
+
 class TerrainTile {
   const TerrainTile({
     required this.kind,
@@ -63,12 +76,18 @@ class TerrainVectorFeature {
     required this.name,
     required this.points,
     required this.isClosed,
+    this.roadClass = RoadClass.unknown,
+    this.isBridge = false,
+    this.lanes,
   });
 
   final TerrainKind kind;
   final String name;
   final List<LatLng> points;
   final bool isClosed;
+  final RoadClass roadClass;
+  final bool isBridge;
+  final int? lanes;
 }
 
 abstract class TerrainDataSource {
@@ -94,6 +113,9 @@ class GeoTerrainFeature {
     required this.lng,
     required this.radiusMeters,
     this.geometry,
+    this.roadClass = RoadClass.unknown,
+    this.isBridge = false,
+    this.lanes,
   });
 
   final TerrainKind kind;
@@ -102,6 +124,9 @@ class GeoTerrainFeature {
   final double lng;
   final double radiusMeters;
   final GeoTerrainGeometry? geometry;
+  final RoadClass roadClass;
+  final bool isBridge;
+  final int? lanes;
 
   LatLng get center => LatLng(lat, lng);
 }
@@ -150,6 +175,9 @@ class GeoTerrainDataset {
             lat: (raw['lat'] as num).toDouble(),
             lng: (raw['lng'] as num).toDouble(),
             radiusMeters: (raw['radiusMeters'] as num).toDouble(),
+            roadClass: _parseRoadClass(raw['roadClass'] as String?),
+            isBridge: raw['isBridge'] as bool? ?? false,
+            lanes: (raw['lanes'] as num?)?.toInt(),
             geometry: raw['geometry'] is Map<String, dynamic>
                 ? GeoTerrainGeometry.fromJson(
                     raw['geometry'] as Map<String, dynamic>,
@@ -165,6 +193,13 @@ class GeoTerrainDataset {
       if (kind.name == value) return kind;
     }
     throw FormatException('Unknown terrain kind: $value');
+  }
+
+  static RoadClass _parseRoadClass(String? value) {
+    for (final roadClass in RoadClass.values) {
+      if (roadClass.name == value) return roadClass;
+    }
+    return RoadClass.unknown;
   }
 }
 
@@ -221,6 +256,9 @@ class GeoTerrainDataSource implements TerrainDataSource {
             name: feature.name,
             points: feature.geometry!.coordinates,
             isClosed: feature.geometry!.isPolygon,
+            roadClass: feature.roadClass,
+            isBridge: feature.isBridge,
+            lanes: feature.lanes,
           ),
     ];
   }

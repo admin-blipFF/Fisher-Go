@@ -7,6 +7,7 @@ import 'package:latlong2/latlong.dart' hide Path;
 
 import '../domain/game_map_camera.dart';
 import '../domain/game_map_feature_store.dart';
+import '../domain/game_road_style.dart';
 import '../domain/terrain_data_source.dart';
 
 class _ProjectedTerrainTile {
@@ -14,6 +15,13 @@ class _ProjectedTerrainTile {
 
   final TerrainTile data;
   final Offset center;
+}
+
+class _RoadEndpoint {
+  const _RoadEndpoint({required this.position, required this.style});
+
+  final Offset position;
+  final GameRoadStyle style;
 }
 
 enum _TerrainCellEdge { top, right, bottom, left }
@@ -740,7 +748,8 @@ class GameMapPainter extends CustomPainter {
     final budget = _renderBudget;
     final visibleTiles = _budgetedTiles(
       terrainTiles
-          .where((tile) => camera.isVisible(tile.centerLatLng, paddingMeters: 80))
+          .where(
+              (tile) => camera.isVisible(tile.centerLatLng, paddingMeters: 80))
           .toList(growable: false),
       maxTiles: budget.maxWashTiles,
     );
@@ -825,7 +834,8 @@ class GameMapPainter extends CustomPainter {
     final budget = _renderBudget;
     final visibleTiles = _budgetedTiles(
       terrainTiles
-          .where((tile) => camera.isVisible(tile.centerLatLng, paddingMeters: 90))
+          .where(
+              (tile) => camera.isVisible(tile.centerLatLng, paddingMeters: 90))
           .toList(growable: false),
       maxTiles: budget.maxVeilTiles,
     );
@@ -2705,45 +2715,66 @@ class GameMapPainter extends CustomPainter {
   // ignore: unused_element
   void _drawRoadLayer(Canvas canvas, Size size) {
     final budget = _renderBudget;
-    for (final feature in terrainFeatures) {
-      if (feature.kind != TerrainKind.road) continue;
+    final roads = [
+      for (final feature in terrainFeatures)
+        if (feature.kind == TerrainKind.road) feature,
+    ]..sort(
+        (left, right) => GameRoadStyle.forFeature(left).drawPriority.compareTo(
+              GameRoadStyle.forFeature(right).drawPriority,
+            ),
+      );
+
+    for (final feature in roads) {
       final path = _pathForFeature(feature);
       if (path == null) continue;
+      final style = GameRoadStyle.forFeature(feature);
 
       if (budget.enableRoadMicroDetails) {
-        _drawRoadShoulderBlend(canvas, path);
-        _drawRoadBevelShadow(canvas, path);
+        _drawRoadShoulderBlend(canvas, path, style);
+        _drawRoadBevelShadow(canvas, path, style);
       }
-      _drawRoadCasing(canvas, path, width: 12.5);
+      if (style.drawsBridgeDeck) {
+        _drawBridgeRoadDeck(canvas, path, style);
+      }
+      _drawRoadCasing(canvas, path, width: style.casingWidth);
       canvas.drawPath(
         path,
         _texturedStrokePaint(
           TerrainKind.road,
           path.getBounds(),
           fallbackColor: const Color(0xFFE5ECE6).withValues(alpha: 0.96),
-          width: 6.6,
+          width: style.surfaceWidth,
         ),
       );
       if (budget.enableRoadMicroDetails) {
-        _drawRoadSurfaceGrain(canvas, path);
+        _drawRoadSurfaceGrain(canvas, path, style);
       }
-      _drawRoadEdgeRim(canvas, path);
-      _drawRoadCenterHighlight(canvas, path);
-      _drawRoadLaneMarkings(canvas, path);
-      if (budget.enableRoadMicroDetails) {
-        _drawRoadJunctionCaps(canvas, path);
-        _drawRoadIntersectionGlow(canvas, path);
+      _drawRoadEdgeRim(canvas, path, style);
+      if (style.hasPedestrianHighlight) {
+        _drawPedestrianRoadHighlight(canvas, path, style);
+      } else {
+        _drawRoadCenterHighlight(canvas, path, style);
       }
+      if (style.hasVehicleLaneMarkings) {
+        _drawRoadLaneMarkings(canvas, path, style);
+      }
+    }
+    if (budget.enableRoadMicroDetails) {
+      _drawRoadIntersectionLayer(canvas, roads);
     }
   }
 
-  void _drawRoadShoulderBlend(Canvas canvas, Path path) {
+  void _drawRoadShoulderBlend(
+    Canvas canvas,
+    Path path,
+    GameRoadStyle style,
+  ) {
     canvas.drawPath(
       path,
       Paint()
         ..color = const Color(0xFF83E7B0).withValues(alpha: 0.11)
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 25
+        ..strokeWidth = style.casingWidth + 12
         ..strokeCap = StrokeCap.round
         ..strokeJoin = StrokeJoin.round
         ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 7),
@@ -2753,20 +2784,24 @@ class GameMapPainter extends CustomPainter {
       Paint()
         ..color = const Color(0xFF052D34).withValues(alpha: 0.11)
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 22
+        ..strokeWidth = style.casingWidth + 9
         ..strokeCap = StrokeCap.round
         ..strokeJoin = StrokeJoin.round
         ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 5),
     );
   }
 
-  void _drawRoadBevelShadow(Canvas canvas, Path path) {
+  void _drawRoadBevelShadow(
+    Canvas canvas,
+    Path path,
+    GameRoadStyle style,
+  ) {
     canvas.drawPath(
       path.shift(const Offset(1.8, 2.8)),
       Paint()
         ..color = const Color(0xFF01252D).withValues(alpha: 0.24)
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 18
+        ..strokeWidth = style.casingWidth + 5
         ..strokeCap = StrokeCap.round
         ..strokeJoin = StrokeJoin.round
         ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3.5),
@@ -2776,7 +2811,7 @@ class GameMapPainter extends CustomPainter {
       Paint()
         ..color = const Color(0xFFFFFFFF).withValues(alpha: 0.18)
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 15
+        ..strokeWidth = style.casingWidth + 2
         ..strokeCap = StrokeCap.round
         ..strokeJoin = StrokeJoin.round
         ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2),
@@ -2805,16 +2840,44 @@ class GameMapPainter extends CustomPainter {
     );
   }
 
-  void _drawRoadEdgeRim(Canvas canvas, Path path) {
+  void _drawBridgeRoadDeck(
+    Canvas canvas,
+    Path path,
+    GameRoadStyle style,
+  ) {
+    canvas.drawPath(
+      path.shift(const Offset(1.8, 3.4)),
+      Paint()
+        ..color = const Color(0xFF01252D).withValues(alpha: 0.32)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = style.casingWidth + 8
+        ..strokeCap = StrokeCap.round
+        ..strokeJoin = StrokeJoin.round
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3.5),
+    );
+    _drawRoadCasing(canvas, path, width: style.casingWidth + 3);
+    final railPaint = Paint()
+      ..color = const Color(0xFFF3FFF4).withValues(alpha: 0.74)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.15
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+    final railOffset = style.casingWidth * 0.5 - 0.5;
+    canvas.drawPath(path.shift(Offset(0, -railOffset)), railPaint);
+    canvas.drawPath(path.shift(Offset(0, railOffset)), railPaint);
+  }
+
+  void _drawRoadEdgeRim(Canvas canvas, Path path, GameRoadStyle style) {
     final rimPaint = Paint()
       ..color = const Color(0xFFEFFFF8).withValues(alpha: 0.24)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 0.9
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round;
-    canvas.drawPath(path.shift(const Offset(-1.7, -1.0)), rimPaint);
+    final offset = style.surfaceWidth * 0.25;
+    canvas.drawPath(path.shift(Offset(-offset, -offset * 0.6)), rimPaint);
     canvas.drawPath(
-      path.shift(const Offset(1.7, 1.0)),
+      path.shift(Offset(offset, offset * 0.6)),
       Paint()
         ..color = const Color(0xFF07313A).withValues(alpha: 0.2)
         ..style = PaintingStyle.stroke
@@ -2824,13 +2887,17 @@ class GameMapPainter extends CustomPainter {
     );
   }
 
-  void _drawRoadCenterHighlight(Canvas canvas, Path path) {
+  void _drawRoadCenterHighlight(
+    Canvas canvas,
+    Path path,
+    GameRoadStyle style,
+  ) {
     canvas.drawPath(
       path,
       Paint()
         ..color = const Color(0xFFFFFFFF).withValues(alpha: 0.66)
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.2
+        ..strokeWidth = style.surfaceWidth >= 5 ? 1.2 : 0.8
         ..strokeCap = StrokeCap.round
         ..strokeJoin = StrokeJoin.round,
     );
@@ -2839,23 +2906,27 @@ class GameMapPainter extends CustomPainter {
       Paint()
         ..color = const Color(0xFF40DAD2).withValues(alpha: 0.34)
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 2.2
+        ..strokeWidth = style.surfaceWidth >= 5 ? 2.2 : 1.5
         ..strokeCap = StrokeCap.round
         ..strokeJoin = StrokeJoin.round,
     );
   }
 
-  void _drawRoadLaneMarkings(Canvas canvas, Path path) {
+  void _drawRoadLaneMarkings(
+    Canvas canvas,
+    Path path,
+    GameRoadStyle style,
+  ) {
     final markPaint = Paint()
       ..color = const Color(0xFFFFF8DE).withValues(alpha: 0.5)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.35
+      ..strokeWidth = style.surfaceWidth >= 7 ? 1.35 : 1.0
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round;
     final glowPaint = Paint()
       ..color = const Color(0xFFFFFFFF).withValues(alpha: 0.18)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 3.2
+      ..strokeWidth = style.surfaceWidth >= 7 ? 3.2 : 2.4
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 1.4);
@@ -2872,7 +2943,27 @@ class GameMapPainter extends CustomPainter {
     }
   }
 
-  void _drawRoadSurfaceGrain(Canvas canvas, Path path) {
+  void _drawPedestrianRoadHighlight(
+    Canvas canvas,
+    Path path,
+    GameRoadStyle style,
+  ) {
+    canvas.drawPath(
+      path,
+      Paint()
+        ..color = const Color(0xFFE8FFF3).withValues(alpha: 0.52)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = style.surfaceWidth * 0.35
+        ..strokeCap = StrokeCap.round
+        ..strokeJoin = StrokeJoin.round,
+    );
+  }
+
+  void _drawRoadSurfaceGrain(
+    Canvas canvas,
+    Path path,
+    GameRoadStyle style,
+  ) {
     final grainPaint = Paint()
       ..color = const Color(0xFF0B5360).withValues(alpha: 0.13)
       ..style = PaintingStyle.stroke
@@ -2895,7 +2986,8 @@ class GameMapPainter extends CustomPainter {
         if (tangent == null) break;
         final normal = Offset(-tangent.vector.dy, tangent.vector.dx);
         final side = index.isEven ? 1.0 : -1.0;
-        final center = tangent.position + normal * side * 2.0;
+        final center =
+            tangent.position + normal * side * style.surfaceWidth * 0.3;
         final segment = Path()
           ..moveTo(center.dx - tangent.vector.dx * 2.4,
               center.dy - tangent.vector.dy * 2.4)
@@ -2905,6 +2997,66 @@ class GameMapPainter extends CustomPainter {
         distance += 13 + (index % 4) * 3;
         index++;
       }
+    }
+  }
+
+  void _drawRoadIntersectionLayer(
+    Canvas canvas,
+    List<TerrainVectorFeature> roads,
+  ) {
+    final groups = <List<_RoadEndpoint>>[];
+    for (final road in roads) {
+      if (road.points.length < 2) continue;
+      final style = GameRoadStyle.forFeature(road);
+      for (final point in [road.points.first, road.points.last]) {
+        final endpoint = _RoadEndpoint(
+          position: camera.project(point),
+          style: style,
+        );
+        List<_RoadEndpoint>? group;
+        for (final candidate in groups) {
+          if ((candidate.first.position - endpoint.position).distance <= 3) {
+            group = candidate;
+            break;
+          }
+        }
+        final endpointGroup = group ?? <_RoadEndpoint>[];
+        if (group == null) groups.add(endpointGroup);
+        endpointGroup.add(endpoint);
+      }
+    }
+
+    for (final group in groups) {
+      if (group.length < 2) continue;
+      var highestPriority = group.first.style;
+      for (final endpoint in group.skip(1)) {
+        if (endpoint.style.drawPriority > highestPriority.drawPriority) {
+          highestPriority = endpoint.style;
+        }
+      }
+      final center = Offset(
+        group.map((endpoint) => endpoint.position.dx).reduce((a, b) => a + b) /
+            group.length,
+        group.map((endpoint) => endpoint.position.dy).reduce((a, b) => a + b) /
+            group.length,
+      );
+      canvas.drawCircle(
+        center.translate(1.1, 1.8),
+        highestPriority.casingWidth * 0.58,
+        Paint()
+          ..color = const Color(0xFF012C35).withValues(alpha: 0.22)
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2),
+      );
+      canvas.drawCircle(
+        center,
+        highestPriority.casingWidth * 0.54,
+        Paint()..color = const Color(0xFF07313A).withValues(alpha: 0.76),
+      );
+      canvas.drawCircle(
+        center,
+        highestPriority.surfaceWidth * 0.54,
+        Paint()..color = const Color(0xFFE5ECE6).withValues(alpha: 0.96),
+      );
     }
   }
 
@@ -3888,6 +4040,9 @@ class GameMapPainter extends CustomPainter {
       if (left.kind != right.kind ||
           left.name != right.name ||
           left.isClosed != right.isClosed ||
+          left.roadClass != right.roadClass ||
+          left.isBridge != right.isBridge ||
+          left.lanes != right.lanes ||
           !_sameLatLngList(left.points, right.points)) {
         return false;
       }

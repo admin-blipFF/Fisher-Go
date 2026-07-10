@@ -152,6 +152,13 @@ void main() {
     expect(rendererSource, contains('_drawRoadEdgeRim'));
     expect(rendererSource, contains('_drawRoadLaneMarkings'));
     expect(rendererSource, contains('_drawRoadCenterHighlight'));
+    expect(rendererSource, contains('GameRoadStyle'));
+    expect(rendererSource, contains('_drawBridgeRoadDeck'));
+    expect(rendererSource, contains('_drawRoadIntersectionLayer'));
+    expect(rendererSource, contains('_drawPedestrianRoadHighlight'));
+    expect(rendererSource, contains('left.roadClass != right.roadClass'));
+    expect(rendererSource, contains('left.isBridge != right.isBridge'));
+    expect(rendererSource, contains('left.lanes != right.lanes'));
     expect(rendererSource, contains('_drawPierLayer'));
     expect(rendererSource, contains('_drawLandmarkLabelLayer'));
     expect(rendererSource, contains('_drawFishingSpotLayer'));

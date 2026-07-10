@@ -30,6 +30,7 @@ import '../../navigation/game_screen.dart';
 import '../../profile/data/player_progress_service.dart';
 import '../../profile/data/profile_wallet_service.dart';
 import '../../profile/presentation/profile_screen.dart';
+import 'game_fishing_spot_marker.dart';
 import 'game_map_renderer.dart';
 
 /// 地圖首頁
@@ -3404,10 +3405,10 @@ class _GameWorldMapShell extends StatelessWidget {
                     camera: camera,
                     terrainTiles: terrainTiles,
                     terrainFeatures: terrainFeatures,
-                    fishingSpots: fishingSpots,
+                    fishingSpots: const <ProjectedFishingSpot>[],
                   ),
                 ),
-                ..._buildProjectedSpotButtons(camera),
+                ..._buildProjectedSpotButtons(fishingSpots),
               ],
             );
           },
@@ -3425,13 +3426,18 @@ class _GameWorldMapShell extends StatelessWidget {
     );
   }
 
-  List<Widget> _buildProjectedSpotButtons(GameMapCamera camera) {
+  List<Widget> _buildProjectedSpotButtons(
+    List<ProjectedFishingSpot> projectedSpots,
+  ) {
+    final spotsById = {
+      for (final spot in spots) '${spot.name}:${spot.lat}:${spot.lng}': spot,
+    };
     return [
-      for (final spot in spots)
-        if (camera.isVisible(LatLng(spot.lat, spot.lng)))
+      for (final projectedSpot in projectedSpots)
+        if (spotsById[projectedSpot.id] case final spot?)
           Positioned(
-            left: camera.project(LatLng(spot.lat, spot.lng)).dx - 59,
-            top: camera.project(LatLng(spot.lat, spot.lng)).dy -
+            left: projectedSpot.screenPosition.dx - 59,
+            top: projectedSpot.screenPosition.dy -
                 84 -
                 _projectedSpotLiftPixels(spot),
             width: 118,
@@ -4373,107 +4379,12 @@ class _SpotMarker extends StatelessWidget {
 
   final _SpotDemo spot;
 
-  Color get c {
-    switch (spot.rarity) {
-      case 1:
-        return Colors.green;
-      case 2:
-        return Colors.blue;
-      case 3:
-        return Colors.purple;
-      case 4:
-        return Colors.orange;
-      case 5:
-        return Colors.red;
-      default:
-        return Colors.grey;
-    }
-  }
-
   @override
-  Widget build(BuildContext context) {
-    final rarityColor = c;
-    return Column(mainAxisSize: MainAxisSize.min, children: [
-      SizedBox(
-        width: 82,
-        height: 76,
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            Positioned(
-              bottom: 3,
-              child: _SpotMarkerDepthShadow(color: rarityColor),
-            ),
-            _SpotMarkerHalo(color: rarityColor),
-            Positioned(
-              top: 8,
-              child: _SpotMarkerBuoy(color: rarityColor),
-            ),
-            Positioned(
-              right: 12,
-              top: 13,
-              child: Container(
-                width: 22,
-                height: 22,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: const Color(0xFF082B36),
-                  border: Border.all(color: Colors.white, width: 2),
-                  boxShadow: [
-                    BoxShadow(
-                      color: rarityColor.withValues(alpha: 0.5),
-                      blurRadius: 9,
-                      spreadRadius: 1,
-                    ),
-                  ],
-                ),
-                child: const Icon(
-                  Icons.phishing,
-                  color: Color(0xFF7DF9FF),
-                  size: 13,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-      const SizedBox(height: 2),
-      Container(
-        constraints: const BoxConstraints(maxWidth: 112),
-        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-        decoration: BoxDecoration(
-          color: const Color(0xE6091D24),
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: rarityColor.withValues(alpha: 0.65)),
-          boxShadow: const [
-            BoxShadow(
-              color: Colors.black38,
-              blurRadius: 8,
-              offset: Offset(0, 3),
-            ),
-          ],
-        ),
-        child: Text(
-          spot.name,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: const TextStyle(
-              color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
-        ),
-      ),
-      if (spot.isNew)
-        Container(
-          margin: const EdgeInsets.only(top: 2),
-          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-          decoration: BoxDecoration(
-            color: Colors.green,
-            borderRadius: BorderRadius.circular(4),
-          ),
-          child: const Text('NEW',
-              style: TextStyle(color: Colors.white, fontSize: 8)),
-        ),
-    ]);
-  }
+  Widget build(BuildContext context) => GameFishingSpotMarker(
+        name: spot.name,
+        rarity: spot.rarity,
+        isNew: spot.isNew,
+      );
 }
 
 class _SpotMarkerHalo extends StatelessWidget {

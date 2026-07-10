@@ -43,5 +43,6 @@ flutter:
     - assets/maps/
     - assets/maps/textures/
     - assets/fishing/
+    - assets/fishing/map_markers/
     - assets/fishing/scenes/
     - assets/minigame/

@@ -8,6 +8,15 @@
 
 **Tech Stack:** Flutter, Dart, `latlong2`, existing `flutter_test`, bundled JSON terrain assets, existing `flutter_map` panoramic map, Android Gradle build.
 
+## Global Constraints
+
+- Home-map geometry and fishing spots must share one `GameMapCamera`; changing `bearingDegrees` rotates roads, coastline, piers, markers, and the player world together.
+- The default game-map radius remains 500 meters.
+- Road geometry must come from bundled real-world OSM snapshots at runtime; web and Android must not require a live map API.
+- Only compact OSM road classes needed for the game are bundled; the renderer must remain within the existing dense-web `GameMapRenderBudget`.
+- User-facing map text remains Traditional Chinese; legal attribution uses the exact text `© OpenStreetMap contributors`.
+- Android install and smoke verification must target an emulator only and must never target device serial `0123456789ABCDEF`.
+
 ---
 
 ## File Structure
@@ -781,9 +790,171 @@ git commit -m "Upgrade fishing spots with 3D beacon assets"
 
 ---
 
+## Task 8: OSM Road Hierarchy And Bridge Rendering
+
+**Files:**
+- Create: `lib/features/game_home/domain/game_road_style.dart`
+- Modify: `lib/features/game_home/domain/terrain_data_source.dart`
+- Modify: `lib/features/game_home/domain/game_map_feature_store.dart`
+- Modify: `lib/features/game_home/presentation/game_map_renderer.dart`
+- Modify: `test/terrain_data_source_test.dart`
+- Create: `test/game_road_style_test.dart`
+- Modify: `test/game_world_renderer_source_test.dart`
+
+**Interfaces:**
+- Produces `enum RoadClass { motorway, trunk, primary, secondary, tertiary, local, service, footway, cycleway, unknown }`.
+- Extends `GeoTerrainFeature` and `TerrainVectorFeature` with `roadClass`, `isBridge`, and `lanes`, using backward-compatible defaults.
+- Produces `GameRoadStyle.forFeature(TerrainVectorFeature)` with casing width, surface width, lane-marking mode, bridge-deck flag, and draw priority.
+
+- [ ] **Step 1: Write failing metadata and style tests**
+
+Add a JSON fixture to `test/terrain_data_source_test.dart` containing:
+
+```json
+{
+  "kind": "road",
+  "name": "大涌橋路",
+  "roadClass": "primary",
+  "isBridge": true,
+  "lanes": 3,
+  "lat": 22.3792,
+  "lng": 114.1923,
+  "radiusMeters": 50,
+  "geometry": {
+    "type": "lineString",
+    "coordinates": [[22.3790, 114.1910], [22.3800, 114.1930]]
+  }
+}
+```
+
+Assert the parsed `GeoTerrainFeature` and exposed `TerrainVectorFeature` retain all three fields. In `test/game_road_style_test.dart`, assert `primary.surfaceWidth > secondary.surfaceWidth > local.surfaceWidth > footway.surfaceWidth`, footways have no vehicle lane markings, and bridge roads enable the elevated deck treatment.
+
+- [ ] **Step 2: Run tests and verify RED**
+
+```powershell
+$env:Path = "$env:USERPROFILE\develop\flutter\bin;$env:Path"
+flutter test test\terrain_data_source_test.dart test\game_road_style_test.dart
+```
+
+Expected: FAIL because `RoadClass`, road metadata fields, and `GameRoadStyle` do not exist.
+
+- [ ] **Step 3: Implement the road metadata pipeline**
+
+Parse `roadClass`, `isBridge`, and `lanes` in `GeoTerrainDataset.fromJson`, defaulting to `RoadClass.unknown`, `false`, and `null`. Copy the fields through `GeoTerrainDataSource.visibleVectorFeatures` and `GameMapFeatureStore.visibleTerrainFeatures`. Preserve old fixture constructors with optional named parameters and const defaults.
+
+- [ ] **Step 4: Implement road styles and renderer ordering**
+
+Implement `GameRoadStyle.forFeature` with these exact surface widths:
+
+```text
+motorway/trunk 9.0
+primary 7.4
+secondary 6.2
+tertiary 5.4
+local 4.6
+service 3.8
+cycleway 3.0
+footway 2.4
+unknown 5.0
+```
+
+Render lower-priority roads first and major roads last. Add `_drawBridgeRoadDeck` for bridge shadow, deck casing, and pale outer rails. Add `_drawRoadIntersectionLayer` that groups projected road endpoints within 3 screen pixels and draws a junction cap using the highest-priority connected style. Vehicle lane dashes appear only on motorway through tertiary classes; cycleway and footway use restrained continuous highlights.
+
+- [ ] **Step 5: Add renderer source assertions and verify GREEN**
+
+Require `GameRoadStyle`, `_drawBridgeRoadDeck`, `_drawRoadIntersectionLayer`, and `_drawPedestrianRoadHighlight` in `test/game_world_renderer_source_test.dart`, then run:
+
+```powershell
+flutter test test\terrain_data_source_test.dart test\game_road_style_test.dart test\game_map_renderer_test.dart test\game_world_renderer_source_test.dart
+```
+
+Expected: all focused tests pass.
+
+- [ ] **Step 6: Commit**
+
+```powershell
+git add lib\features\game_home\domain\game_road_style.dart lib\features\game_home\domain\terrain_data_source.dart lib\features\game_home\domain\game_map_feature_store.dart lib\features\game_home\presentation\game_map_renderer.dart test\terrain_data_source_test.dart test\game_road_style_test.dart test\game_world_renderer_source_test.dart
+git commit -m "Add real road hierarchy rendering"
+```
+
+---
+
+## Task 9: Official OSM Road Snapshot Import
+
+**Files:**
+- Create: `tool/update_osm_road_cache.dart`
+- Create: `test/osm_road_cache_import_test.dart`
+- Create: `data/hk_geo/osm_road_geometry_cache.json`
+- Modify: `tool/generate_hk_terrain_mvp.dart`
+- Modify: `test/hk_terrain_generator_test.dart`
+- Modify: `assets/maps/hk_terrain_mvp.json`
+- Modify: `pubspec.yaml`
+- Modify: `pubspec.lock`
+- Modify: `lib/features/game_home/presentation/game_home_screen.dart`
+
+**Interfaces:**
+- Produces `buildRoadCacheFromOsmXml(String source, {required String regionName})` in `tool/update_osm_road_cache.dart`.
+- Reads official OSM API XML and writes compact JSON features containing `osmId`, `roadClass`, `isBridge`, `lanes`, and real `lineString` coordinates.
+- `buildTerrainAsset` merges `osm_vector_cache.json`, `osm_road_geometry_cache.json`, manual gameplay features, and fishing-spot CSV data.
+
+- [ ] **Step 1: Add XML importer tests and verify RED**
+
+Create an OSM XML fixture with three nodes and one way tagged `highway=primary`, `bridge=yes`, `lanes=3`, and `name:zh=沙田鄉事會路`. Assert the importer returns one road feature with the exact tags and coordinates. Add a second fixture for an unnamed `footway` and assert it is excluded, while a named footway is retained.
+
+Run:
+
+```powershell
+$env:Path = "$env:USERPROFILE\develop\flutter\bin;$env:Path"
+flutter test test\osm_road_cache_import_test.dart
+```
+
+Expected: FAIL because the importer does not exist.
+
+- [ ] **Step 2: Add the structured XML dependency and importer**
+
+Add `xml: ^6.5.0` under `dev_dependencies`. Parse XML with `package:xml/xml.dart`; do not use regex. Keep motorway, trunk, primary, secondary, tertiary, residential, unclassified, service, pedestrian, cycleway, footway, and path. Always keep motorway through tertiary; keep minor classes only when they have a name. Map residential/unclassified to `local`. Deduplicate by OSM way id and round coordinates to 7 decimal places.
+
+- [ ] **Step 3: Fetch compact official snapshots**
+
+Use the official endpoint `https://api.openstreetmap.org/api/0.6/map` for these exact bboxes:
+
+```text
+sha-tin: 114.1814,22.3769,114.1934,22.3869
+tsing-ma: 114.0640,22.3460,114.0845,22.3585
+```
+
+Write `data/hk_geo/osm_road_geometry_cache.json` with source `© OpenStreetMap contributors`, the fetch timestamp, both region names, and the compact road features.
+
+- [ ] **Step 4: Merge the new cache into the terrain asset**
+
+Preserve all road metadata in `_featureFromOsmCache`, include the new cache in `generatedFrom`, and regenerate `assets/maps/hk_terrain_mvp.json`. Update `test/hk_terrain_generator_test.dart` to require primary, secondary, local, footway/cycleway, and bridge metadata plus exact generated-asset equality.
+
+- [ ] **Step 5: Add unobtrusive attribution and verify**
+
+Add `© OpenStreetMap contributors` to the game-map stack at 8px, bottom-left above the fishing bar, with white text and a subtle dark shadow. Do not add any other explanatory copy.
+
+Run:
+
+```powershell
+flutter test test\osm_road_cache_import_test.dart test\hk_terrain_generator_test.dart test\terrain_data_source_test.dart test\game_world_renderer_source_test.dart
+flutter analyze
+flutter build web --release
+```
+
+Expected: tests pass, analyzer reports no issues, and the Web release build contains the regenerated terrain JSON.
+
+- [ ] **Step 6: Commit**
+
+```powershell
+git add tool\update_osm_road_cache.dart test\osm_road_cache_import_test.dart data\hk_geo\osm_road_geometry_cache.json tool\generate_hk_terrain_mvp.dart test\hk_terrain_generator_test.dart assets\maps\hk_terrain_mvp.json pubspec.yaml pubspec.lock lib\features\game_home\presentation\game_home_screen.dart
+git commit -m "Import official OSM road geometry"
+```
+
+---
+
 ## Self-Review
 
-- Spec coverage: camera, bearing, real spot projection, feature store, renderer layers, web build, Android APK build, and live web deployment are covered.
+- Spec coverage: camera, bearing, real spot projection, feature store, renderer layers, OSM road hierarchy, official road snapshot import, web build, Android APK build, and live web deployment are covered.
 - Placeholder scan: no TBD/TODO placeholders are used as plan steps.
 - Type consistency: `GameMapCamera`, `GameMapFeatureStore`, `GameMapFishingSpot`, `ProjectedFishingSpot`, `TerrainVectorFeature`, and `GameMapRenderer` are introduced before use.
 - Scope: this is Phase 1 of the full map-system goal. It does not claim full Hong Kong OSM coverage, paid 3D maps, compass auto-heading, or emulator smoke if no Android runtime is available.

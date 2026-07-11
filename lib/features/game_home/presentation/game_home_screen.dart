@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show compute;
 import 'package:flutter/services.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:geolocator/geolocator.dart';
@@ -172,7 +173,7 @@ class _GameHomeScreenState extends State<GameHomeScreen>
     try {
       final source =
           await rootBundle.loadString('assets/maps/hk_terrain_mvp.json');
-      final dataset = GeoTerrainDataset.fromJson(source);
+      final dataset = await compute(GeoTerrainDataset.fromJson, source);
       if (!mounted) return;
       setState(() => _terrainDataSource = GeoTerrainDataSource(dataset));
     } catch (_) {

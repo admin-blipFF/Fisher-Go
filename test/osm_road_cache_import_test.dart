@@ -3,6 +3,25 @@ import '../tool/update_osm_road_cache.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  test('covers the major Hong Kong fishing regions', () {
+    expect(
+      osmRoadRegionNames,
+      containsAll([
+        'central-harbour',
+        'north-point',
+        'aberdeen',
+        'sai-kung',
+        'tai-po',
+        'sam-mun-tsai',
+        'tung-chung',
+        'chek-lap-kok-east',
+        'cheung-chau',
+        'lamma',
+        'stanley',
+      ]),
+    );
+  });
+
   test('imports primary bridge metadata and real node coordinates', () {
     final cache = buildRoadCacheFromOsmXml(
       _osmFixture,

@@ -307,6 +307,31 @@ void main() {
       expect(names, contains('大涌橋路'));
     });
 
+    test('exposes real roads around major Hong Kong fishing regions', () {
+      final json = File('assets/maps/hk_terrain_mvp.json').readAsStringSync();
+      final source = GeoTerrainDataSource(GeoTerrainDataset.fromJson(json));
+      const anchors = <String, LatLng>{
+        'central-harbour': LatLng(22.2860, 114.1626),
+        'north-point': LatLng(22.2937, 114.1985),
+        'sai-kung': LatLng(22.3815, 114.2754),
+        'tai-po': LatLng(22.4425, 114.1840),
+        'sam-mun-tsai': LatLng(22.4555, 114.2132),
+        'tung-chung': LatLng(22.2942, 113.9404),
+        'cheung-chau': LatLng(22.2080, 114.0285),
+        'stanley': LatLng(22.2173, 114.2102),
+      };
+
+      for (final entry in anchors.entries) {
+        final roads = source
+            .visibleVectorFeatures(
+              playerLatLng: entry.value,
+              radiusMeters: 900,
+            )
+            .where((feature) => feature.kind == TerrainKind.road);
+        expect(roads, isNotEmpty, reason: '${entry.key} should expose roads');
+      }
+    });
+
     test('reuses tiles while the GPS center is unchanged', () {
       final json = File('assets/maps/hk_terrain_mvp.json').readAsStringSync();
       final source = GeoTerrainDataSource(GeoTerrainDataset.fromJson(json));
@@ -324,6 +349,51 @@ void main() {
       );
 
       expect(identical(first, second), isTrue);
+    });
+
+    test('prunes distant roads before tile classification', () {
+      final features = <GeoTerrainFeature>[
+        const GeoTerrainFeature(
+          kind: TerrainKind.road,
+          name: 'nearby road',
+          lat: 22.3522,
+          lng: 114.0740,
+          radiusMeters: 50,
+          geometry: GeoTerrainGeometry(
+            type: 'lineString',
+            coordinates: [
+              LatLng(22.3520, 114.0730),
+              LatLng(22.3525, 114.0750),
+            ],
+          ),
+        ),
+        for (var index = 0; index < 200; index++)
+          GeoTerrainFeature(
+            kind: TerrainKind.road,
+            name: 'distant road $index',
+            lat: 22.55 + index * 0.00001,
+            lng: 114.25,
+            radiusMeters: 50,
+            geometry: GeoTerrainGeometry(
+              type: 'lineString',
+              coordinates: [
+                LatLng(22.55 + index * 0.00001, 114.25),
+                LatLng(22.551 + index * 0.00001, 114.251),
+              ],
+            ),
+          ),
+      ];
+      final source = GeoTerrainDataSource(
+        GeoTerrainDataset(features: features),
+      );
+
+      expect(
+        source.candidateFeatureCount(
+          const LatLng(22.3517, 114.0743),
+          TerrainKind.road,
+        ),
+        1,
+      );
     });
   });
 }

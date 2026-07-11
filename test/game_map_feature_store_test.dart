@@ -301,5 +301,51 @@ void main() {
       expect(markers, hasLength(1));
       expect(markers.single.id, visibleSpot.id);
     });
+
+    test('prunes distant terrain before precise projection', () {
+      final features = <GeoTerrainFeature>[
+        const GeoTerrainFeature(
+          kind: TerrainKind.road,
+          name: 'nearby road',
+          lat: 22.3522,
+          lng: 114.0740,
+          radiusMeters: 50,
+          geometry: GeoTerrainGeometry(
+            type: 'lineString',
+            coordinates: [
+              LatLng(22.3520, 114.0730),
+              LatLng(22.3525, 114.0750),
+            ],
+          ),
+        ),
+        for (var index = 0; index < 200; index++)
+          GeoTerrainFeature(
+            kind: TerrainKind.road,
+            name: 'distant road $index',
+            lat: 22.55 + index * 0.00001,
+            lng: 114.25,
+            radiusMeters: 50,
+            geometry: GeoTerrainGeometry(
+              type: 'lineString',
+              coordinates: [
+                LatLng(22.55 + index * 0.00001, 114.25),
+                LatLng(22.551 + index * 0.00001, 114.251),
+              ],
+            ),
+          ),
+      ];
+      final store = GameMapFeatureStore(
+        dataset: GeoTerrainDataset(features: features),
+      );
+      final camera = GameMapCamera(
+        center: const LatLng(22.3517, 114.0743),
+        visibleRadiusMeters: 500,
+        bearingDegrees: 0,
+        viewportSize: const Size(390, 844),
+      );
+
+      expect(store.candidateFeatureCount(camera), 1);
+      expect(store.visibleTerrainFeatures(camera).single.name, 'nearby road');
+    });
   });
 }

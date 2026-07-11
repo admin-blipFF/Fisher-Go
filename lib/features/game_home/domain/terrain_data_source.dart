@@ -204,9 +204,17 @@ class GeoTerrainDataset {
 }
 
 class GeoTerrainDataSource implements TerrainDataSource {
-  GeoTerrainDataSource(this.dataset);
+  GeoTerrainDataSource(this.dataset)
+      : _indexedFeaturesByKind = {
+          for (final kind in TerrainKind.values)
+            kind: [
+              for (final feature in dataset.features)
+                if (feature.kind == kind) _GeoIndexedFeature(feature),
+            ],
+        };
 
   final GeoTerrainDataset dataset;
+  final Map<TerrainKind, List<_GeoIndexedFeature>> _indexedFeaturesByKind;
   static const _fallback = LocalTerrainDataSource();
   static const _distance = Distance();
   LatLng? _cachedTileCenter;
@@ -334,7 +342,8 @@ class GeoTerrainDataSource implements TerrainDataSource {
   GeoTerrainFeature? _firstContaining(LatLng point, TerrainKind kind) {
     GeoTerrainFeature? best;
     double bestRatio = double.infinity;
-    for (final feature in dataset.features.where((f) => f.kind == kind)) {
+    for (final indexed in _candidateFeatures(point, kind)) {
+      final feature = indexed.feature;
       final distance = _featureDistanceMeters(point, feature);
       final radius = _effectiveRadiusMeters(feature);
       if (distance <= radius || _containsGeometry(point, feature)) {
@@ -347,6 +356,18 @@ class GeoTerrainDataSource implements TerrainDataSource {
     }
     return best;
   }
+
+  int candidateFeatureCount(LatLng point, TerrainKind kind) =>
+      _candidateFeatures(point, kind).length;
+
+  List<_GeoIndexedFeature> _candidateFeatures(
+    LatLng point,
+    TerrainKind kind,
+  ) =>
+      [
+        for (final indexed in _indexedFeaturesByKind[kind] ?? const [])
+          if (indexed.contains(point)) indexed,
+      ];
 
   bool _isVisibleVectorFeature(
     LatLng playerLatLng,
@@ -462,6 +483,65 @@ class GeoTerrainDataSource implements TerrainDataSource {
     }
     return inside;
   }
+}
+
+class _GeoIndexedFeature {
+  _GeoIndexedFeature(this.feature)
+      : minLat = _minimumLatitude(feature) - _latitudePadding(feature),
+        maxLat = _maximumLatitude(feature) + _latitudePadding(feature),
+        minLng = _minimumLongitude(feature) - _longitudePadding(feature),
+        maxLng = _maximumLongitude(feature) + _longitudePadding(feature);
+
+  final GeoTerrainFeature feature;
+  final double minLat;
+  final double maxLat;
+  final double minLng;
+  final double maxLng;
+
+  bool contains(LatLng point) =>
+      point.latitude >= minLat &&
+      point.latitude <= maxLat &&
+      point.longitude >= minLng &&
+      point.longitude <= maxLng;
+
+  static Iterable<LatLng> _points(GeoTerrainFeature feature) sync* {
+    final geometry = feature.geometry;
+    if (geometry != null && geometry.coordinates.isNotEmpty) {
+      yield* geometry.coordinates;
+    } else {
+      yield feature.center;
+    }
+  }
+
+  static double _effectiveRadius(GeoTerrainFeature feature) =>
+      switch (feature.kind) {
+        TerrainKind.road => math.min(feature.radiusMeters, 160),
+        TerrainKind.pier => math.min(feature.radiusMeters, 90),
+        TerrainKind.fishingNode => math.min(feature.radiusMeters, 95),
+        _ => feature.geometry == null ? feature.radiusMeters : 20,
+      };
+
+  static double _latitudePadding(GeoTerrainFeature feature) =>
+      _effectiveRadius(feature) / 111320;
+
+  static double _longitudePadding(GeoTerrainFeature feature) =>
+      _effectiveRadius(feature) / 100000;
+
+  static double _minimumLatitude(GeoTerrainFeature feature) => _points(feature)
+      .map((point) => point.latitude)
+      .reduce((left, right) => left < right ? left : right);
+
+  static double _maximumLatitude(GeoTerrainFeature feature) => _points(feature)
+      .map((point) => point.latitude)
+      .reduce((left, right) => left > right ? left : right);
+
+  static double _minimumLongitude(GeoTerrainFeature feature) => _points(feature)
+      .map((point) => point.longitude)
+      .reduce((left, right) => left < right ? left : right);
+
+  static double _maximumLongitude(GeoTerrainFeature feature) => _points(feature)
+      .map((point) => point.longitude)
+      .reduce((left, right) => left > right ? left : right);
 }
 
 class LocalTerrainDataSource implements TerrainDataSource {

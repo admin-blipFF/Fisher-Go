@@ -32,23 +32,47 @@ class ProjectedFishingSpot {
 }
 
 class GameMapFeatureStore {
-  const GameMapFeatureStore({required this.dataset});
+  GameMapFeatureStore({required this.dataset})
+      : _indexedFeatures = _indexCache[dataset] ??= [
+          for (final feature in dataset.features)
+            _IndexedTerrainFeature(feature),
+        ];
 
+  static final _indexCache = Expando<List<_IndexedTerrainFeature>>();
   final GeoTerrainDataset dataset;
+  final List<_IndexedTerrainFeature> _indexedFeatures;
 
   List<TerrainVectorFeature> visibleTerrainFeatures(GameMapCamera camera) {
     return [
-      for (final feature in dataset.features)
-        if (_isVisibleTerrainFeature(camera, feature))
-          TerrainVectorFeature(
-            kind: feature.kind,
-            name: feature.name,
-            points: feature.geometry!.coordinates,
-            isClosed: feature.geometry!.isPolygon,
-            roadClass: feature.roadClass,
-            isBridge: feature.isBridge,
-            lanes: feature.lanes,
-          ),
+      for (final indexed in _candidateFeatures(camera))
+        if (indexed.feature case final feature)
+          if (_isVisibleTerrainFeature(camera, feature))
+            TerrainVectorFeature(
+              kind: feature.kind,
+              name: feature.name,
+              points: feature.geometry!.coordinates,
+              isClosed: feature.geometry!.isPolygon,
+              roadClass: feature.roadClass,
+              isBridge: feature.isBridge,
+              lanes: feature.lanes,
+            ),
+    ];
+  }
+
+  int candidateFeatureCount(GameMapCamera camera) =>
+      _candidateFeatures(camera).length;
+
+  List<_IndexedTerrainFeature> _candidateFeatures(GameMapCamera camera) {
+    final searchRadiusMeters = camera.visibleRadiusMeters + 550;
+    final latitudePadding = searchRadiusMeters / 111320;
+    final longitudePadding = searchRadiusMeters / 100000;
+    final minLat = camera.center.latitude - latitudePadding;
+    final maxLat = camera.center.latitude + latitudePadding;
+    final minLng = camera.center.longitude - longitudePadding;
+    final maxLng = camera.center.longitude + longitudePadding;
+    return [
+      for (final indexed in _indexedFeatures)
+        if (indexed.intersects(minLat, maxLat, minLng, maxLng)) indexed,
     ];
   }
 
@@ -185,4 +209,54 @@ class GameMapFeatureStore {
     }
     return inside;
   }
+}
+
+class _IndexedTerrainFeature {
+  _IndexedTerrainFeature(this.feature)
+      : minLat = _minimumLatitude(feature),
+        maxLat = _maximumLatitude(feature),
+        minLng = _minimumLongitude(feature),
+        maxLng = _maximumLongitude(feature);
+
+  final GeoTerrainFeature feature;
+  final double minLat;
+  final double maxLat;
+  final double minLng;
+  final double maxLng;
+
+  bool intersects(
+    double viewportMinLat,
+    double viewportMaxLat,
+    double viewportMinLng,
+    double viewportMaxLng,
+  ) =>
+      maxLat >= viewportMinLat &&
+      minLat <= viewportMaxLat &&
+      maxLng >= viewportMinLng &&
+      minLng <= viewportMaxLng;
+
+  static Iterable<LatLng> _points(GeoTerrainFeature feature) sync* {
+    final geometry = feature.geometry;
+    if (geometry != null && geometry.coordinates.isNotEmpty) {
+      yield* geometry.coordinates;
+    } else {
+      yield feature.center;
+    }
+  }
+
+  static double _minimumLatitude(GeoTerrainFeature feature) => _points(feature)
+      .map((point) => point.latitude)
+      .reduce((left, right) => left < right ? left : right);
+
+  static double _maximumLatitude(GeoTerrainFeature feature) => _points(feature)
+      .map((point) => point.latitude)
+      .reduce((left, right) => left > right ? left : right);
+
+  static double _minimumLongitude(GeoTerrainFeature feature) => _points(feature)
+      .map((point) => point.longitude)
+      .reduce((left, right) => left < right ? left : right);
+
+  static double _maximumLongitude(GeoTerrainFeature feature) => _points(feature)
+      .map((point) => point.longitude)
+      .reduce((left, right) => left > right ? left : right);
 }

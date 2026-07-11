@@ -17,7 +17,55 @@ const _regions = <_OsmRoadRegion>[
     name: 'tsing-ma',
     bbox: '114.0640,22.3460,114.0845,22.3585',
   ),
+  _OsmRoadRegion(
+    name: 'central-harbour',
+    bbox: '114.1550,22.2790,114.1700,22.2920',
+  ),
+  _OsmRoadRegion(
+    name: 'north-point',
+    bbox: '114.1900,22.2860,114.2050,22.3000',
+  ),
+  _OsmRoadRegion(
+    name: 'aberdeen',
+    bbox: '114.1460,22.2390,114.1610,22.2530',
+  ),
+  _OsmRoadRegion(
+    name: 'sai-kung',
+    bbox: '114.2670,22.3740,114.2820,22.3890',
+  ),
+  _OsmRoadRegion(
+    name: 'tai-po',
+    bbox: '114.1760,22.4350,114.1910,22.4500',
+  ),
+  _OsmRoadRegion(
+    name: 'sam-mun-tsai',
+    bbox: '114.2060,22.4480,114.2210,22.4630',
+  ),
+  _OsmRoadRegion(
+    name: 'tung-chung',
+    bbox: '113.9270,22.2790,113.9470,22.3000',
+  ),
+  _OsmRoadRegion(
+    name: 'chek-lap-kok-east',
+    bbox: '113.9230,22.3070,113.9450,22.3270',
+  ),
+  _OsmRoadRegion(
+    name: 'cheung-chau',
+    bbox: '114.0210,22.2010,114.0370,22.2170',
+  ),
+  _OsmRoadRegion(
+    name: 'lamma',
+    bbox: '114.1150,22.2010,114.1330,22.2190',
+  ),
+  _OsmRoadRegion(
+    name: 'stanley',
+    bbox: '114.2020,22.2100,114.2180,22.2250',
+  ),
 ];
+
+List<String> get osmRoadRegionNames => [
+      for (final region in _regions) region.name,
+    ];
 
 Map<String, Object?> buildRoadCacheFromOsmXml(
   String source, {

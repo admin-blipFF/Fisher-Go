@@ -40,6 +40,7 @@ void main() {
     expect(source, contains('© OpenStreetMap contributors'));
     expect(source, contains('https://www.openstreetmap.org/copyright'));
     expect(source, contains('launchUrl'));
+    expect(source, contains('compute(GeoTerrainDataset.fromJson, source)'));
     expect(source, contains('_developerTestSpots'));
     expect(source, contains('沙田希爾頓中心測試釣點'));
     expect(source, isNot(contains('Map<String, String> get _equipped => {}')));

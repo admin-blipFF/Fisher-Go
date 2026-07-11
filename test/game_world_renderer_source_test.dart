@@ -37,6 +37,9 @@ void main() {
     expect(source, contains('onSpotSelected'));
     expect(source, contains('_buildProjectedSpotButtons'));
     expect(source, contains('_projectedSpotLiftPixels'));
+    expect(source, contains('© OpenStreetMap contributors'));
+    expect(source, contains('https://www.openstreetmap.org/copyright'));
+    expect(source, contains('launchUrl'));
     expect(source, contains('_developerTestSpots'));
     expect(source, contains('沙田希爾頓中心測試釣點'));
     expect(source, isNot(contains('Map<String, String> get _equipped => {}')));
@@ -146,8 +149,8 @@ void main() {
     expect(rendererSource, contains('_drawRoadCasing'));
     expect(rendererSource, contains('_drawRoadBevelShadow'));
     expect(rendererSource, contains('_drawRoadShoulderBlend'));
-    expect(rendererSource, contains('_drawRoadIntersectionGlow'));
-    expect(rendererSource, contains('_drawRoadJunctionCaps'));
+    expect(rendererSource, isNot(contains('_drawRoadIntersectionGlow')));
+    expect(rendererSource, isNot(contains('_drawRoadJunctionCaps')));
     expect(rendererSource, contains('_drawRoadSurfaceGrain'));
     expect(rendererSource, contains('_drawRoadEdgeRim'));
     expect(rendererSource, contains('_drawRoadLaneMarkings'));

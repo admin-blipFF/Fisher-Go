@@ -4,21 +4,28 @@ import 'dart:math' as math;
 
 const _sourcePath = 'data/hk_geo/hk_fishing_spots_master_all_geocoded_gov.csv';
 const _osmVectorCachePath = 'data/hk_geo/osm_vector_cache.json';
+const _osmRoadCachePath = 'data/hk_geo/osm_road_geometry_cache.json';
 const _outputPath = 'assets/maps/hk_terrain_mvp.json';
 
 Map<String, Object> buildTerrainAsset({
   required String sourceCsv,
   String? osmVectorCacheJson,
+  String? osmRoadCacheJson,
 }) {
   final features = <Map<String, Object>>[
     if (osmVectorCacheJson != null)
       ..._featuresFromOsmVectorCache(osmVectorCacheJson),
+    if (osmRoadCacheJson != null)
+      ..._featuresFromOsmVectorCache(osmRoadCacheJson),
     ..._manualGameplayFeatures,
     ..._featuresFromCsv(sourceCsv),
   ];
   final uniqueFeatures = <String, Map<String, Object>>{};
   for (final feature in features) {
-    uniqueFeatures['${feature['kind']}|${feature['name']}'] = feature;
+    final osmId = feature['osmId'];
+    final key =
+        osmId == null ? '${feature['kind']}|${feature['name']}' : 'osm|$osmId';
+    uniqueFeatures[key] = feature;
   }
 
   return {
@@ -26,8 +33,14 @@ Map<String, Object> buildTerrainAsset({
     'name': 'FisherGo Hong Kong terrain MVP',
     'generatedFrom': [
       _sourcePath,
-      if (osmVectorCacheJson != null) _osmVectorCachePath
+      if (osmVectorCacheJson != null) _osmVectorCachePath,
+      if (osmRoadCacheJson != null) _osmRoadCachePath,
     ],
+    if (osmRoadCacheJson != null) ...{
+      'attribution': '© OpenStreetMap contributors',
+      'license': 'ODbL-1.0',
+      'licenseUrl': 'https://www.openstreetmap.org/copyright',
+    },
     'features': uniqueFeatures.values.toList(),
   };
 }
@@ -37,9 +50,12 @@ void writeTerrainAsset({
   required File output,
 }) {
   final cache = File(_osmVectorCachePath);
+  final roadCache = File(_osmRoadCachePath);
   final asset = buildTerrainAsset(
     sourceCsv: source.readAsStringSync(),
     osmVectorCacheJson: cache.existsSync() ? cache.readAsStringSync() : null,
+    osmRoadCacheJson:
+        roadCache.existsSync() ? roadCache.readAsStringSync() : null,
   );
   const encoder = JsonEncoder.withIndent('  ');
   output.writeAsStringSync('${encoder.convert(asset)}\n');
@@ -81,6 +97,11 @@ Map<String, Object> _featureFromOsmCache(Map<String, dynamic> raw) {
       'type': geometry['type'] as String,
       'coordinates': coordinates,
     },
+    osmId: (raw['osmId'] as num?)?.toInt(),
+    region: raw['region'] as String?,
+    roadClass: raw['roadClass'] as String?,
+    isBridge: raw['isBridge'] as bool?,
+    lanes: (raw['lanes'] as num?)?.toInt(),
   );
 }
 
@@ -297,6 +318,11 @@ Map<String, Object> _feature({
   required double lng,
   required num radiusMeters,
   Map<String, Object>? geometry,
+  int? osmId,
+  String? region,
+  String? roadClass,
+  bool? isBridge,
+  int? lanes,
 }) =>
     {
       'kind': kind,
@@ -305,6 +331,11 @@ Map<String, Object> _feature({
       'lng': _round(lng),
       'radiusMeters': radiusMeters.round(),
       if (geometry != null) 'geometry': geometry,
+      if (osmId != null) 'osmId': osmId,
+      if (region != null) 'region': region,
+      if (roadClass != null) 'roadClass': roadClass,
+      if (isBridge != null) 'isBridge': isBridge,
+      if (lanes != null) 'lanes': lanes,
     };
 
 (double, double) _centerOf(List<List<double>> coordinates) {

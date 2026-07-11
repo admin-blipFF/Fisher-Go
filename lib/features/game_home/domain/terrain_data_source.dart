@@ -204,11 +204,15 @@ class GeoTerrainDataset {
 }
 
 class GeoTerrainDataSource implements TerrainDataSource {
-  const GeoTerrainDataSource(this.dataset);
+  GeoTerrainDataSource(this.dataset);
 
   final GeoTerrainDataset dataset;
   static const _fallback = LocalTerrainDataSource();
   static const _distance = Distance();
+  LatLng? _cachedTileCenter;
+  int? _cachedTileRows;
+  int? _cachedTileCols;
+  List<TerrainTile>? _cachedTiles;
 
   @override
   List<TerrainTile> buildTiles({
@@ -224,7 +228,13 @@ class GeoTerrainDataSource implements TerrainDataSource {
       );
     }
 
-    return [
+    if (_cachedTileCenter == playerLatLng &&
+        _cachedTileRows == rows &&
+        _cachedTileCols == cols) {
+      return _cachedTiles!;
+    }
+
+    final tiles = [
       for (var row = 0; row < rows; row++)
         for (var col = 0; col < cols; col++)
           TerrainTile(
@@ -235,6 +245,10 @@ class GeoTerrainDataSource implements TerrainDataSource {
             centerLatLng: _tileLatLng(playerLatLng, row, col, rows, cols),
           ),
     ];
+    _cachedTileCenter = playerLatLng;
+    _cachedTileRows = rows;
+    _cachedTileCols = cols;
+    return _cachedTiles = List.unmodifiable(tiles);
   }
 
   @override

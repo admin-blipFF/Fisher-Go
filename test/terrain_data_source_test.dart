@@ -306,5 +306,24 @@ void main() {
       expect(names, contains('源禾路'));
       expect(names, contains('大涌橋路'));
     });
+
+    test('reuses tiles while the GPS center is unchanged', () {
+      final json = File('assets/maps/hk_terrain_mvp.json').readAsStringSync();
+      final source = GeoTerrainDataSource(GeoTerrainDataset.fromJson(json));
+      const center = LatLng(22.3524, 114.0739);
+
+      final first = source.buildTiles(
+        playerLatLng: center,
+        rows: 29,
+        cols: 21,
+      );
+      final second = source.buildTiles(
+        playerLatLng: center,
+        rows: 29,
+        cols: 21,
+      );
+
+      expect(identical(first, second), isTrue);
+    });
   });
 }

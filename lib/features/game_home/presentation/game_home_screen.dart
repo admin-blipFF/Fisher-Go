@@ -7,6 +7,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:hive/hive.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:latlong2/latlong.dart' hide Path;
+import 'package:url_launcher/url_launcher.dart';
 import '../../../core/announcement/announcement_service.dart';
 import '../../../core/admin/admin_ops_service.dart';
 import '../../../core/permissions/android_permission_gate.dart';
@@ -781,6 +782,41 @@ class _GameHomeScreenState extends State<GameHomeScreen>
             hasLiveLocation: _hasLiveLocation,
             accuracyMeters: _playerAccuracyMeters,
             onTap: _loadPlayerLocation,
+          ),
+        ),
+        Positioned(
+          left: 12,
+          bottom: MediaQuery.of(context).padding.bottom + 96,
+          child: Semantics(
+            button: true,
+            label: 'OpenStreetMap 資料來源及授權',
+            child: TextButton(
+              onPressed: () => unawaited(
+                launchUrl(
+                  Uri.parse('https://www.openstreetmap.org/copyright'),
+                  mode: LaunchMode.externalApplication,
+                ),
+              ),
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 3),
+                minimumSize: Size.zero,
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                textStyle: const TextStyle(fontSize: 9),
+              ),
+              child: const Text(
+                '© OpenStreetMap contributors',
+                style: TextStyle(
+                  shadows: [
+                    Shadow(
+                      color: Colors.black87,
+                      blurRadius: 3,
+                      offset: Offset(0, 1),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ),
         ),
         // Announcement bell — placed below the top status bar so it does not

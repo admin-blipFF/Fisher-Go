@@ -13,6 +13,8 @@ void main() {
       ).readAsStringSync(),
       osmVectorCacheJson:
           File('data/hk_geo/osm_vector_cache.json').readAsStringSync(),
+      osmRoadCacheJson:
+          File('data/hk_geo/osm_road_geometry_cache.json').readAsStringSync(),
     );
     final features = asset['features'] as List<Map<String, Object>>;
     final names = features.map((feature) => feature['name']).toSet();
@@ -26,6 +28,31 @@ void main() {
     expect(names, containsAll(['青馬大橋', '三門仔村碼頭', '長洲公眾碼頭', '跑道尾立魚位']));
     expect(geometryFeatures.length, greaterThanOrEqualTo(6));
     expect(names, containsAll(['OSM 汲水門水域', 'OSM 青馬主幹道']));
+
+    final roadCache = jsonDecode(
+      File('data/hk_geo/osm_road_geometry_cache.json').readAsStringSync(),
+    ) as Map<String, dynamic>;
+    final cachedRoads = roadCache['features'] as List<dynamic>;
+    final osmRoads = features.where((feature) => feature['osmId'] != null);
+    final roadClasses = osmRoads.map((feature) => feature['roadClass']).toSet();
+
+    expect(osmRoads.length, cachedRoads.length);
+    expect(osmRoads.map((feature) => feature['osmId']).toSet().length,
+        cachedRoads.length);
+    expect(
+      roadClasses,
+      containsAll(['primary', 'secondary', 'local', 'footway', 'cycleway']),
+    );
+    expect(osmRoads.any((feature) => feature['isBridge'] == true), isTrue);
+    expect(
+      asset['generatedFrom'],
+      contains('data/hk_geo/osm_road_geometry_cache.json'),
+    );
+    expect(asset['license'], 'ODbL-1.0');
+    expect(
+      asset['licenseUrl'],
+      'https://www.openstreetmap.org/copyright',
+    );
   });
 
   test('current bundled terrain asset matches generator output', () {
@@ -35,6 +62,8 @@ void main() {
       ).readAsStringSync(),
       osmVectorCacheJson:
           File('data/hk_geo/osm_vector_cache.json').readAsStringSync(),
+      osmRoadCacheJson:
+          File('data/hk_geo/osm_road_geometry_cache.json').readAsStringSync(),
     );
     final current = jsonDecode(
       File('assets/maps/hk_terrain_mvp.json').readAsStringSync(),

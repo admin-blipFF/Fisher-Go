@@ -26,11 +26,13 @@ dependencies:
   go_router: ^17.2.3
   flutter_svg: ^2.2.0
   web: ^1.1.1
+  url_launcher: ^6.3.2
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^5.0.0
+  xml: ^7.0.1
 
 flutter:
   uses-material-design: true

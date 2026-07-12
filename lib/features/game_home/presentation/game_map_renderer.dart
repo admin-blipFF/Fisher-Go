@@ -2897,7 +2897,7 @@ class GameMapPainter extends CustomPainter {
     for (final feature in roads) {
       final path = _pathForFeature(feature);
       if (path == null) continue;
-      final style = GameRoadStyle.forFeature(feature);
+      final style = _roadStyleForFeature(feature);
 
       if (budget.enableRoadMicroDetails) {
         _drawRoadShoulderBlend(canvas, path, style);
@@ -2942,6 +2942,13 @@ class GameMapPainter extends CustomPainter {
     if (budget.enableRoadMicroDetails) {
       _drawRoadIntersectionLayer(canvas, roads);
     }
+  }
+
+  GameRoadStyle _roadStyleForFeature(TerrainVectorFeature feature) {
+    final midpoint = feature.points[feature.points.length ~/ 2];
+    return GameRoadStyle.forFeature(feature).scaledBy(
+      camera.depthScaleFor(midpoint),
+    );
   }
 
   void _drawRoadShoulderBlend(
@@ -3233,7 +3240,7 @@ class GameMapPainter extends CustomPainter {
     final groups = <List<_RoadEndpoint>>[];
     for (final road in roads) {
       if (road.points.length < 2) continue;
-      final style = GameRoadStyle.forFeature(road);
+      final style = _roadStyleForFeature(road);
       for (final point in [road.points.first, road.points.last]) {
         final endpoint = _RoadEndpoint(
           position: camera.project(point),

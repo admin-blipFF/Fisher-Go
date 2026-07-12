@@ -22,6 +22,17 @@ class GameRoadStyle {
   bool get hasPedestrianHighlight =>
       laneMarking == GameRoadLaneMarking.pedestrianHighlight;
 
+  GameRoadStyle scaledBy(double factor) {
+    final safeFactor = factor.clamp(0.86, 1.12).toDouble();
+    return GameRoadStyle(
+      casingWidth: casingWidth * safeFactor,
+      surfaceWidth: surfaceWidth * safeFactor,
+      laneMarking: laneMarking,
+      drawsBridgeDeck: drawsBridgeDeck,
+      drawPriority: drawPriority,
+    );
+  }
+
   factory GameRoadStyle.forFeature(TerrainVectorFeature feature) {
     final roadClass = feature.roadClass;
     final surfaceWidth = switch (roadClass) {

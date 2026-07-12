@@ -46,4 +46,19 @@ void main() {
       isTrue,
     );
   });
+
+  test('depth scaling changes widths while preserving road semantics', () {
+    final original =
+        GameRoadStyle.forFeature(road(RoadClass.primary, isBridge: true));
+    final far = original.scaledBy(0.5);
+    final near = original.scaledBy(1.5);
+
+    expect(far.surfaceWidth, closeTo(original.surfaceWidth * 0.86, 0.001));
+    expect(near.surfaceWidth, closeTo(original.surfaceWidth * 1.12, 0.001));
+    expect(far.casingWidth, lessThan(original.casingWidth));
+    expect(near.casingWidth, greaterThan(original.casingWidth));
+    expect(far.laneMarking, original.laneMarking);
+    expect(far.drawsBridgeDeck, isTrue);
+    expect(far.drawPriority, original.drawPriority);
+  });
 }

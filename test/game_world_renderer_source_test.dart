@@ -90,6 +90,8 @@ void main() {
     expect(rendererSource, contains('seenLabelKeys'));
     expect(rendererSource, contains('labelSafeRight'));
     expect(rendererSource, contains('final maxCenterX = math.max'));
+    expect(rendererSource, contains('_roadStyleForFeature'));
+    expect(rendererSource, contains('camera.depthScaleFor(midpoint)'));
     final seaLayerSource = rendererSource.substring(
       rendererSource.indexOf('void _drawSeaLayer'),
       rendererSource.indexOf('void _drawLandLayer'),

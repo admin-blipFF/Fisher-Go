@@ -7,7 +7,8 @@ import 'package:fishergo/features/fish/data/sample_fish_species_data_source.dart
 import 'package:fishergo/features/fish/domain/fish_species.dart';
 
 class _FakeRemote extends RemoteFishSpeciesDataSource {
-  _FakeRemote(this.rows) : super(SupabaseClient('https://example.supabase.co', 'anon-key'));
+  _FakeRemote(this.rows)
+      : super(SupabaseClient('https://example.supabase.co', 'anon-key'));
 
   final List<FishSpecies> rows;
 
@@ -28,6 +29,20 @@ class _MemoryLocal extends LocalFishSpeciesDataSource {
 }
 
 void main() {
+  test('remote generated fish paths resolve to the mobile asset bundle', () {
+    final fish = FishSpecies.fromMap({
+      'id': 'fish-001',
+      'common_name_zh': '黃腳鱲',
+      'image_url':
+          'assets/fish/icons/generated/001_hk-yellowfin-seabream-badge.png',
+    });
+
+    expect(
+      fish.imageUrl,
+      'assets/fish/mobile/001_hk-yellowfin-seabream-badge.png',
+    );
+  });
+
   test('fish display name uses local name first', () {
     const fish = FishSpecies(
       id: 'fish-126',
@@ -39,7 +54,9 @@ void main() {
     expect(fish.displayNameLocalSlashCommon, '烏頭｜鯔魚');
   });
 
-  test('remote catalog is merged with bundled samples so fish 126 and 127 exist', () async {
+  test(
+      'remote catalog is merged with bundled samples so fish 126 and 127 exist',
+      () async {
     final local = _MemoryLocal();
     final repo = OfflineFirstFishSpeciesRepository(
       remote: _FakeRemote(const [
@@ -54,7 +71,9 @@ void main() {
 
     expect(ids, contains('fish-126'));
     expect(ids, contains('fish-127'));
-    expect(species.firstWhere((fish) => fish.id == 'fish-126').displayLocalName, '黑咕咕');
-    expect(species.firstWhere((fish) => fish.id == 'fish-127').displayLocalName, '花雞');
+    expect(species.firstWhere((fish) => fish.id == 'fish-126').displayLocalName,
+        '黑咕咕');
+    expect(species.firstWhere((fish) => fish.id == 'fish-127').displayLocalName,
+        '花雞');
   });
 }

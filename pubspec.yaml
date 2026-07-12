@@ -33,13 +33,14 @@ dev_dependencies:
     sdk: flutter
   flutter_lints: ^5.0.0
   xml: ^7.0.1
+  image: ^4.9.1
 
 flutter:
   uses-material-design: true
   assets:
     - .env
     - assets/fish/icons/
-    - assets/fish/icons/generated/
+    - assets/fish/mobile/
     - assets/fish/icons/silhouettes/
     - assets/avatar/layers/
     - assets/maps/

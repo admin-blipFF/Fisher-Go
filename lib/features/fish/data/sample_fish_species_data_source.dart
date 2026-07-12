@@ -5,7 +5,6 @@ class SampleFishSpeciesDataSource {
 
   List<FishSpecies> loadSpecies() {
     final species = <FishSpecies>[
-
       FishSpecies(
         id: 'fish-001',
         afcdId: null,
@@ -19,10 +18,10 @@ class SampleFishSpeciesDataSource {
         fishType: '其他魚類',
         bodyShape: 'fish',
         rarityRank: 1,
-        imageUrl: 'assets/fish/icons/generated/003_hk-goldlined-seabream-badge.png',
+        imageUrl:
+            'assets/fish/icons/generated/003_hk-goldlined-seabream-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-002',
         afcdId: null,
@@ -36,10 +35,10 @@ class SampleFishSpeciesDataSource {
         fishType: '其他魚類',
         bodyShape: 'fish',
         rarityRank: 1,
-        imageUrl: 'assets/fish/icons/generated/004_hk-russell-snapper-badge.png',
+        imageUrl:
+            'assets/fish/icons/generated/004_hk-russell-snapper-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-003',
         afcdId: null,
@@ -53,10 +52,10 @@ class SampleFishSpeciesDataSource {
         fishType: '其他魚類',
         bodyShape: 'fish',
         rarityRank: 1,
-        imageUrl: 'assets/fish/icons/generated/005_hk-mangrove-red-snapper-badge.png',
+        imageUrl:
+            'assets/fish/icons/generated/005_hk-mangrove-red-snapper-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-004',
         afcdId: null,
@@ -73,7 +72,6 @@ class SampleFishSpeciesDataSource {
         imageUrl: 'assets/fish/icons/generated/059_hk-goatfish-local-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-005',
         afcdId: null,
@@ -90,7 +88,6 @@ class SampleFishSpeciesDataSource {
         imageUrl: 'assets/fish/icons/generated/006_hk-johns-snapper-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-006',
         afcdId: null,
@@ -104,10 +101,10 @@ class SampleFishSpeciesDataSource {
         fishType: '其他魚類',
         bodyShape: 'fish',
         rarityRank: 1,
-        imageUrl: 'assets/fish/icons/generated/015_hk-japanese-seabass-badge.png',
+        imageUrl:
+            'assets/fish/icons/generated/015_hk-japanese-seabass-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-007',
         afcdId: null,
@@ -124,7 +121,6 @@ class SampleFishSpeciesDataSource {
         imageUrl: 'assets/fish/icons/generated/022_hk-bombay-duck-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-008',
         afcdId: null,
@@ -138,10 +134,10 @@ class SampleFishSpeciesDataSource {
         fishType: '其他魚類',
         bodyShape: 'fish',
         rarityRank: 1,
-        imageUrl: 'assets/fish/icons/generated/001_hk-yellowfin-seabream-badge.png',
+        imageUrl:
+            'assets/fish/icons/generated/001_hk-yellowfin-seabream-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-009',
         afcdId: null,
@@ -155,10 +151,10 @@ class SampleFishSpeciesDataSource {
         fishType: '其他魚類',
         bodyShape: 'fish',
         rarityRank: 1,
-        imageUrl: 'assets/fish/icons/generated/024_hk-golden-threadfin-bream-badge.png',
+        imageUrl:
+            'assets/fish/icons/generated/024_hk-golden-threadfin-bream-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-010',
         afcdId: null,
@@ -172,10 +168,10 @@ class SampleFishSpeciesDataSource {
         fishType: '其他魚類',
         bodyShape: 'fish',
         rarityRank: 1,
-        imageUrl: 'assets/fish/icons/generated/029_hk-orangefin-ponyfish-badge.png',
+        imageUrl:
+            'assets/fish/icons/generated/029_hk-orangefin-ponyfish-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-011',
         afcdId: null,
@@ -189,10 +185,10 @@ class SampleFishSpeciesDataSource {
         fishType: '其他魚類',
         bodyShape: 'fish',
         rarityRank: 1,
-        imageUrl: 'assets/fish/icons/generated/034_hk-indian-mackerel-badge.png',
+        imageUrl:
+            'assets/fish/icons/generated/034_hk-indian-mackerel-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-012',
         afcdId: null,
@@ -206,10 +202,10 @@ class SampleFishSpeciesDataSource {
         fishType: '其他魚類',
         bodyShape: 'fish',
         rarityRank: 1,
-        imageUrl: 'assets/fish/icons/generated/035_hk-narrow-barred-spanish-mackerel-badge.png',
+        imageUrl:
+            'assets/fish/icons/generated/035_hk-narrow-barred-spanish-mackerel-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-013',
         afcdId: null,
@@ -226,7 +222,6 @@ class SampleFishSpeciesDataSource {
         imageUrl: 'assets/fish/icons/generated/060_hk-grunt-local-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-014',
         afcdId: null,
@@ -243,7 +238,6 @@ class SampleFishSpeciesDataSource {
         imageUrl: 'assets/fish/icons/generated/044_hk-stingray-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-015',
         afcdId: null,
@@ -257,10 +251,10 @@ class SampleFishSpeciesDataSource {
         fishType: '其他魚類',
         bodyShape: 'fish',
         rarityRank: 1,
-        imageUrl: 'assets/fish/icons/generated/061_hk-small-banded-grunter-local-badge.png',
+        imageUrl:
+            'assets/fish/icons/generated/061_hk-small-banded-grunter-local-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-016',
         afcdId: null,
@@ -274,10 +268,10 @@ class SampleFishSpeciesDataSource {
         fishType: '其他魚類',
         bodyShape: 'fish',
         rarityRank: 1,
-        imageUrl: 'assets/fish/icons/generated/047_hk-unicorn-leatherjacket-badge.png',
+        imageUrl:
+            'assets/fish/icons/generated/047_hk-unicorn-leatherjacket-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-017',
         afcdId: null,
@@ -294,7 +288,6 @@ class SampleFishSpeciesDataSource {
         imageUrl: 'assets/fish/icons/generated/002_hk-black-seabream-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-018',
         afcdId: null,
@@ -311,7 +304,6 @@ class SampleFishSpeciesDataSource {
         imageUrl: 'assets/fish/icons/generated/050_hk-conger-eel-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-019',
         afcdId: null,
@@ -325,10 +317,10 @@ class SampleFishSpeciesDataSource {
         fishType: '其他魚類',
         bodyShape: 'fish',
         rarityRank: 1,
-        imageUrl: 'assets/fish/icons/generated/051_hk-red-seabream-local-badge.png',
+        imageUrl:
+            'assets/fish/icons/generated/051_hk-red-seabream-local-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-020',
         afcdId: null,
@@ -342,10 +334,10 @@ class SampleFishSpeciesDataSource {
         fishType: '其他魚類',
         bodyShape: 'fish',
         rarityRank: 1,
-        imageUrl: 'assets/fish/icons/generated/055_hk-small-scad-local-badge.png',
+        imageUrl:
+            'assets/fish/icons/generated/055_hk-small-scad-local-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-021',
         afcdId: null,
@@ -359,10 +351,10 @@ class SampleFishSpeciesDataSource {
         fishType: '其他魚類',
         bodyShape: 'fish',
         rarityRank: 2,
-        imageUrl: 'assets/fish/icons/generated/007_hk-orange-spotted-grouper-badge.png',
+        imageUrl:
+            'assets/fish/icons/generated/007_hk-orange-spotted-grouper-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-022',
         afcdId: null,
@@ -376,10 +368,10 @@ class SampleFishSpeciesDataSource {
         fishType: '其他魚類',
         bodyShape: 'fish',
         rarityRank: 2,
-        imageUrl: 'assets/fish/icons/generated/008_hk-malabar-grouper-badge.png',
+        imageUrl:
+            'assets/fish/icons/generated/008_hk-malabar-grouper-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-023',
         afcdId: null,
@@ -393,10 +385,10 @@ class SampleFishSpeciesDataSource {
         fishType: '其他魚類',
         bodyShape: 'fish',
         rarityRank: 2,
-        imageUrl: 'assets/fish/icons/generated/009_hk-hong-kong-grouper-badge.png',
+        imageUrl:
+            'assets/fish/icons/generated/009_hk-hong-kong-grouper-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-024',
         afcdId: null,
@@ -410,10 +402,10 @@ class SampleFishSpeciesDataSource {
         fishType: '其他魚類',
         bodyShape: 'fish',
         rarityRank: 2,
-        imageUrl: 'assets/fish/icons/generated/010_hk-leopard-coral-grouper-badge.png',
+        imageUrl:
+            'assets/fish/icons/generated/010_hk-leopard-coral-grouper-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-025',
         afcdId: null,
@@ -430,7 +422,6 @@ class SampleFishSpeciesDataSource {
         imageUrl: 'assets/fish/icons/generated/012_hk-spotted-scat-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-026',
         afcdId: null,
@@ -444,10 +435,10 @@ class SampleFishSpeciesDataSource {
         fishType: '其他魚類',
         bodyShape: 'fish',
         rarityRank: 2,
-        imageUrl: 'assets/fish/icons/generated/014_hk-large-scale-mullet-badge.png',
+        imageUrl:
+            'assets/fish/icons/generated/014_hk-large-scale-mullet-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-027',
         afcdId: null,
@@ -464,7 +455,6 @@ class SampleFishSpeciesDataSource {
         imageUrl: 'assets/fish/icons/generated/016_hk-barramundi-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-028',
         afcdId: null,
@@ -478,10 +468,10 @@ class SampleFishSpeciesDataSource {
         fishType: '其他魚類',
         bodyShape: 'fish',
         rarityRank: 2,
-        imageUrl: 'assets/fish/icons/generated/019_hk-bartail-flathead-badge.png',
+        imageUrl:
+            'assets/fish/icons/generated/019_hk-bartail-flathead-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-029',
         afcdId: null,
@@ -495,10 +485,10 @@ class SampleFishSpeciesDataSource {
         fishType: '其他魚類',
         bodyShape: 'fish',
         rarityRank: 2,
-        imageUrl: 'assets/fish/icons/generated/020_hk-bigeye-flathead-badge.png',
+        imageUrl:
+            'assets/fish/icons/generated/020_hk-bigeye-flathead-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-030',
         afcdId: null,
@@ -515,7 +505,6 @@ class SampleFishSpeciesDataSource {
         imageUrl: 'assets/fish/icons/generated/023.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-031',
         afcdId: null,
@@ -529,10 +518,10 @@ class SampleFishSpeciesDataSource {
         fishType: '其他魚類',
         bodyShape: 'fish',
         rarityRank: 2,
-        imageUrl: 'assets/fish/icons/generated/026_hk-big-head-croaker-badge.png',
+        imageUrl:
+            'assets/fish/icons/generated/026_hk-big-head-croaker-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-032',
         afcdId: null,
@@ -549,7 +538,6 @@ class SampleFishSpeciesDataSource {
         imageUrl: 'assets/fish/icons/generated/027_hk-reeves-croaker-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-033',
         afcdId: null,
@@ -563,10 +551,10 @@ class SampleFishSpeciesDataSource {
         fishType: '其他魚類',
         bodyShape: 'fish',
         rarityRank: 2,
-        imageUrl: 'assets/fish/icons/generated/030_hk-golden-trevally-badge.png',
+        imageUrl:
+            'assets/fish/icons/generated/030_hk-golden-trevally-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-034',
         afcdId: null,
@@ -583,7 +571,6 @@ class SampleFishSpeciesDataSource {
         imageUrl: 'assets/fish/icons/generated/033_hk-queenfish-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-035',
         afcdId: null,
@@ -600,7 +587,6 @@ class SampleFishSpeciesDataSource {
         imageUrl: 'assets/fish/icons/generated/036_hk-kawakawa-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-036',
         afcdId: null,
@@ -617,7 +603,6 @@ class SampleFishSpeciesDataSource {
         imageUrl: 'assets/fish/icons/generated/038_hk-black-pomfret-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-037',
         afcdId: null,
@@ -634,7 +619,6 @@ class SampleFishSpeciesDataSource {
         imageUrl: 'assets/fish/icons/generated/040_hk-pufferfish-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-038',
         afcdId: null,
@@ -651,7 +635,6 @@ class SampleFishSpeciesDataSource {
         imageUrl: 'assets/fish/icons/generated/041_hk-lionfish-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-039',
         afcdId: null,
@@ -668,7 +651,6 @@ class SampleFishSpeciesDataSource {
         imageUrl: 'assets/fish/icons/generated/043_hk-scorpionfish-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-040',
         afcdId: null,
@@ -682,10 +664,10 @@ class SampleFishSpeciesDataSource {
         fishType: '其他魚類',
         bodyShape: 'fish',
         rarityRank: 2,
-        imageUrl: 'assets/fish/icons/generated/045_hk-white-spotted-bamboo-shark-badge.png',
+        imageUrl:
+            'assets/fish/icons/generated/045_hk-white-spotted-bamboo-shark-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-041',
         afcdId: null,
@@ -699,10 +681,10 @@ class SampleFishSpeciesDataSource {
         fishType: '其他魚類',
         bodyShape: 'fish',
         rarityRank: 2,
-        imageUrl: 'assets/fish/icons/generated/046_hk-orangespotted-filefish-badge.png',
+        imageUrl:
+            'assets/fish/icons/generated/046_hk-orangespotted-filefish-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-042',
         afcdId: null,
@@ -719,7 +701,6 @@ class SampleFishSpeciesDataSource {
         imageUrl: 'assets/fish/icons/generated/048_hk-flatfish-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-043',
         afcdId: null,
@@ -736,7 +717,6 @@ class SampleFishSpeciesDataSource {
         imageUrl: 'assets/fish/icons/generated/049_hk-moray-eel-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-044',
         afcdId: null,
@@ -750,10 +730,10 @@ class SampleFishSpeciesDataSource {
         fishType: '其他魚類',
         bodyShape: 'fish',
         rarityRank: 2,
-        imageUrl: 'assets/fish/icons/generated/052_hk-sand-seabream-local-badge.png',
+        imageUrl:
+            'assets/fish/icons/generated/052_hk-sand-seabream-local-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-045',
         afcdId: null,
@@ -767,10 +747,10 @@ class SampleFishSpeciesDataSource {
         fishType: '其他魚類',
         bodyShape: 'fish',
         rarityRank: 2,
-        imageUrl: 'assets/fish/icons/generated/053_hk-oil-seabream-local-badge.png',
+        imageUrl:
+            'assets/fish/icons/generated/053_hk-oil-seabream-local-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-046',
         afcdId: null,
@@ -784,10 +764,10 @@ class SampleFishSpeciesDataSource {
         fishType: '其他魚類',
         bodyShape: 'fish',
         rarityRank: 2,
-        imageUrl: 'assets/fish/icons/generated/054_hk-threadfin-seabream-local-badge.png',
+        imageUrl:
+            'assets/fish/icons/generated/054_hk-threadfin-seabream-local-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-047',
         afcdId: null,
@@ -801,10 +781,10 @@ class SampleFishSpeciesDataSource {
         fishType: '其他魚類',
         bodyShape: 'fish',
         rarityRank: 2,
-        imageUrl: 'assets/fish/icons/generated/056_hk-egg-wrasse-local-badge.png',
+        imageUrl:
+            'assets/fish/icons/generated/056_hk-egg-wrasse-local-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-048',
         afcdId: null,
@@ -818,10 +798,10 @@ class SampleFishSpeciesDataSource {
         fishType: '其他魚類',
         bodyShape: 'fish',
         rarityRank: 2,
-        imageUrl: 'assets/fish/icons/generated/058_hk-silver-sillago-local-badge.png',
+        imageUrl:
+            'assets/fish/icons/generated/058_hk-silver-sillago-local-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-049',
         afcdId: null,
@@ -838,7 +818,6 @@ class SampleFishSpeciesDataSource {
         imageUrl: 'assets/fish/icons/generated/011_hk-rabbitfish-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-050',
         afcdId: null,
@@ -855,7 +834,6 @@ class SampleFishSpeciesDataSource {
         imageUrl: 'assets/fish/icons/generated/013_hk-grey-mullet-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-051',
         afcdId: null,
@@ -869,10 +847,10 @@ class SampleFishSpeciesDataSource {
         fishType: '其他魚類',
         bodyShape: 'fish',
         rarityRank: 3,
-        imageUrl: 'assets/fish/icons/generated/017_hk-fourfinger-threadfin-badge.png',
+        imageUrl:
+            'assets/fish/icons/generated/017_hk-fourfinger-threadfin-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-052',
         afcdId: null,
@@ -886,10 +864,10 @@ class SampleFishSpeciesDataSource {
         fishType: '其他魚類',
         bodyShape: 'fish',
         rarityRank: 3,
-        imageUrl: 'assets/fish/icons/generated/018_hk-largehead-hairtail-badge.png',
+        imageUrl:
+            'assets/fish/icons/generated/018_hk-largehead-hairtail-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-053',
         afcdId: null,
@@ -906,7 +884,6 @@ class SampleFishSpeciesDataSource {
         imageUrl: 'assets/fish/icons/generated/021_hk-lizardfish-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-054',
         afcdId: null,
@@ -923,7 +900,6 @@ class SampleFishSpeciesDataSource {
         imageUrl: 'assets/fish/icons/generated/025_hk-yellow-croaker-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-055',
         afcdId: null,
@@ -940,7 +916,6 @@ class SampleFishSpeciesDataSource {
         imageUrl: 'assets/fish/icons/generated/028_hk-ponyfish-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-056',
         afcdId: null,
@@ -954,10 +929,10 @@ class SampleFishSpeciesDataSource {
         fishType: '其他魚類',
         bodyShape: 'fish',
         rarityRank: 3,
-        imageUrl: 'assets/fish/icons/generated/031_hk-malabar-trevally-badge.png',
+        imageUrl:
+            'assets/fish/icons/generated/031_hk-malabar-trevally-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-057',
         afcdId: null,
@@ -971,10 +946,10 @@ class SampleFishSpeciesDataSource {
         fishType: '其他魚類',
         bodyShape: 'fish',
         rarityRank: 3,
-        imageUrl: 'assets/fish/icons/generated/032_hk-yellowtail-scad-badge.png',
+        imageUrl:
+            'assets/fish/icons/generated/032_hk-yellowtail-scad-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-058',
         afcdId: null,
@@ -991,7 +966,6 @@ class SampleFishSpeciesDataSource {
         imageUrl: 'assets/fish/icons/generated/037_hk-longtail-tuna-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-059',
         afcdId: null,
@@ -1008,7 +982,6 @@ class SampleFishSpeciesDataSource {
         imageUrl: 'assets/fish/icons/generated/039_hk-silver-pomfret-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-060',
         afcdId: null,
@@ -1025,7 +998,6 @@ class SampleFishSpeciesDataSource {
         imageUrl: 'assets/fish/icons/generated/042_hk-stonefish-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-061',
         afcdId: null,
@@ -1039,10 +1011,10 @@ class SampleFishSpeciesDataSource {
         fishType: '其他魚類',
         bodyShape: 'fish',
         rarityRank: 3,
-        imageUrl: 'assets/fish/icons/generated/057_hk-mouse-wrasse-local-badge.png',
+        imageUrl:
+            'assets/fish/icons/generated/057_hk-mouse-wrasse-local-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-062',
         afcdId: null,
@@ -1056,10 +1028,10 @@ class SampleFishSpeciesDataSource {
         fishType: '底棲近岸類',
         bodyShape: 'fish',
         rarityRank: 1,
-        imageUrl: 'assets/fish/icons/generated/065_hk-barracuda-local-badge.png',
+        imageUrl:
+            'assets/fish/icons/generated/065_hk-barracuda-local-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-063',
         afcdId: null,
@@ -1073,10 +1045,10 @@ class SampleFishSpeciesDataSource {
         fishType: '底棲近岸類',
         bodyShape: 'fish',
         rarityRank: 1,
-        imageUrl: 'assets/fish/icons/generated/066_hk-needlefish-local-badge.png',
+        imageUrl:
+            'assets/fish/icons/generated/066_hk-needlefish-local-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-064',
         afcdId: null,
@@ -1093,7 +1065,6 @@ class SampleFishSpeciesDataSource {
         imageUrl: 'assets/fish/icons/generated/067_hk-halfbeak-local-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-065',
         afcdId: null,
@@ -1107,10 +1078,10 @@ class SampleFishSpeciesDataSource {
         fishType: '底棲近岸類',
         bodyShape: 'fish',
         rarityRank: 1,
-        imageUrl: 'assets/fish/icons/generated/068_hk-eeltail-catfish-local-badge.png',
+        imageUrl:
+            'assets/fish/icons/generated/068_hk-eeltail-catfish-local-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-066',
         afcdId: null,
@@ -1124,10 +1095,10 @@ class SampleFishSpeciesDataSource {
         fishType: '底棲近岸類',
         bodyShape: 'fish',
         rarityRank: 1,
-        imageUrl: 'assets/fish/icons/generated/069_hk-sea-catfish-local-badge.png',
+        imageUrl:
+            'assets/fish/icons/generated/069_hk-sea-catfish-local-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-067',
         afcdId: null,
@@ -1141,10 +1112,10 @@ class SampleFishSpeciesDataSource {
         fishType: '底棲近岸類',
         bodyShape: 'fish',
         rarityRank: 2,
-        imageUrl: 'assets/fish/icons/generated/064_hk-sardinella-local-badge.png',
+        imageUrl:
+            'assets/fish/icons/generated/064_hk-sardinella-local-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-068',
         afcdId: null,
@@ -1158,10 +1129,10 @@ class SampleFishSpeciesDataSource {
         fishType: '底棲近岸類',
         bodyShape: 'fish',
         rarityRank: 2,
-        imageUrl: 'assets/fish/icons/generated/062_hk-silver-biddy-local-badge.png',
+        imageUrl:
+            'assets/fish/icons/generated/062_hk-silver-biddy-local-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-069',
         afcdId: null,
@@ -1178,7 +1149,6 @@ class SampleFishSpeciesDataSource {
         imageUrl: 'assets/fish/icons/generated/063_hk-anchovy-local-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-070',
         afcdId: null,
@@ -1195,7 +1165,6 @@ class SampleFishSpeciesDataSource {
         imageUrl: 'assets/fish/icons/generated/070_hk-mojarra-local-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-071',
         afcdId: null,
@@ -1212,7 +1181,6 @@ class SampleFishSpeciesDataSource {
         imageUrl: 'assets/fish/icons/generated/071_hk-goby-local-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-072',
         afcdId: null,
@@ -1229,7 +1197,6 @@ class SampleFishSpeciesDataSource {
         imageUrl: 'assets/fish/icons/generated/072_hk-杉斑-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-073',
         afcdId: null,
@@ -1243,10 +1210,10 @@ class SampleFishSpeciesDataSource {
         fishType: '石斑類',
         bodyShape: 'fish',
         rarityRank: 3,
-        imageUrl: 'assets/fish/icons/generated/072_hk-mudskipper-local-badge.png',
+        imageUrl:
+            'assets/fish/icons/generated/072_hk-mudskipper-local-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-074',
         afcdId: null,
@@ -1263,7 +1230,6 @@ class SampleFishSpeciesDataSource {
         imageUrl: 'assets/fish/icons/generated/077_hk-紅瓜子斑-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-075',
         afcdId: null,
@@ -1277,10 +1243,10 @@ class SampleFishSpeciesDataSource {
         fishType: '石斑類',
         bodyShape: 'fish',
         rarityRank: 3,
-        imageUrl: 'assets/fish/icons/generated/073_hk-thread-sail-filefish-local-badge.png',
+        imageUrl:
+            'assets/fish/icons/generated/073_hk-thread-sail-filefish-local-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-076',
         afcdId: null,
@@ -1294,10 +1260,10 @@ class SampleFishSpeciesDataSource {
         fishType: '石斑類',
         bodyShape: 'fish',
         rarityRank: 3,
-        imageUrl: 'assets/fish/icons/generated/074_hk-cardinalfish-local-badge.png',
+        imageUrl:
+            'assets/fish/icons/generated/074_hk-cardinalfish-local-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-077',
         afcdId: null,
@@ -1311,10 +1277,10 @@ class SampleFishSpeciesDataSource {
         fishType: '石斑類',
         bodyShape: 'fish',
         rarityRank: 3,
-        imageUrl: 'assets/fish/icons/generated/075_hk-butterflyfish-local-badge.png',
+        imageUrl:
+            'assets/fish/icons/generated/075_hk-butterflyfish-local-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-078',
         afcdId: null,
@@ -1328,10 +1294,10 @@ class SampleFishSpeciesDataSource {
         fishType: '石斑類',
         bodyShape: 'fish',
         rarityRank: 3,
-        imageUrl: 'assets/fish/icons/generated/076_hk-damselfish-local-badge.png',
+        imageUrl:
+            'assets/fish/icons/generated/076_hk-damselfish-local-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-079',
         afcdId: null,
@@ -1345,10 +1311,10 @@ class SampleFishSpeciesDataSource {
         fishType: '石斑類',
         bodyShape: 'fish',
         rarityRank: 3,
-        imageUrl: 'assets/fish/icons/generated/077_hk-parrotfish-local-badge.png',
+        imageUrl:
+            'assets/fish/icons/generated/077_hk-parrotfish-local-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-080',
         afcdId: null,
@@ -1365,7 +1331,6 @@ class SampleFishSpeciesDataSource {
         imageUrl: 'assets/fish/icons/generated/074_hk-西星斑-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-081',
         afcdId: null,
@@ -1382,7 +1347,6 @@ class SampleFishSpeciesDataSource {
         imageUrl: 'assets/fish/icons/generated/075_hk-金錢斑-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-082',
         afcdId: null,
@@ -1396,10 +1360,10 @@ class SampleFishSpeciesDataSource {
         fishType: '石斑類',
         bodyShape: 'fish',
         rarityRank: 4,
-        imageUrl: 'assets/fish/icons/generated/078_hk-triggerfish-local-badge.png',
+        imageUrl:
+            'assets/fish/icons/generated/078_hk-triggerfish-local-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-083',
         afcdId: null,
@@ -1416,7 +1380,6 @@ class SampleFishSpeciesDataSource {
         imageUrl: 'assets/fish/icons/generated/073_hk-老鼠斑-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-084',
         afcdId: null,
@@ -1433,7 +1396,6 @@ class SampleFishSpeciesDataSource {
         imageUrl: 'assets/fish/icons/generated/076_hk-蘇鼠斑-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-085',
         afcdId: null,
@@ -1450,7 +1412,6 @@ class SampleFishSpeciesDataSource {
         imageUrl: 'assets/fish/icons/generated/080_hk-remora-local-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-086',
         afcdId: null,
@@ -1464,10 +1425,10 @@ class SampleFishSpeciesDataSource {
         fishType: '礁棲觀賞類',
         bodyShape: 'fish',
         rarityRank: 2,
-        imageUrl: 'assets/fish/icons/generated/081_hk-flame-snapper-local-badge.png',
+        imageUrl:
+            'assets/fish/icons/generated/081_hk-flame-snapper-local-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-087',
         afcdId: null,
@@ -1484,7 +1445,6 @@ class SampleFishSpeciesDataSource {
         imageUrl: 'assets/fish/icons/generated/079_hk-boxfish-local-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-088',
         afcdId: null,
@@ -1498,10 +1458,10 @@ class SampleFishSpeciesDataSource {
         fishType: '礁棲觀賞類',
         bodyShape: 'fish',
         rarityRank: 2,
-        imageUrl: 'assets/fish/icons/generated/083_hk-red-devil-rockfish-local-badge.png',
+        imageUrl:
+            'assets/fish/icons/generated/083_hk-red-devil-rockfish-local-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-089',
         afcdId: null,
@@ -1515,10 +1475,10 @@ class SampleFishSpeciesDataSource {
         fishType: '礁棲觀賞類',
         bodyShape: 'fish',
         rarityRank: 2,
-        imageUrl: 'assets/fish/icons/generated/082_hk-tooth-spotted-seabream-local-badge.png',
+        imageUrl:
+            'assets/fish/icons/generated/082_hk-tooth-spotted-seabream-local-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-090',
         afcdId: null,
@@ -1532,10 +1492,10 @@ class SampleFishSpeciesDataSource {
         fishType: '礁棲觀賞類',
         bodyShape: 'fish',
         rarityRank: 3,
-        imageUrl: 'assets/fish/icons/generated/084_hk-black-sand-seabream-local-badge.png',
+        imageUrl:
+            'assets/fish/icons/generated/084_hk-black-sand-seabream-local-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-091',
         afcdId: null,
@@ -1549,10 +1509,10 @@ class SampleFishSpeciesDataSource {
         fishType: '近岸草食類',
         bodyShape: 'fish',
         rarityRank: 1,
-        imageUrl: 'assets/fish/icons/generated/085_hk-white-seabream-local-badge.png',
+        imageUrl:
+            'assets/fish/icons/generated/085_hk-white-seabream-local-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-092',
         afcdId: null,
@@ -1566,10 +1526,10 @@ class SampleFishSpeciesDataSource {
         fishType: '鯛科/笛鯛類',
         bodyShape: 'fish',
         rarityRank: 1,
-        imageUrl: 'assets/fish/icons/generated/103_hk-french-threadfin-local-badge.png',
+        imageUrl:
+            'assets/fish/icons/generated/103_hk-french-threadfin-local-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-093',
         afcdId: null,
@@ -1583,10 +1543,10 @@ class SampleFishSpeciesDataSource {
         fishType: '鯛科/笛鯛類',
         bodyShape: 'fish',
         rarityRank: 2,
-        imageUrl: 'assets/fish/icons/generated/086_hk-red-seabream-aka-local-badge.png',
+        imageUrl:
+            'assets/fish/icons/generated/086_hk-red-seabream-aka-local-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-094',
         afcdId: null,
@@ -1603,7 +1563,6 @@ class SampleFishSpeciesDataSource {
         imageUrl: 'assets/fish/icons/generated/116_hk-二長棘鯛-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-095',
         afcdId: null,
@@ -1617,10 +1576,10 @@ class SampleFishSpeciesDataSource {
         fishType: '鯛科/笛鯛類',
         bodyShape: 'fish',
         rarityRank: 2,
-        imageUrl: 'assets/fish/icons/generated/087_hk-gold-thread-seabream-local-badge.png',
+        imageUrl:
+            'assets/fish/icons/generated/087_hk-gold-thread-seabream-local-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-096',
         afcdId: null,
@@ -1634,10 +1593,10 @@ class SampleFishSpeciesDataSource {
         fishType: '鯛科/笛鯛類',
         bodyShape: 'fish',
         rarityRank: 2,
-        imageUrl: 'assets/fish/icons/generated/089_hk-blackline-grouper-local-badge.png',
+        imageUrl:
+            'assets/fish/icons/generated/089_hk-blackline-grouper-local-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-097',
         afcdId: null,
@@ -1651,10 +1610,10 @@ class SampleFishSpeciesDataSource {
         fishType: '鯛科/笛鯛類',
         bodyShape: 'fish',
         rarityRank: 2,
-        imageUrl: 'assets/fish/icons/generated/090_hk-yellow-nail-local-badge.png',
+        imageUrl:
+            'assets/fish/icons/generated/090_hk-yellow-nail-local-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-098',
         afcdId: null,
@@ -1668,10 +1627,10 @@ class SampleFishSpeciesDataSource {
         fishType: '鯛科/笛鯛類',
         bodyShape: 'fish',
         rarityRank: 2,
-        imageUrl: 'assets/fish/icons/generated/091_hk-sesame-grouper-local-badge.png',
+        imageUrl:
+            'assets/fish/icons/generated/091_hk-sesame-grouper-local-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-099',
         afcdId: null,
@@ -1685,10 +1644,10 @@ class SampleFishSpeciesDataSource {
         fishType: '鯛科/笛鯛類',
         bodyShape: 'fish',
         rarityRank: 2,
-        imageUrl: 'assets/fish/icons/generated/093_hk-giant-grouper-local-badge.png',
+        imageUrl:
+            'assets/fish/icons/generated/093_hk-giant-grouper-local-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-100',
         afcdId: null,
@@ -1702,10 +1661,10 @@ class SampleFishSpeciesDataSource {
         fishType: '鯛科/笛鯛類',
         bodyShape: 'fish',
         rarityRank: 2,
-        imageUrl: 'assets/fish/icons/generated/094_hk-spotted-sweetlips-local-badge.png',
+        imageUrl:
+            'assets/fish/icons/generated/094_hk-spotted-sweetlips-local-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-101',
         afcdId: null,
@@ -1719,10 +1678,10 @@ class SampleFishSpeciesDataSource {
         fishType: '鯛科/笛鯛類',
         bodyShape: 'fish',
         rarityRank: 2,
-        imageUrl: 'assets/fish/icons/generated/095_hk-star-snapper-local-badge.png',
+        imageUrl:
+            'assets/fish/icons/generated/095_hk-star-snapper-local-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-102',
         afcdId: null,
@@ -1736,10 +1695,10 @@ class SampleFishSpeciesDataSource {
         fishType: '鯛科/笛鯛類',
         bodyShape: 'fish',
         rarityRank: 2,
-        imageUrl: 'assets/fish/icons/generated/097_hk-spotted-sillago-local-badge.png',
+        imageUrl:
+            'assets/fish/icons/generated/097_hk-spotted-sillago-local-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-103',
         afcdId: null,
@@ -1753,10 +1712,10 @@ class SampleFishSpeciesDataSource {
         fishType: '鯛科/笛鯛類',
         bodyShape: 'fish',
         rarityRank: 2,
-        imageUrl: 'assets/fish/icons/generated/099_hk-goatfish-wrasp-local-badge.png',
+        imageUrl:
+            'assets/fish/icons/generated/099_hk-goatfish-wrasp-local-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-104',
         afcdId: null,
@@ -1770,10 +1729,10 @@ class SampleFishSpeciesDataSource {
         fishType: '鯛科/笛鯛類',
         bodyShape: 'fish',
         rarityRank: 2,
-        imageUrl: 'assets/fish/icons/generated/100_hk-croaker-gwak-local-badge.png',
+        imageUrl:
+            'assets/fish/icons/generated/100_hk-croaker-gwak-local-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-105',
         afcdId: null,
@@ -1787,10 +1746,10 @@ class SampleFishSpeciesDataSource {
         fishType: '鯛科/笛鯛類',
         bodyShape: 'fish',
         rarityRank: 2,
-        imageUrl: 'assets/fish/icons/generated/102_hk-stone-bream-local-badge.png',
+        imageUrl:
+            'assets/fish/icons/generated/102_hk-stone-bream-local-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-106',
         afcdId: null,
@@ -1804,10 +1763,10 @@ class SampleFishSpeciesDataSource {
         fishType: '鯛科/笛鯛類',
         bodyShape: 'fish',
         rarityRank: 2,
-        imageUrl: 'assets/fish/icons/generated/104_hk-bigeye-scad-local-badge.png',
+        imageUrl:
+            'assets/fish/icons/generated/104_hk-bigeye-scad-local-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-107',
         afcdId: null,
@@ -1824,7 +1783,6 @@ class SampleFishSpeciesDataSource {
         imageUrl: 'assets/fish/icons/generated/105_hk-oilfish-local-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-108',
         afcdId: null,
@@ -1838,10 +1796,10 @@ class SampleFishSpeciesDataSource {
         fishType: '鯛科/笛鯛類',
         bodyShape: 'fish',
         rarityRank: 2,
-        imageUrl: 'assets/fish/icons/generated/106_hk-ponyfishes-linmai-local-badge.png',
+        imageUrl:
+            'assets/fish/icons/generated/106_hk-ponyfishes-linmai-local-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-109',
         afcdId: null,
@@ -1855,10 +1813,10 @@ class SampleFishSpeciesDataSource {
         fishType: '鯛科/笛鯛類',
         bodyShape: 'fish',
         rarityRank: 2,
-        imageUrl: 'assets/fish/icons/generated/107_hk-peanut-fish-local-badge.png',
+        imageUrl:
+            'assets/fish/icons/generated/107_hk-peanut-fish-local-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-110',
         afcdId: null,
@@ -1872,10 +1830,10 @@ class SampleFishSpeciesDataSource {
         fishType: '鯛科/笛鯛類',
         bodyShape: 'fish',
         rarityRank: 2,
-        imageUrl: 'assets/fish/icons/generated/108_hk-gizzard-shad-local-badge.png',
+        imageUrl:
+            'assets/fish/icons/generated/108_hk-gizzard-shad-local-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-111',
         afcdId: null,
@@ -1889,10 +1847,10 @@ class SampleFishSpeciesDataSource {
         fishType: '鯛科/笛鯛類',
         bodyShape: 'fish',
         rarityRank: 2,
-        imageUrl: 'assets/fish/icons/generated/109_hk-ten-lined-scad-local-badge.png',
+        imageUrl:
+            'assets/fish/icons/generated/109_hk-ten-lined-scad-local-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-112',
         afcdId: null,
@@ -1909,7 +1867,6 @@ class SampleFishSpeciesDataSource {
         imageUrl: 'assets/fish/icons/generated/088_hk-flagfish-local-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-113',
         afcdId: null,
@@ -1923,10 +1880,10 @@ class SampleFishSpeciesDataSource {
         fishType: '鯛科/笛鯛類',
         bodyShape: 'fish',
         rarityRank: 3,
-        imageUrl: 'assets/fish/icons/generated/096_hk-yellowstripe-trevally-local-badge.png',
+        imageUrl:
+            'assets/fish/icons/generated/096_hk-yellowstripe-trevally-local-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-114',
         afcdId: null,
@@ -1943,7 +1900,6 @@ class SampleFishSpeciesDataSource {
         imageUrl: 'assets/fish/icons/generated/098_hk-rockfish-local-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-115',
         afcdId: null,
@@ -1957,10 +1913,10 @@ class SampleFishSpeciesDataSource {
         fishType: '鯛科/笛鯛類',
         bodyShape: 'fish',
         rarityRank: 3,
-        imageUrl: 'assets/fish/icons/generated/101_hk-red-three-knife-local-badge.png',
+        imageUrl:
+            'assets/fish/icons/generated/101_hk-red-three-knife-local-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-116',
         afcdId: null,
@@ -1974,10 +1930,10 @@ class SampleFishSpeciesDataSource {
         fishType: '鯛科/笛鯛類',
         bodyShape: 'fish',
         rarityRank: 4,
-        imageUrl: 'assets/fish/icons/generated/092_hk-flower-head-grouper-local-badge.png',
+        imageUrl:
+            'assets/fish/icons/generated/092_hk-flower-head-grouper-local-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-117',
         afcdId: null,
@@ -1994,7 +1950,6 @@ class SampleFishSpeciesDataSource {
         imageUrl: 'assets/fish/icons/generated/117_hk-五線笛鯛-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-118',
         afcdId: null,
@@ -2011,7 +1966,6 @@ class SampleFishSpeciesDataSource {
         imageUrl: 'assets/fish/icons/generated/118_hk-四間畫眉-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-119',
         afcdId: null,
@@ -2028,7 +1982,6 @@ class SampleFishSpeciesDataSource {
         imageUrl: 'assets/fish/icons/generated/120_hk-約氏笛鯛-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-120',
         afcdId: null,
@@ -2045,7 +1998,6 @@ class SampleFishSpeciesDataSource {
         imageUrl: 'assets/fish/icons/generated/119_hk-千年笛鯛-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-121',
         afcdId: null,
@@ -2062,7 +2014,6 @@ class SampleFishSpeciesDataSource {
         imageUrl: 'assets/fish/icons/generated/122_hk-老鼠䱛-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-122',
         afcdId: null,
@@ -2079,7 +2030,6 @@ class SampleFishSpeciesDataSource {
         imageUrl: 'assets/fish/icons/generated/121_hk-雞蛋䱛-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-123',
         afcdId: null,
@@ -2096,7 +2046,6 @@ class SampleFishSpeciesDataSource {
         imageUrl: 'assets/fish/icons/generated/123_hk-紅牙䱛-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-124',
         afcdId: null,
@@ -2113,7 +2062,6 @@ class SampleFishSpeciesDataSource {
         imageUrl: 'assets/fish/icons/generated/124_hk-鮸魚-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-125',
         afcdId: null,
@@ -2130,7 +2078,6 @@ class SampleFishSpeciesDataSource {
         imageUrl: 'assets/fish/icons/generated/125_hk-黃唇魚-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-126',
         afcdId: null,
@@ -2147,7 +2094,6 @@ class SampleFishSpeciesDataSource {
         imageUrl: 'assets/fish/icons/generated/127_hk-中華烏塘鱧-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-127',
         afcdId: null,
@@ -2164,7 +2110,6 @@ class SampleFishSpeciesDataSource {
         imageUrl: 'assets/fish/icons/generated/126_hk-花尾胡椒鯛-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-128',
         afcdId: null,
@@ -2181,7 +2126,6 @@ class SampleFishSpeciesDataSource {
         imageUrl: 'assets/fish/icons/generated/129_hk-火點-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-129',
         afcdId: null,
@@ -2198,7 +2142,6 @@ class SampleFishSpeciesDataSource {
         imageUrl: 'assets/fish/icons/generated/128_hk-石狗公-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-130',
         afcdId: null,
@@ -2215,7 +2158,6 @@ class SampleFishSpeciesDataSource {
         imageUrl: 'assets/fish/icons/generated/130_hk-深水石狗公-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-131',
         afcdId: null,
@@ -2232,7 +2174,6 @@ class SampleFishSpeciesDataSource {
         imageUrl: 'assets/fish/icons/generated/131_hk-真池魚-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-132',
         afcdId: null,
@@ -2249,7 +2190,6 @@ class SampleFishSpeciesDataSource {
         imageUrl: 'assets/fish/icons/generated/134_hk-紅瓜-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-133',
         afcdId: null,
@@ -2266,7 +2206,6 @@ class SampleFishSpeciesDataSource {
         imageUrl: 'assets/fish/icons/generated/135_hk-脂眼凹肩鰺-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-134',
         afcdId: null,
@@ -2283,7 +2222,6 @@ class SampleFishSpeciesDataSource {
         imageUrl: 'assets/fish/icons/generated/132_hk-六帶鰺-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-135',
         afcdId: null,
@@ -2300,7 +2238,6 @@ class SampleFishSpeciesDataSource {
         imageUrl: 'assets/fish/icons/generated/133_hk-浪花鰺-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-136',
         afcdId: null,
@@ -2314,10 +2251,10 @@ class SampleFishSpeciesDataSource {
         fishType: '鯖科',
         bodyShape: 'fish',
         rarityRank: 1,
-        imageUrl: 'assets/fish/icons/generated/124_hk-daggertooth-pike-conger-local-badge.png',
+        imageUrl:
+            'assets/fish/icons/generated/124_hk-daggertooth-pike-conger-local-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-137',
         afcdId: null,
@@ -2334,7 +2271,6 @@ class SampleFishSpeciesDataSource {
         imageUrl: 'assets/fish/icons/generated/126.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-138',
         afcdId: null,
@@ -2351,7 +2287,6 @@ class SampleFishSpeciesDataSource {
         imageUrl: 'assets/fish/icons/generated/127.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-139',
         afcdId: null,
@@ -2365,10 +2300,10 @@ class SampleFishSpeciesDataSource {
         fishType: '鯖科',
         bodyShape: 'fish',
         rarityRank: 2,
-        imageUrl: 'assets/fish/icons/generated/125_hk-ribbon-eel-local-badge.png',
+        imageUrl:
+            'assets/fish/icons/generated/125_hk-ribbon-eel-local-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-140',
         afcdId: null,
@@ -2382,10 +2317,10 @@ class SampleFishSpeciesDataSource {
         fishType: '鰺科/洄游類',
         bodyShape: 'fish',
         rarityRank: 1,
-        imageUrl: 'assets/fish/icons/generated/123_hk-flower-lizardfish-local-badge.png',
+        imageUrl:
+            'assets/fish/icons/generated/123_hk-flower-lizardfish-local-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-141',
         afcdId: null,
@@ -2399,10 +2334,10 @@ class SampleFishSpeciesDataSource {
         fishType: '鰺科/洄游類',
         bodyShape: 'fish',
         rarityRank: 1,
-        imageUrl: 'assets/fish/icons/generated/117_hk-green-wrasse-local-badge.png',
+        imageUrl:
+            'assets/fish/icons/generated/117_hk-green-wrasse-local-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-142',
         afcdId: null,
@@ -2416,10 +2351,10 @@ class SampleFishSpeciesDataSource {
         fishType: '鰺科/洄游類',
         bodyShape: 'fish',
         rarityRank: 2,
-        imageUrl: 'assets/fish/icons/generated/110_hk-three-whisker-fish-local-badge.png',
+        imageUrl:
+            'assets/fish/icons/generated/110_hk-three-whisker-fish-local-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-143',
         afcdId: null,
@@ -2433,10 +2368,10 @@ class SampleFishSpeciesDataSource {
         fishType: '鰺科/洄游類',
         bodyShape: 'fish',
         rarityRank: 2,
-        imageUrl: 'assets/fish/icons/generated/111_hk-bigeye-pomfret-local-badge.png',
+        imageUrl:
+            'assets/fish/icons/generated/111_hk-bigeye-pomfret-local-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-144',
         afcdId: null,
@@ -2450,10 +2385,10 @@ class SampleFishSpeciesDataSource {
         fishType: '鰺科/洄游類',
         bodyShape: 'fish',
         rarityRank: 2,
-        imageUrl: 'assets/fish/icons/generated/113_hk-three-spot-damselfish-local-badge.png',
+        imageUrl:
+            'assets/fish/icons/generated/113_hk-three-spot-damselfish-local-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-145',
         afcdId: null,
@@ -2467,10 +2402,10 @@ class SampleFishSpeciesDataSource {
         fishType: '鰺科/洄游類',
         bodyShape: 'fish',
         rarityRank: 2,
-        imageUrl: 'assets/fish/icons/generated/115_hk-silver-mojarra-local-badge.png',
+        imageUrl:
+            'assets/fish/icons/generated/115_hk-silver-mojarra-local-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-146',
         afcdId: null,
@@ -2484,10 +2419,10 @@ class SampleFishSpeciesDataSource {
         fishType: '鰺科/洄游類',
         bodyShape: 'fish',
         rarityRank: 2,
-        imageUrl: 'assets/fish/icons/generated/116_hk-biting-blenny-local-badge.png',
+        imageUrl:
+            'assets/fish/icons/generated/116_hk-biting-blenny-local-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-147',
         afcdId: null,
@@ -2501,10 +2436,10 @@ class SampleFishSpeciesDataSource {
         fishType: '鰺科/洄游類',
         bodyShape: 'fish',
         rarityRank: 2,
-        imageUrl: 'assets/fish/icons/generated/119_hk-dragon-boat-fish-local-badge.png',
+        imageUrl:
+            'assets/fish/icons/generated/119_hk-dragon-boat-fish-local-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-148',
         afcdId: null,
@@ -2518,10 +2453,10 @@ class SampleFishSpeciesDataSource {
         fishType: '鰺科/洄游類',
         bodyShape: 'fish',
         rarityRank: 2,
-        imageUrl: 'assets/fish/icons/generated/120_hk-yellowtail-fusilier-local-badge.png',
+        imageUrl:
+            'assets/fish/icons/generated/120_hk-yellowtail-fusilier-local-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-149',
         afcdId: null,
@@ -2535,10 +2470,10 @@ class SampleFishSpeciesDataSource {
         fishType: '鰺科/洄游類',
         bodyShape: 'fish',
         rarityRank: 2,
-        imageUrl: 'assets/fish/icons/generated/121_hk-small-scad-subadult-local-badge.png',
+        imageUrl:
+            'assets/fish/icons/generated/121_hk-small-scad-subadult-local-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-150',
         afcdId: null,
@@ -2552,10 +2487,10 @@ class SampleFishSpeciesDataSource {
         fishType: '鰺科/洄游類',
         bodyShape: 'fish',
         rarityRank: 2,
-        imageUrl: 'assets/fish/icons/generated/122_hk-green-needlefish-local-badge.png',
+        imageUrl:
+            'assets/fish/icons/generated/122_hk-green-needlefish-local-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-151',
         afcdId: null,
@@ -2569,10 +2504,10 @@ class SampleFishSpeciesDataSource {
         fishType: '鰺科/洄游類',
         bodyShape: 'fish',
         rarityRank: 3,
-        imageUrl: 'assets/fish/icons/generated/112_hk-yellowtail-damselfish-local-badge.png',
+        imageUrl:
+            'assets/fish/icons/generated/112_hk-yellowtail-damselfish-local-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-152',
         afcdId: null,
@@ -2586,10 +2521,10 @@ class SampleFishSpeciesDataSource {
         fishType: '鰺科/洄游類',
         bodyShape: 'fish',
         rarityRank: 3,
-        imageUrl: 'assets/fish/icons/generated/114_hk-white-head-wrasse-local-badge.png',
+        imageUrl:
+            'assets/fish/icons/generated/114_hk-white-head-wrasse-local-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
       FishSpecies(
         id: 'fish-153',
         afcdId: null,
@@ -2603,11 +2538,14 @@ class SampleFishSpeciesDataSource {
         fishType: '鰺科/洄游類',
         bodyShape: 'fish',
         rarityRank: 3,
-        imageUrl: 'assets/fish/icons/generated/118_hk-triangle-fish-local-badge.png',
+        imageUrl:
+            'assets/fish/icons/generated/118_hk-triangle-fish-local-badge.png',
         silhouetteUrl: 'assets/fish/icons/locked_silhouette.png',
       ),
-
     ];
-    return species;
+    return [
+      for (final fish in species)
+        fish.copyWith(imageUrl: normalizeFishAssetUrl(fish.imageUrl)),
+    ];
   }
 }

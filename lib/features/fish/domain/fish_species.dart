@@ -60,7 +60,7 @@ class FishSpecies {
         fishType: map['fish_type'] as String?,
         bodyShape: map['body_shape'] as String?,
         rarityRank: (map['rarity_rank'] as num?)?.toInt() ?? 1,
-        imageUrl: map['image_url'] as String?,
+        imageUrl: normalizeFishAssetUrl(map['image_url'] as String?),
         silhouetteUrl: map['silhouette_url'] as String?,
       );
 
@@ -116,4 +116,12 @@ class FishSpecies {
         'image_url': imageUrl,
         'silhouette_url': silhouetteUrl,
       };
+}
+
+String? normalizeFishAssetUrl(String? value) {
+  if (value == null) return null;
+  return value.replaceFirst(
+    'assets/fish/icons/generated/',
+    'assets/fish/mobile/',
+  );
 }

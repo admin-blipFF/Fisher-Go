@@ -1044,8 +1044,7 @@ class _FishEntry {
   String get fishId => _gameNameToFishId[name] ?? 'fish-022';
 
   String get silhouetteAsset => iconAsset
-      .replaceFirst(
-          'assets/fish/icons/generated/', 'assets/fish/icons/silhouettes/')
+      .replaceFirst('assets/fish/mobile/', 'assets/fish/icons/silhouettes/')
       .replaceFirst('.png', '_silhouette.png');
 
   String get bodySizeLabel => switch (bodySize) {
@@ -1075,7 +1074,7 @@ class _FishSpot {
 
 // 魚類數據定義
 // 淺水：全小型魚，1% 稀有
-const _fishIconDir = 'assets/fish/icons/generated';
+const _fishIconDir = 'assets/fish/mobile';
 const _tutorialFish = _FishEntry(
   name: '白䱛',
   rarity: _FishRarity.common,

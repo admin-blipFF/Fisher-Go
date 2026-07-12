@@ -352,6 +352,7 @@ void main() {
       final dataset = GeoTerrainDataset.fromJson('''
       {"features":[{"kind":"building","name":"Hilton Centre",
       "lat":22.3819,"lng":114.1874,"radiusMeters":40,"heightMeters":31,
+      "osmId":789012,
       "geometry":{"type":"polygon","coordinates":[
       [22.3818,114.1873],[22.3818,114.1875],[22.3820,114.1875],
       [22.3820,114.1873],[22.3818,114.1873]]}}]}''');
@@ -367,6 +368,8 @@ void main() {
 
       expect(feature.kind, TerrainKind.building);
       expect(feature.heightMeters, 31);
+      expect(feature.osmId, 789012);
+      expect(feature.isOsmDerived, isTrue);
     });
   });
 }

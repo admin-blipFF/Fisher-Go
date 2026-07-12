@@ -91,6 +91,7 @@ class TerrainVectorFeature {
     required this.name,
     required this.points,
     required this.isClosed,
+    this.osmId,
     this.heightMeters,
     this.roadClass = RoadClass.unknown,
     this.isBridge = false,
@@ -101,10 +102,13 @@ class TerrainVectorFeature {
   final String name;
   final List<LatLng> points;
   final bool isClosed;
+  final int? osmId;
   final double? heightMeters;
   final RoadClass roadClass;
   final bool isBridge;
   final int? lanes;
+
+  bool get isOsmDerived => osmId != null;
 }
 
 abstract class TerrainDataSource {
@@ -130,6 +134,7 @@ class GeoTerrainFeature {
     required this.lng,
     required this.radiusMeters,
     this.geometry,
+    this.osmId,
     this.heightMeters,
     this.roadClass = RoadClass.unknown,
     this.isBridge = false,
@@ -142,10 +147,13 @@ class GeoTerrainFeature {
   final double lng;
   final double radiusMeters;
   final GeoTerrainGeometry? geometry;
+  final int? osmId;
   final double? heightMeters;
   final RoadClass roadClass;
   final bool isBridge;
   final int? lanes;
+
+  bool get isOsmDerived => osmId != null;
 
   LatLng get center => LatLng(lat, lng);
 }
@@ -194,6 +202,7 @@ class GeoTerrainDataset {
             lat: (raw['lat'] as num).toDouble(),
             lng: (raw['lng'] as num).toDouble(),
             radiusMeters: (raw['radiusMeters'] as num).toDouble(),
+            osmId: (raw['osmId'] as num?)?.toInt(),
             heightMeters: (raw['heightMeters'] as num?)?.toDouble(),
             roadClass: _parseRoadClass(raw['roadClass'] as String?),
             isBridge: raw['isBridge'] as bool? ?? false,
@@ -298,6 +307,7 @@ class GeoTerrainDataSource implements TerrainDataSource {
             name: feature.name,
             points: feature.geometry!.coordinates,
             isClosed: feature.geometry!.isPolygon,
+            osmId: feature.osmId,
             heightMeters: feature.heightMeters,
             roadClass: feature.roadClass,
             isBridge: feature.isBridge,

@@ -32,4 +32,34 @@ void main() {
     expect(near.extrusionPixels, lessThanOrEqualTo(15));
     expect(near.extrusionPixels, greaterThan(far.extrusionPixels));
   });
+
+  test('simplified building style disables roof detail and shadow blur', () {
+    const feature = TerrainVectorFeature(
+      kind: TerrainKind.building,
+      name: 'Block',
+      points: [
+        LatLng(22.0, 114.0),
+        LatLng(22.0, 114.001),
+        LatLng(22.001, 114.001),
+        LatLng(22.0, 114.0),
+      ],
+      isClosed: true,
+      heightMeters: 30,
+    );
+    final simplified = GameBuildingStyle.forFeature(
+      feature,
+      depthScale: 1,
+      simplified: true,
+    );
+    final detailed = GameBuildingStyle.forFeature(
+      feature,
+      depthScale: 1,
+      simplified: false,
+    );
+
+    expect(simplified.drawRoofDetail, isFalse);
+    expect(simplified.shadowBlurSigma, 0);
+    expect(detailed.drawRoofDetail, isTrue);
+    expect(detailed.shadowBlurSigma, greaterThan(0));
+  });
 }

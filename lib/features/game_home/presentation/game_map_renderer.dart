@@ -16,6 +16,72 @@ bool isRenderableBuildingFeature(TerrainVectorFeature feature) =>
     feature.isClosed &&
     feature.points.length >= 4;
 
+bool isRenderableCoastlineDepthFeature(TerrainVectorFeature feature) =>
+    feature.isOsmDerived &&
+    const {TerrainKind.water, TerrainKind.land, TerrainKind.shore}
+        .contains(feature.kind) &&
+    feature.points.length >= 2;
+
+class ProjectedBuildingCandidate {
+  const ProjectedBuildingCandidate({
+    required this.feature,
+    required this.path,
+    required this.midpoint,
+  });
+
+  final TerrainVectorFeature feature;
+  final Path path;
+  final LatLng midpoint;
+}
+
+List<ProjectedBuildingCandidate> selectBuildingCandidates({
+  required List<TerrainVectorFeature> features,
+  required GameMapCamera camera,
+  required Size viewportSize,
+  required int maxBuildings,
+}) {
+  if (maxBuildings <= 0) return const [];
+  final viewport = Offset.zero & viewportSize;
+  final viewportCandidates = <ProjectedBuildingCandidate>[];
+  for (final feature in features) {
+    if (!isRenderableBuildingFeature(feature)) continue;
+    final path = _projectFeaturePath(feature, camera);
+    if (!path.getBounds().inflate(18).overlaps(viewport)) continue;
+    viewportCandidates.add(
+      ProjectedBuildingCandidate(
+        feature: feature,
+        path: path,
+        midpoint: feature.points[feature.points.length ~/ 2],
+      ),
+    );
+  }
+  final selected = viewportCandidates.take(maxBuildings).toList();
+  selected.sort(
+    (left, right) => camera
+        .project(left.midpoint)
+        .dy
+        .compareTo(camera.project(right.midpoint).dy),
+  );
+  return List.unmodifiable(selected);
+}
+
+Path _projectFeaturePath(
+  TerrainVectorFeature feature,
+  GameMapCamera camera,
+) {
+  final path = Path();
+  for (var i = 0; i < feature.points.length; i++) {
+    final offset = camera.project(feature.points[i]);
+    if (i == 0) {
+      path.moveTo(offset.dx, offset.dy);
+    } else {
+      path.lineTo(offset.dx, offset.dy);
+    }
+  }
+  if (feature.isClosed) path.close();
+  return path;
+}
+
 class _ProjectedTerrainTile {
   const _ProjectedTerrainTile(this.data, this.center);
 
@@ -2915,14 +2981,9 @@ class GameMapPainter extends CustomPainter {
   }
 
   void _drawCoastlineDepthLayer(Canvas canvas, Size size) {
-    const coastlineKinds = {
-      TerrainKind.water,
-      TerrainKind.land,
-      TerrainKind.shore,
-    };
     final viewport = Offset.zero & size;
     for (final feature in terrainFeatures) {
-      if (!coastlineKinds.contains(feature.kind)) continue;
+      if (!isRenderableCoastlineDepthFeature(feature)) continue;
       final path = _pathForFeature(feature);
       if (path == null || !path.getBounds().inflate(14).overlaps(viewport)) {
         continue;
@@ -2965,40 +3026,29 @@ class GameMapPainter extends CustomPainter {
 
   void _drawBuildingLayer(Canvas canvas, Size size) {
     final budget = _renderBudget;
-    final visibleBuildings = terrainFeatures
-        .where(isRenderableBuildingFeature)
-        .where(
-          (feature) => feature.points.any(
-            (point) => camera.isVisible(point, paddingMeters: 80),
-          ),
-        )
-        .toList()
-      ..sort((left, right) {
-        final leftMidpoint = left.points[left.points.length ~/ 2];
-        final rightMidpoint = right.points[right.points.length ~/ 2];
-        return camera
-            .project(leftMidpoint)
-            .dy
-            .compareTo(camera.project(rightMidpoint).dy);
-      });
-    final viewport = Offset.zero & size;
+    final buildings = selectBuildingCandidates(
+      features: terrainFeatures,
+      camera: camera,
+      viewportSize: size,
+      maxBuildings: budget.maxBuildings,
+    );
 
-    for (final feature in visibleBuildings.take(budget.maxBuildings)) {
-      final path = _pathForFeature(feature);
-      if (path == null || !path.getBounds().inflate(18).overlaps(viewport)) {
-        continue;
-      }
-      final midpoint = feature.points[feature.points.length ~/ 2];
+    for (final candidate in buildings) {
+      final feature = candidate.feature;
+      final path = candidate.path;
       final style = GameBuildingStyle.forFeature(
         feature,
-        depthScale: camera.depthScaleFor(midpoint),
+        depthScale: camera.depthScaleFor(candidate.midpoint),
         simplified: !budget.enableBuildingRoofDetail,
       );
       final extrusion = Offset(0, style.extrusionPixels);
       final shadowPaint = Paint()
         ..color = const Color(0xFF102F34).withValues(alpha: 0.24);
-      if (style.drawRoofDetail) {
-        shadowPaint.maskFilter = const MaskFilter.blur(BlurStyle.normal, 3);
+      if (style.shadowBlurSigma > 0) {
+        shadowPaint.maskFilter = MaskFilter.blur(
+          BlurStyle.normal,
+          style.shadowBlurSigma,
+        );
       }
 
       canvas.drawPath(
@@ -3726,17 +3776,7 @@ class GameMapPainter extends CustomPainter {
 
   Path? _pathForFeature(TerrainVectorFeature feature) {
     if (feature.points.length < 2) return null;
-    final path = Path();
-    for (var i = 0; i < feature.points.length; i++) {
-      final offset = camera.project(feature.points[i]);
-      if (i == 0) {
-        path.moveTo(offset.dx, offset.dy);
-      } else {
-        path.lineTo(offset.dx, offset.dy);
-      }
-    }
-    if (feature.isClosed) path.close();
-    return path;
+    return _projectFeaturePath(feature, camera);
   }
 
   Offset? _featureAnchor(TerrainVectorFeature feature) {
@@ -4354,7 +4394,9 @@ class GameMapPainter extends CustomPainter {
       a.center.longitude == b.center.longitude &&
       a.visibleRadiusMeters == b.visibleRadiusMeters &&
       a.bearingDegrees == b.bearingDegrees &&
-      a.viewportSize == b.viewportSize;
+      a.viewportSize == b.viewportSize &&
+      a.perspectiveStrength == b.perspectiveStrength &&
+      a.viewportAnchorY == b.viewportAnchorY;
 
   bool _sameTerrainFeatures(
     List<TerrainVectorFeature> a,
@@ -4367,6 +4409,8 @@ class GameMapPainter extends CustomPainter {
       if (left.kind != right.kind ||
           left.name != right.name ||
           left.isClosed != right.isClosed ||
+          left.osmId != right.osmId ||
+          left.heightMeters != right.heightMeters ||
           left.roadClass != right.roadClass ||
           left.isBridge != right.isBridge ||
           left.lanes != right.lanes ||

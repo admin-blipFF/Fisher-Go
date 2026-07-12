@@ -270,22 +270,4 @@ void main() {
       lessThan(paint.indexOf('_drawFishingSpotLayer')),
     );
   });
-
-  test('building painter projects real footprints with depth and budget', () {
-    final rendererSource = File(
-      'lib/features/game_home/presentation/game_map_renderer.dart',
-    ).readAsStringSync();
-    final buildingLayer = rendererSource.substring(
-      rendererSource.indexOf('void _drawBuildingLayer'),
-      rendererSource.indexOf('void _drawRoadLayer'),
-    );
-
-    expect(buildingLayer, contains('_pathForFeature(feature)'));
-    expect(buildingLayer, contains('camera.depthScaleFor(midpoint)'));
-    expect(buildingLayer, contains('take(budget.maxBuildings)'));
-    expect(
-      buildingLayer,
-      contains('simplified: !budget.enableBuildingRoofDetail'),
-    );
-  });
 }

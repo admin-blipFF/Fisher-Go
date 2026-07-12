@@ -13,6 +13,8 @@ const viewport = Size(390, 780);
 void main() {
   GameMapPainter painter({
     double bearing = 0,
+    double perspectiveStrength = 0,
+    double viewportAnchorY = 0.5,
     List<TerrainTile>? tiles,
     List<TerrainVectorFeature>? features,
     List<ProjectedFishingSpot>? spots,
@@ -22,6 +24,8 @@ void main() {
       visibleRadiusMeters: 500,
       bearingDegrees: bearing,
       viewportSize: viewport,
+      perspectiveStrength: perspectiveStrength,
+      viewportAnchorY: viewportAnchorY,
     );
     return GameMapPainter(
       camera: camera,
@@ -67,6 +71,34 @@ void main() {
           ),
         ],
       ).shouldRepaint(painter()),
+      isTrue,
+    );
+  });
+
+  test('repaints when perspective projection settings change', () {
+    expect(
+      painter(perspectiveStrength: 0.3).shouldRepaint(painter()),
+      isTrue,
+    );
+    expect(
+      painter(viewportAnchorY: 0.42).shouldRepaint(painter()),
+      isTrue,
+    );
+  });
+
+  test('repaints when building height or OSM provenance changes', () {
+    expect(
+      painter(
+        features: [_buildingFeature(heightMeters: 36)],
+      ).shouldRepaint(
+        painter(features: [_buildingFeature(heightMeters: 24)]),
+      ),
+      isTrue,
+    );
+    expect(
+      painter(features: [_waterFeature(osmId: 42)]).shouldRepaint(
+        painter(features: [_waterFeature()]),
+      ),
       isTrue,
     );
   });
@@ -131,7 +163,136 @@ void main() {
       isTrue,
     );
   });
+
+  test('coastline depth accepts OSM geometry but rejects manual polygons', () {
+    expect(
+      isRenderableCoastlineDepthFeature(_waterFeature(osmId: 42)),
+      isTrue,
+    );
+    expect(
+      isRenderableCoastlineDepthFeature(_waterFeature()),
+      isFalse,
+    );
+  });
+
+  test('building cap ignores buffered geometry outside projected viewport', () {
+    final camera = _camera();
+    final candidates = selectBuildingCandidates(
+      features: [
+        _polygonBuilding(
+          'buffered offscreen',
+          const [
+            LatLng(22.33095, 114.10595),
+            LatLng(22.33095, 114.10605),
+            LatLng(22.33105, 114.10605),
+            LatLng(22.33095, 114.10595),
+          ],
+        ),
+        _polygonBuilding(
+          'visible',
+          const [
+            LatLng(22.33095, 114.10295),
+            LatLng(22.33095, 114.10305),
+            LatLng(22.33105, 114.10305),
+            LatLng(22.33095, 114.10295),
+          ],
+        ),
+      ],
+      camera: camera,
+      viewportSize: viewport,
+      maxBuildings: 1,
+    );
+
+    expect(candidates.map((candidate) => candidate.feature.name), ['visible']);
+  });
+
+  test('building selection retains crossing and enclosing polygons', () {
+    final camera = _camera();
+    final crossing = _polygonBuilding(
+      'crossing',
+      const [
+        LatLng(22.3309, 114.0998),
+        LatLng(22.3309, 114.1062),
+        LatLng(22.3311, 114.1062),
+        LatLng(22.3311, 114.0998),
+        LatLng(22.3309, 114.0998),
+      ],
+    );
+    final enclosing = _polygonBuilding(
+      'enclosing',
+      const [
+        LatLng(22.326, 114.0998),
+        LatLng(22.326, 114.1062),
+        LatLng(22.336, 114.1062),
+        LatLng(22.336, 114.0998),
+        LatLng(22.326, 114.0998),
+      ],
+    );
+
+    bool hasVertexInViewport(TerrainVectorFeature feature) => feature.points
+        .map(camera.project)
+        .any((point) => (Offset.zero & viewport).contains(point));
+    expect(hasVertexInViewport(crossing), isFalse);
+    expect(hasVertexInViewport(enclosing), isFalse);
+
+    final candidates = selectBuildingCandidates(
+      features: [crossing, enclosing],
+      camera: camera,
+      viewportSize: viewport,
+      maxBuildings: 2,
+    );
+
+    expect(
+      candidates.map((candidate) => candidate.feature.name).toSet(),
+      {'crossing', 'enclosing'},
+    );
+  });
+
+  test('building selection sorts capped candidates far-to-near', () {
+    final candidates = selectBuildingCandidates(
+      features: [
+        _buildingAt('near', const LatLng(22.3302, 114.103)),
+        _buildingAt('far', const LatLng(22.3318, 114.103)),
+      ],
+      camera: _camera(perspectiveStrength: 0.3),
+      viewportSize: viewport,
+      maxBuildings: 2,
+    );
+
+    expect(
+      candidates.map((candidate) => candidate.feature.name),
+      ['far', 'near'],
+    );
+  });
 }
+
+GameMapCamera _camera({double perspectiveStrength = 0}) => GameMapCamera(
+      center: center,
+      visibleRadiusMeters: 500,
+      bearingDegrees: 0,
+      viewportSize: viewport,
+      perspectiveStrength: perspectiveStrength,
+    );
+
+TerrainVectorFeature _buildingAt(String name, LatLng point) {
+  const delta = 0.00005;
+  return _polygonBuilding(name, [
+    LatLng(point.latitude - delta, point.longitude - delta),
+    LatLng(point.latitude - delta, point.longitude + delta),
+    LatLng(point.latitude + delta, point.longitude + delta),
+    LatLng(point.latitude - delta, point.longitude - delta),
+  ]);
+}
+
+TerrainVectorFeature _polygonBuilding(String name, List<LatLng> points) =>
+    TerrainVectorFeature(
+      kind: TerrainKind.building,
+      name: name,
+      points: points,
+      isClosed: true,
+      heightMeters: 24,
+      osmId: 1,
+    );
 
 Future<Image> _testImage() {
   final recorder = PictureRecorder();
@@ -144,8 +305,9 @@ Future<Image> _testImage() {
 }
 
 TerrainVectorFeature _buildingFeature({
-  required bool isClosed,
-  required int pointCount,
+  bool isClosed = true,
+  int pointCount = 4,
+  double heightMeters = 24,
 }) {
   const points = [
     LatLng(22.3308, 114.1028),
@@ -158,7 +320,7 @@ TerrainVectorFeature _buildingFeature({
     name: 'Block',
     points: points.take(pointCount).toList(growable: false),
     isClosed: isClosed,
-    heightMeters: 24,
+    heightMeters: heightMeters,
   );
 }
 
@@ -192,15 +354,16 @@ TerrainVectorFeature _roadFeature() {
   );
 }
 
-TerrainVectorFeature _waterFeature() {
-  return const TerrainVectorFeature(
+TerrainVectorFeature _waterFeature({int? osmId}) {
+  return TerrainVectorFeature(
     kind: TerrainKind.water,
     name: 'water',
-    points: [
+    points: const [
       LatLng(22.3308, 114.1028),
       LatLng(22.3312, 114.1032),
     ],
     isClosed: false,
+    osmId: osmId,
   );
 }
 

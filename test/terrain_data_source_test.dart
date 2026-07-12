@@ -422,6 +422,7 @@ void main() {
       final dataset = GeoTerrainDataset.fromJson('''
       {"features":[{"kind":"building","name":"Hilton Centre",
       "lat":22.3819,"lng":114.1874,"radiusMeters":40,"heightMeters":31,
+      "osmId":123456,
       "geometry":{"type":"polygon","coordinates":[
       [22.3818,114.1873],[22.3818,114.1875],[22.3820,114.1875],
       [22.3820,114.1873],[22.3818,114.1873]]}}]}''');
@@ -436,6 +437,22 @@ void main() {
       expect(feature.kind, TerrainKind.building);
       expect(feature.isClosed, isTrue);
       expect(feature.heightMeters, 31);
+      expect(dataset.features.single.osmId, 123456);
+      expect(dataset.features.single.isOsmDerived, isTrue);
+      expect(feature.osmId, 123456);
+      expect(feature.isOsmDerived, isTrue);
+    });
+
+    test('manual terrain geometry remains explicitly non-OSM', () {
+      final dataset = GeoTerrainDataset.fromJson('''
+      {"features":[{"kind":"land","name":"Gameplay island",
+      "lat":22.3819,"lng":114.1874,"radiusMeters":40,
+      "geometry":{"type":"polygon","coordinates":[
+      [22.3818,114.1873],[22.3818,114.1875],[22.3820,114.1875],
+      [22.3818,114.1873]]}}]}''');
+
+      expect(dataset.features.single.osmId, isNull);
+      expect(dataset.features.single.isOsmDerived, isFalse);
     });
 
     test('prunes distant roads before tile classification', () {

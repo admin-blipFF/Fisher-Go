@@ -9,6 +9,7 @@ class GameBuildingStyle {
     required this.sideColor,
     required this.outlineColor,
     required this.drawRoofDetail,
+    required this.shadowBlurSigma,
   });
 
   factory GameBuildingStyle.forFeature(
@@ -24,6 +25,7 @@ class GameBuildingStyle {
       sideColor: const Color(0xFF728C91),
       outlineColor: const Color(0xFF28484E),
       drawRoofDetail: !simplified,
+      shadowBlurSigma: simplified ? 0 : 3,
     );
   }
 
@@ -32,4 +34,5 @@ class GameBuildingStyle {
   final Color sideColor;
   final Color outlineColor;
   final bool drawRoofDetail;
+  final double shadowBlurSigma;
 }

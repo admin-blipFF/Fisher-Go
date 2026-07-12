@@ -3,6 +3,27 @@ import 'dart:ui';
 
 import 'package:latlong2/latlong.dart';
 
+class GameMapGridLayout {
+  const GameMapGridLayout({required this.rows, required this.cols});
+
+  factory GameMapGridLayout.forViewport(
+    Size viewportSize, {
+    int verticalCellCount = 28,
+  }) {
+    final safeHeight = viewportSize.height <= 0 ? 1.0 : viewportSize.height;
+    final aspectRatio = viewportSize.width / safeHeight;
+    final horizontalCellCount =
+        math.max(8, (verticalCellCount * aspectRatio).ceil());
+    return GameMapGridLayout(
+      rows: verticalCellCount + 1,
+      cols: horizontalCellCount + 1,
+    );
+  }
+
+  final int rows;
+  final int cols;
+}
+
 class GameMapCamera {
   const GameMapCamera({
     required this.center,

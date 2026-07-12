@@ -5,6 +5,16 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:latlong2/latlong.dart';
 
 void main() {
+  test('grid layout follows portrait and landscape viewport proportions', () {
+    final portrait = GameMapGridLayout.forViewport(const Size(390, 844));
+    final landscape = GameMapGridLayout.forViewport(const Size(1280, 720));
+
+    expect(portrait.rows, 29);
+    expect(portrait.cols, 14);
+    expect(landscape.rows, 29);
+    expect(landscape.cols, 51);
+  });
+
   group('GameMapCamera', () {
     test('projects center GPS to viewport center', () {
       final camera = GameMapCamera(

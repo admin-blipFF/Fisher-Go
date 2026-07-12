@@ -63,8 +63,16 @@ class GameRoadStyle {
       RoadClass.motorway => 9,
     };
 
+    final casingExtra = switch (roadClass) {
+      RoadClass.motorway || RoadClass.trunk => 3.6,
+      RoadClass.primary || RoadClass.secondary || RoadClass.tertiary => 3.0,
+      RoadClass.local || RoadClass.unknown => 2.2,
+      RoadClass.service => 1.8,
+      RoadClass.cycleway || RoadClass.footway => 1.4,
+    };
+
     return GameRoadStyle(
-      casingWidth: surfaceWidth + 4.0,
+      casingWidth: surfaceWidth + casingExtra,
       surfaceWidth: surfaceWidth,
       laneMarking: laneMarking,
       drawsBridgeDeck: feature.isBridge,

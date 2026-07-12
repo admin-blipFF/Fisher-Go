@@ -295,7 +295,14 @@ class GeoTerrainDataSource implements TerrainDataSource {
     final rowT = rows <= 1 ? 0.5 : row / (rows - 1);
     final colT = cols <= 1 ? 0.5 : col / (cols - 1);
     const latSpan = 0.009;
-    const lngSpan = 0.0098;
+    final verticalIntervals = math.max(1, rows - 1);
+    final horizontalIntervals = math.max(1, cols - 1);
+    final metersPerDegreeLng =
+        111320.0 * math.cos(playerLatLng.latitude * math.pi / 180);
+    final latitudeSpanMeters = latSpan * 111320.0;
+    final longitudeSpanMeters =
+        latitudeSpanMeters * horizontalIntervals / verticalIntervals;
+    final lngSpan = longitudeSpanMeters / metersPerDegreeLng;
     return LatLng(
       playerLatLng.latitude + (0.5 - rowT) * latSpan,
       playerLatLng.longitude + (colT - 0.5) * lngSpan,
@@ -617,7 +624,14 @@ class LocalTerrainDataSource implements TerrainDataSource {
     final rowT = rows <= 1 ? 0.5 : row / (rows - 1);
     final colT = cols <= 1 ? 0.5 : col / (cols - 1);
     const latSpan = 0.009;
-    const lngSpan = 0.0098;
+    final verticalIntervals = math.max(1, rows - 1);
+    final horizontalIntervals = math.max(1, cols - 1);
+    final metersPerDegreeLng =
+        111320.0 * math.cos(playerLatLng.latitude * math.pi / 180);
+    final latitudeSpanMeters = latSpan * 111320.0;
+    final longitudeSpanMeters =
+        latitudeSpanMeters * horizontalIntervals / verticalIntervals;
+    final lngSpan = longitudeSpanMeters / metersPerDegreeLng;
     return LatLng(
       playerLatLng.latitude + (0.5 - rowT) * latSpan,
       playerLatLng.longitude + (colT - 0.5) * lngSpan,

@@ -229,23 +229,34 @@ class GameMapPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     _drawHorizonLayer(canvas, size);
-    _drawPerspectiveMicroTileLayer(canvas, size);
-    _drawGameTerrainZoneLayer(canvas, size);
-    _drawWorldTerrainWashLayer(canvas, size);
-    _drawWorldTextureVeilLayer(canvas, size);
-    _drawReadableTerrainToneLayer(canvas, size);
-    _drawTerrainBoundaryBlendLayer(canvas, size);
+    if (_hasVectorWorldSurface) {
+      _drawVectorWorldSurfaceLayer(canvas, size);
+    } else {
+      _drawPerspectiveMicroTileLayer(canvas, size);
+      _drawReadableTerrainToneLayer(canvas, size);
+      _drawTerrainBoundaryBlendLayer(canvas, size);
+      _drawTerrainDetailLayer(canvas, size);
+    }
     _drawWorldSeamFusionLayer(canvas, size);
-    _drawTerrainReliefLayer(canvas, size);
-    _drawCoastalWaterSceneLayer(canvas, size);
-    _drawTerrainDetailLayer(canvas, size);
-    _drawWorldDecorationLayer(canvas, size);
     _drawImagegenInspiredMapLayer(canvas, size);
     _drawRoadLayer(canvas, size);
     _drawPierLayer(canvas, size);
     _drawLandmarkLabelLayer(canvas, size);
     _drawFishingSpotLayer(canvas, size);
     _drawAtmosphereLayer(canvas, size);
+  }
+
+  bool get _hasVectorWorldSurface => terrainFeatures.any(
+        (feature) =>
+            feature.kind == TerrainKind.land &&
+            feature.isClosed &&
+            feature.points.length >= 3,
+      );
+
+  void _drawVectorWorldSurfaceLayer(Canvas canvas, Size size) {
+    _drawSeaLayer(canvas, size);
+    _drawLandLayer(canvas, size);
+    _drawCoastlineLayer(canvas, size);
   }
 
   void _drawHorizonLayer(Canvas canvas, Size size) {
@@ -485,6 +496,8 @@ class GameMapPainter extends CustomPainter {
     }
   }
 
+  // Retained for the procedural fallback renderer.
+  // ignore: unused_element
   void _drawGameTerrainZoneLayer(Canvas canvas, Size size) {
     if (terrainTiles.isEmpty) return;
     final visibleTiles = terrainTiles
@@ -743,6 +756,8 @@ class GameMapPainter extends CustomPainter {
     }
   }
 
+  // Retained for the procedural fallback renderer.
+  // ignore: unused_element
   void _drawWorldTerrainWashLayer(Canvas canvas, Size size) {
     if (terrainTiles.isEmpty) return;
     final budget = _renderBudget;
@@ -829,6 +844,8 @@ class GameMapPainter extends CustomPainter {
     );
   }
 
+  // Retained for the procedural fallback renderer.
+  // ignore: unused_element
   void _drawWorldTextureVeilLayer(Canvas canvas, Size size) {
     if (terrainTiles.isEmpty) return;
     final budget = _renderBudget;
@@ -1149,6 +1166,8 @@ class GameMapPainter extends CustomPainter {
     }
   }
 
+  // Retained for the procedural fallback renderer.
+  // ignore: unused_element
   void _drawTerrainReliefLayer(Canvas canvas, Size size) {
     if (terrainTiles.isEmpty) return;
     final visibleTiles = terrainTiles
@@ -1163,6 +1182,8 @@ class GameMapPainter extends CustomPainter {
     }
   }
 
+  // Retained for the procedural fallback renderer.
+  // ignore: unused_element
   void _drawCoastalWaterSceneLayer(Canvas canvas, Size size) {
     if (terrainTiles.isEmpty) return;
     final visibleTiles = terrainTiles
@@ -1648,6 +1669,8 @@ class GameMapPainter extends CustomPainter {
     _drawShoreRockDetails(canvas, size, visibleTiles);
   }
 
+  // Retained for the procedural fallback renderer.
+  // ignore: unused_element
   void _drawWorldDecorationLayer(Canvas canvas, Size size) {
     if (terrainTiles.isEmpty) return;
     if (!_renderBudget.enableDecorativeOverlays) return;
@@ -2196,7 +2219,6 @@ class GameMapPainter extends CustomPainter {
     );
   }
 
-  // ignore: unused_element
   void _drawSeaLayer(Canvas canvas, Size size) {
     final rect = Offset.zero & size;
     final waterPaint = _texturedFillPaint(
@@ -2511,7 +2533,6 @@ class GameMapPainter extends CustomPainter {
       ..close();
   }
 
-  // ignore: unused_element
   void _drawLandLayer(Canvas canvas, Size size) {
     for (final feature in terrainFeatures) {
       if (feature.kind != TerrainKind.land &&
@@ -2547,10 +2568,37 @@ class GameMapPainter extends CustomPainter {
             ..color = const Color(0xFF154B32).withValues(alpha: 0.08)
             ..style = PaintingStyle.fill,
         );
+        _drawVectorLandColorGrade(canvas, path, feature.kind);
       }
 
       _drawLandTexture(canvas, path);
     }
+  }
+
+  void _drawVectorLandColorGrade(
+    Canvas canvas,
+    Path path,
+    TerrainKind kind,
+  ) {
+    final bounds = path.getBounds();
+    if (bounds.isEmpty) return;
+    final colors = kind == TerrainKind.shore
+        ? const [Color(0x44F7E9A0), Color(0x334FCB7B)]
+        : const [
+            Color(0x553FD36B),
+            Color(0x4430B667),
+            Color(0x551B8F59),
+          ];
+    canvas.drawPath(
+      path,
+      Paint()
+        ..shader = LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: colors,
+        ).createShader(bounds)
+        ..style = PaintingStyle.fill,
+    );
   }
 
   void _drawSoftTerrainTiles(
@@ -2657,7 +2705,6 @@ class GameMapPainter extends CustomPainter {
     }
   }
 
-  // ignore: unused_element
   void _drawCoastlineLayer(Canvas canvas, Size size) {
     for (final feature in terrainFeatures) {
       if (feature.kind != TerrainKind.water &&
@@ -3312,9 +3359,12 @@ class GameMapPainter extends CustomPainter {
 
   void _drawLandmarkLabelLayer(Canvas canvas, Size size) {
     final labels = <_MapLabel>[];
+    final seenLabelKeys = <String>{};
     for (final feature in terrainFeatures) {
       final label = _labelForFeature(feature);
       if (label == null) continue;
+      final labelKey = '${feature.kind.name}:$label';
+      if (!seenLabelKeys.add(labelKey)) continue;
       final anchor = _featureAnchor(feature);
       if (anchor == null) continue;
       if (anchor.dx < 18 ||

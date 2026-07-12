@@ -18,6 +18,12 @@ void main() {
     expect(source, contains('GameMapRenderer'));
     expect(source, contains('GameMapCamera'));
     expect(source, contains('GameMapFeatureStore'));
+    expect(source, contains('GameMapGridLayout.forViewport'));
+    expect(source, contains('hasVectorWorldSurface'));
+    expect(
+        source, contains('verticalCellCount: hasVectorWorldSurface ? 10 : 28'));
+    expect(source, contains('rows: gridLayout.rows'));
+    expect(source, contains('cols: gridLayout.cols'));
     expect(source, contains('static const bool _debugDisableTutorial = true'));
     expect(source, contains('if (_debugDisableTutorial) return'));
     expect(source, contains('_mapBearingDegrees'));
@@ -31,8 +37,8 @@ void main() {
     expect(source, contains('onHorizontalDragUpdate'));
     expect(source, contains('visibleVectorFeatures'));
     expect(source, contains('terrainDataSource.buildTiles'));
-    expect(source, contains('rows: 29'));
-    expect(source, contains('cols: 21'));
+    expect(source, isNot(contains('rows: 29')));
+    expect(source, isNot(contains('cols: 21')));
     expect(source, contains('terrainTiles: terrainTiles'));
     expect(source, contains('onSpotSelected'));
     expect(source, contains('_buildProjectedSpotButtons'));
@@ -62,6 +68,20 @@ void main() {
     expect(pubspecSource, contains('assets/fishing/scenes/'));
     expect(source, isNot(contains('_HybridTerrainMapPainter')));
     expect(rendererSource, contains('class GameMapPainter'));
+    expect(rendererSource, contains('_drawVectorWorldSurfaceLayer'));
+    expect(rendererSource, contains('_hasVectorWorldSurface'));
+    expect(rendererSource, contains('_drawVectorLandColorGrade'));
+    expect(rendererSource, contains('seenLabelKeys'));
+    final seaLayerSource = rendererSource.substring(
+      rendererSource.indexOf('void _drawSeaLayer'),
+      rendererSource.indexOf('void _drawLandLayer'),
+    );
+    final landLayerSource = rendererSource.substring(
+      rendererSource.indexOf('void _drawLandLayer'),
+      rendererSource.indexOf('void _drawSoftTerrainTiles'),
+    );
+    expect(seaLayerSource, isNot(contains('_drawVectorLandColorGrade')));
+    expect(landLayerSource, contains('_drawVectorLandColorGrade'));
     expect(rendererSource, contains('GameMapTexturePack'));
     expect(rendererSource, contains('assets/maps/textures/water_tile.jpg'));
     expect(rendererSource, contains('assets/maps/textures/land_tile.jpg'));

@@ -3406,10 +3406,20 @@ class _GameWorldMapShell extends StatelessWidget {
                       playerLatLng: playerLatLng,
                       radiusMeters: 900,
                     );
+            final hasVectorWorldSurface = terrainFeatures.any(
+              (feature) =>
+                  feature.kind == TerrainKind.land &&
+                  feature.isClosed &&
+                  feature.points.length >= 3,
+            );
+            final gridLayout = GameMapGridLayout.forViewport(
+              viewportSize,
+              verticalCellCount: hasVectorWorldSurface ? 10 : 28,
+            );
             final terrainTiles = terrainDataSource.buildTiles(
               playerLatLng: playerLatLng,
-              rows: 29,
-              cols: 21,
+              rows: gridLayout.rows,
+              cols: gridLayout.cols,
             );
             final fishingSpotInputs = [
               for (final spot in spots)

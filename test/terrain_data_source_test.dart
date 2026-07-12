@@ -59,6 +59,38 @@ void main() {
   });
 
   group('GeoTerrainDataSource', () {
+    test('expands the generated world grid to match a landscape viewport', () {
+      final json = File('assets/maps/hk_terrain_mvp.json').readAsStringSync();
+      final source = GeoTerrainDataSource(GeoTerrainDataset.fromJson(json));
+      const player = LatLng(22.3517, 114.0743);
+      const distance = Distance();
+
+      final portrait = source.buildTiles(
+        playerLatLng: player,
+        rows: 29,
+        cols: 15,
+      );
+      final landscape = source.buildTiles(
+        playerLatLng: player,
+        rows: 29,
+        cols: 51,
+      );
+      double eastWestSpan(List<TerrainTile> tiles) {
+        final west = tiles.reduce((a, b) =>
+            a.centerLatLng.longitude < b.centerLatLng.longitude ? a : b);
+        final east = tiles.reduce((a, b) =>
+            a.centerLatLng.longitude > b.centerLatLng.longitude ? a : b);
+        return distance.as(
+          LengthUnit.Meter,
+          west.centerLatLng,
+          east.centerLatLng,
+        );
+      }
+
+      expect(eastWestSpan(portrait), closeTo(500, 70));
+      expect(eastWestSpan(landscape), closeTo(1785, 120));
+    });
+
     test('parses bundled Hong Kong terrain vector data', () {
       final json = File('assets/maps/hk_terrain_mvp.json').readAsStringSync();
       final dataset = GeoTerrainDataset.fromJson(json);
@@ -84,7 +116,7 @@ void main() {
       final tiles = source.buildTiles(
         playerLatLng: const LatLng(22.3517, 114.0743),
         rows: 15,
-        cols: 11,
+        cols: 15,
       );
       final kinds = tiles.map((tile) => tile.kind).toSet();
 

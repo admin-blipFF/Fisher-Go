@@ -455,6 +455,32 @@ void main() {
       expect(dataset.features.single.isOsmDerived, isFalse);
     });
 
+    test('parses explicit OSM provenance independently of osmId', () {
+      final dataset = GeoTerrainDataset.fromJson('''
+      {"features":[{"kind":"water","name":"Cached coastline",
+      "provenance":"openStreetMap",
+      "lat":22.3819,"lng":114.1874,"radiusMeters":40,
+      "geometry":{"type":"polygon","coordinates":[
+      [22.3818,114.1873],[22.3818,114.1875],[22.3820,114.1875],
+      [22.3818,114.1873]]}}]}''');
+      final source = GeoTerrainDataSource(dataset);
+      final feature = source
+          .visibleVectorFeatures(
+            playerLatLng: const LatLng(22.3819, 114.1874),
+            radiusMeters: 500,
+          )
+          .single;
+
+      expect(dataset.features.single.osmId, isNull);
+      expect(
+        dataset.features.single.provenance,
+        TerrainFeatureProvenance.openStreetMap,
+      );
+      expect(feature.osmId, isNull);
+      expect(feature.provenance, TerrainFeatureProvenance.openStreetMap);
+      expect(feature.isOsmDerived, isTrue);
+    });
+
     test('prunes distant roads before tile classification', () {
       final features = <GeoTerrainFeature>[
         const GeoTerrainFeature(

@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:ui';
 
 import 'package:fishergo/features/game_home/domain/game_map_camera.dart';
@@ -101,6 +102,16 @@ void main() {
       ),
       isTrue,
     );
+    expect(
+      painter(
+        features: [
+          _waterFeature(
+            provenance: TerrainFeatureProvenance.openStreetMap,
+          ),
+        ],
+      ).shouldRepaint(painter(features: [_waterFeature()])),
+      isTrue,
+    );
   });
 
   test('uses a low-cost render budget for dense web map scenes', () {
@@ -166,13 +177,52 @@ void main() {
 
   test('coastline depth accepts OSM geometry but rejects manual polygons', () {
     expect(
+      isRenderableCoastlineDepthFeature(
+        _waterFeature(provenance: TerrainFeatureProvenance.openStreetMap),
+      ),
+      isTrue,
+    );
+    expect(
       isRenderableCoastlineDepthFeature(_waterFeature(osmId: 42)),
       isTrue,
+      reason: 'legacy bundles with osmId remain compatible',
     );
     expect(
       isRenderableCoastlineDepthFeature(_waterFeature()),
       isFalse,
     );
+  });
+
+  test('current bundle distinguishes cached coastlines from manual polygons',
+      () {
+    final dataset = GeoTerrainDataset.fromJson(
+      File('assets/maps/hk_terrain_mvp.json').readAsStringSync(),
+    );
+    final source = GeoTerrainDataSource(dataset);
+    final cachedGeo = dataset.features.singleWhere(
+      (feature) => feature.name == 'OSM 汲水門水域',
+    );
+    final manualGeo = dataset.features.singleWhere(
+      (feature) => feature.name == '維多利亞港海面',
+    );
+    final cachedVector = source
+        .visibleVectorFeatures(
+          playerLatLng: cachedGeo.center,
+          radiusMeters: 1000,
+        )
+        .singleWhere((feature) => feature.name == cachedGeo.name);
+    final manualVector = source
+        .visibleVectorFeatures(
+          playerLatLng: manualGeo.center,
+          radiusMeters: 1000,
+        )
+        .singleWhere((feature) => feature.name == manualGeo.name);
+
+    expect(cachedGeo.osmId, isNull);
+    expect(cachedGeo.provenance, TerrainFeatureProvenance.openStreetMap);
+    expect(isRenderableCoastlineDepthFeature(cachedVector), isTrue);
+    expect(manualGeo.provenance, isNull);
+    expect(isRenderableCoastlineDepthFeature(manualVector), isFalse);
   });
 
   test('building cap ignores buffered geometry outside projected viewport', () {
@@ -354,7 +404,10 @@ TerrainVectorFeature _roadFeature() {
   );
 }
 
-TerrainVectorFeature _waterFeature({int? osmId}) {
+TerrainVectorFeature _waterFeature({
+  int? osmId,
+  TerrainFeatureProvenance? provenance,
+}) {
   return TerrainVectorFeature(
     kind: TerrainKind.water,
     name: 'water',
@@ -364,6 +417,7 @@ TerrainVectorFeature _waterFeature({int? osmId}) {
     ],
     isClosed: false,
     osmId: osmId,
+    provenance: provenance,
   );
 }
 

@@ -5,6 +5,8 @@ import 'package:latlong2/latlong.dart';
 
 enum TerrainKind { water, shore, land, building, road, pier, fishingNode }
 
+enum TerrainFeatureProvenance { openStreetMap }
+
 enum RoadClass {
   motorway,
   trunk,
@@ -91,6 +93,7 @@ class TerrainVectorFeature {
     required this.name,
     required this.points,
     required this.isClosed,
+    this.provenance,
     this.osmId,
     this.heightMeters,
     this.roadClass = RoadClass.unknown,
@@ -102,13 +105,16 @@ class TerrainVectorFeature {
   final String name;
   final List<LatLng> points;
   final bool isClosed;
+  final TerrainFeatureProvenance? provenance;
   final int? osmId;
   final double? heightMeters;
   final RoadClass roadClass;
   final bool isBridge;
   final int? lanes;
 
-  bool get isOsmDerived => osmId != null;
+  bool get isOsmDerived =>
+      provenance == TerrainFeatureProvenance.openStreetMap ||
+      (provenance == null && osmId != null);
 }
 
 abstract class TerrainDataSource {
@@ -134,6 +140,7 @@ class GeoTerrainFeature {
     required this.lng,
     required this.radiusMeters,
     this.geometry,
+    this.provenance,
     this.osmId,
     this.heightMeters,
     this.roadClass = RoadClass.unknown,
@@ -147,13 +154,16 @@ class GeoTerrainFeature {
   final double lng;
   final double radiusMeters;
   final GeoTerrainGeometry? geometry;
+  final TerrainFeatureProvenance? provenance;
   final int? osmId;
   final double? heightMeters;
   final RoadClass roadClass;
   final bool isBridge;
   final int? lanes;
 
-  bool get isOsmDerived => osmId != null;
+  bool get isOsmDerived =>
+      provenance == TerrainFeatureProvenance.openStreetMap ||
+      (provenance == null && osmId != null);
 
   LatLng get center => LatLng(lat, lng);
 }
@@ -202,6 +212,7 @@ class GeoTerrainDataset {
             lat: (raw['lat'] as num).toDouble(),
             lng: (raw['lng'] as num).toDouble(),
             radiusMeters: (raw['radiusMeters'] as num).toDouble(),
+            provenance: _parseProvenance(raw['provenance'] as String?),
             osmId: (raw['osmId'] as num?)?.toInt(),
             heightMeters: (raw['heightMeters'] as num?)?.toDouble(),
             roadClass: _parseRoadClass(raw['roadClass'] as String?),
@@ -229,6 +240,13 @@ class GeoTerrainDataset {
       if (roadClass.name == value) return roadClass;
     }
     return RoadClass.unknown;
+  }
+
+  static TerrainFeatureProvenance? _parseProvenance(String? value) {
+    for (final provenance in TerrainFeatureProvenance.values) {
+      if (provenance.name == value) return provenance;
+    }
+    return null;
   }
 }
 
@@ -307,6 +325,7 @@ class GeoTerrainDataSource implements TerrainDataSource {
             name: feature.name,
             points: feature.geometry!.coordinates,
             isClosed: feature.geometry!.isPolygon,
+            provenance: feature.provenance,
             osmId: feature.osmId,
             heightMeters: feature.heightMeters,
             roadClass: feature.roadClass,

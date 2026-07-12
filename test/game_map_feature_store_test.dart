@@ -371,5 +371,28 @@ void main() {
       expect(feature.osmId, 789012);
       expect(feature.isOsmDerived, isTrue);
     });
+
+    test('preserves explicit OSM provenance without an osmId', () {
+      final dataset = GeoTerrainDataset.fromJson('''
+      {"features":[{"kind":"land","name":"Cached coast land",
+      "provenance":"openStreetMap",
+      "lat":22.3819,"lng":114.1874,"radiusMeters":40,
+      "geometry":{"type":"polygon","coordinates":[
+      [22.3818,114.1873],[22.3818,114.1875],[22.3820,114.1875],
+      [22.3818,114.1873]]}}]}''');
+      final store = GameMapFeatureStore(dataset: dataset);
+      final camera = GameMapCamera(
+        center: const LatLng(22.3819, 114.1874),
+        visibleRadiusMeters: 500,
+        bearingDegrees: 0,
+        viewportSize: const Size(390, 844),
+      );
+
+      final feature = store.visibleTerrainFeatures(camera).single;
+
+      expect(feature.osmId, isNull);
+      expect(feature.provenance, TerrainFeatureProvenance.openStreetMap);
+      expect(feature.isOsmDerived, isTrue);
+    });
   });
 }

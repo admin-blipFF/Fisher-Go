@@ -20,8 +20,44 @@ void main() {
         .singleWhere((feature) => feature['kind'] == 'building');
     expect(building['kind'], 'building');
     expect(building['heightMeters'], 24);
+    expect(building['provenance'], 'openStreetMap');
     expect((building['geometry'] as Map)['type'], 'polygon');
     expect(asset['attribution'], '© OpenStreetMap contributors');
+  });
+
+  test('marks both OSM caches without marking manual or CSV features', () {
+    final asset = buildTerrainAsset(
+      sourceCsv: 'name,type,lat,lon\nCSV Game Island,island,22.3,114.1\n',
+      osmVectorCacheJson: '''{"features":[{
+        "kind":"water","name":"Cached Coastline Without ID",
+        "radiusMeters":1,"geometry":{"type":"polygon","coordinates":[
+          [22.30,114.00],[22.30,114.01],[22.31,114.01],[22.30,114.00]
+        ]}}]}''',
+      osmRoadCacheJson: '''{"features":[{
+        "osmId":7001,"kind":"road","name":"Cached Road",
+        "radiusMeters":20,"geometry":{"type":"lineString","coordinates":[
+          [22.30,114.00],[22.31,114.01]
+        ]}}]}''',
+    );
+    final features = asset['features'] as List<Map<String, Object>>;
+    final coastline = features.singleWhere(
+      (feature) => feature['name'] == 'Cached Coastline Without ID',
+    );
+    final cachedRoad = features.singleWhere(
+      (feature) => feature['name'] == 'Cached Road',
+    );
+    final manualPolygon = features.singleWhere(
+      (feature) => feature['name'] == '維多利亞港海面',
+    );
+    final csvIsland = features.singleWhere(
+      (feature) => feature['name'] == 'CSV Game Island',
+    );
+
+    expect(coastline['osmId'], isNull);
+    expect(coastline['provenance'], 'openStreetMap');
+    expect(cachedRoad['provenance'], 'openStreetMap');
+    expect(manualPolygon.containsKey('provenance'), isFalse);
+    expect(csvIsland.containsKey('provenance'), isFalse);
   });
 
   test('builds terrain asset from geocoded Hong Kong source data', () {

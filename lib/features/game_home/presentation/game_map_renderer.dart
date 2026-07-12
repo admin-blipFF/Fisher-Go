@@ -4409,6 +4409,7 @@ class GameMapPainter extends CustomPainter {
       if (left.kind != right.kind ||
           left.name != right.name ||
           left.isClosed != right.isClosed ||
+          left.provenance != right.provenance ||
           left.osmId != right.osmId ||
           left.heightMeters != right.heightMeters ||
           left.roadClass != right.roadClass ||

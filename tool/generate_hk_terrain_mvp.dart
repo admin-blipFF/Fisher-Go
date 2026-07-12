@@ -29,7 +29,7 @@ Map<String, Object> buildTerrainAsset({
   }
 
   return {
-    'schemaVersion': 2,
+    'schemaVersion': 3,
     'name': 'FisherGo Hong Kong terrain MVP',
     'generatedFrom': [
       _sourcePath,
@@ -97,6 +97,7 @@ Map<String, Object> _featureFromOsmCache(Map<String, dynamic> raw) {
       'type': geometry['type'] as String,
       'coordinates': coordinates,
     },
+    provenance: 'openStreetMap',
     osmId: (raw['osmId'] as num?)?.toInt(),
     region: raw['region'] as String?,
     heightMeters: (raw['heightMeters'] as num?)?.toDouble(),
@@ -319,6 +320,7 @@ Map<String, Object> _feature({
   required double lng,
   required num radiusMeters,
   Map<String, Object>? geometry,
+  String? provenance,
   int? osmId,
   String? region,
   double? heightMeters,
@@ -333,6 +335,7 @@ Map<String, Object> _feature({
       'lng': _round(lng),
       'radiusMeters': radiusMeters.round(),
       if (geometry != null) 'geometry': geometry,
+      if (provenance != null) 'provenance': provenance,
       if (osmId != null) 'osmId': osmId,
       if (region != null) 'region': region,
       if (heightMeters != null) 'heightMeters': _round(heightMeters),

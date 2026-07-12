@@ -52,6 +52,7 @@ class GameMapFeatureStore {
               name: feature.name,
               points: feature.geometry!.coordinates,
               isClosed: feature.geometry!.isPolygon,
+              heightMeters: feature.heightMeters,
               roadClass: feature.roadClass,
               isBridge: feature.isBridge,
               lanes: feature.lanes,

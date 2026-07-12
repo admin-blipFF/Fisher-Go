@@ -347,5 +347,26 @@ void main() {
       expect(store.candidateFeatureCount(camera), 1);
       expect(store.visibleTerrainFeatures(camera).single.name, 'nearby road');
     });
+
+    test('preserves building height in visible terrain features', () {
+      final dataset = GeoTerrainDataset.fromJson('''
+      {"features":[{"kind":"building","name":"Hilton Centre",
+      "lat":22.3819,"lng":114.1874,"radiusMeters":40,"heightMeters":31,
+      "geometry":{"type":"polygon","coordinates":[
+      [22.3818,114.1873],[22.3818,114.1875],[22.3820,114.1875],
+      [22.3820,114.1873],[22.3818,114.1873]]}}]}''');
+      final store = GameMapFeatureStore(dataset: dataset);
+      final camera = GameMapCamera(
+        center: const LatLng(22.3819, 114.1874),
+        visibleRadiusMeters: 500,
+        bearingDegrees: 0,
+        viewportSize: const Size(390, 844),
+      );
+
+      final feature = store.visibleTerrainFeatures(camera).single;
+
+      expect(feature.kind, TerrainKind.building);
+      expect(feature.heightMeters, 31);
+    });
   });
 }

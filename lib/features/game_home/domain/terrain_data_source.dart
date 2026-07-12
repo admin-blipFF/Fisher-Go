@@ -3,7 +3,7 @@ import 'dart:math' as math;
 
 import 'package:latlong2/latlong.dart';
 
-enum TerrainKind { water, shore, land, road, pier, fishingNode }
+enum TerrainKind { water, shore, land, building, road, pier, fishingNode }
 
 enum RoadClass {
   motorway,
@@ -91,6 +91,7 @@ class TerrainVectorFeature {
     required this.name,
     required this.points,
     required this.isClosed,
+    this.heightMeters,
     this.roadClass = RoadClass.unknown,
     this.isBridge = false,
     this.lanes,
@@ -100,6 +101,7 @@ class TerrainVectorFeature {
   final String name;
   final List<LatLng> points;
   final bool isClosed;
+  final double? heightMeters;
   final RoadClass roadClass;
   final bool isBridge;
   final int? lanes;
@@ -128,6 +130,7 @@ class GeoTerrainFeature {
     required this.lng,
     required this.radiusMeters,
     this.geometry,
+    this.heightMeters,
     this.roadClass = RoadClass.unknown,
     this.isBridge = false,
     this.lanes,
@@ -139,6 +142,7 @@ class GeoTerrainFeature {
   final double lng;
   final double radiusMeters;
   final GeoTerrainGeometry? geometry;
+  final double? heightMeters;
   final RoadClass roadClass;
   final bool isBridge;
   final int? lanes;
@@ -190,6 +194,7 @@ class GeoTerrainDataset {
             lat: (raw['lat'] as num).toDouble(),
             lng: (raw['lng'] as num).toDouble(),
             radiusMeters: (raw['radiusMeters'] as num).toDouble(),
+            heightMeters: (raw['heightMeters'] as num?)?.toDouble(),
             roadClass: _parseRoadClass(raw['roadClass'] as String?),
             isBridge: raw['isBridge'] as bool? ?? false,
             lanes: (raw['lanes'] as num?)?.toInt(),
@@ -293,6 +298,7 @@ class GeoTerrainDataSource implements TerrainDataSource {
             name: feature.name,
             points: feature.geometry!.coordinates,
             isClosed: feature.geometry!.isPolygon,
+            heightMeters: feature.heightMeters,
             roadClass: feature.roadClass,
             isBridge: feature.isBridge,
             lanes: feature.lanes,

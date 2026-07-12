@@ -418,6 +418,26 @@ void main() {
       expect(identical(first, second), isTrue);
     });
 
+    test('parses and exposes a closed building polygon with height', () {
+      final dataset = GeoTerrainDataset.fromJson('''
+      {"features":[{"kind":"building","name":"Hilton Centre",
+      "lat":22.3819,"lng":114.1874,"radiusMeters":40,"heightMeters":31,
+      "geometry":{"type":"polygon","coordinates":[
+      [22.3818,114.1873],[22.3818,114.1875],[22.3820,114.1875],
+      [22.3820,114.1873],[22.3818,114.1873]]}}]}''');
+      final source = GeoTerrainDataSource(dataset);
+      final feature = source
+          .visibleVectorFeatures(
+            playerLatLng: const LatLng(22.3819, 114.1874),
+            radiusMeters: 500,
+          )
+          .single;
+
+      expect(feature.kind, TerrainKind.building);
+      expect(feature.isClosed, isTrue);
+      expect(feature.heightMeters, 31);
+    });
+
     test('prunes distant roads before tile classification', () {
       final features = <GeoTerrainFeature>[
         const GeoTerrainFeature(

@@ -83,6 +83,8 @@ void main() {
     expect(budget.maxWashTiles, lessThan(29 * 21));
     expect(budget.maxVeilTiles, lessThan(budget.maxWashTiles));
     expect(budget.maxLabels, lessThan(7));
+    expect(budget.maxBuildings, lessThan(80));
+    expect(budget.enableBuildingRoofDetail, isFalse);
   });
 
   test('keeps full visual detail for compact map scenes', () {

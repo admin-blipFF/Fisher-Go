@@ -36,6 +36,8 @@ class GameMapRenderBudget {
     required this.maxWashTiles,
     required this.maxVeilTiles,
     required this.maxLabels,
+    required this.maxBuildings,
+    required this.enableBuildingRoofDetail,
   });
 
   factory GameMapRenderBudget.forScene({
@@ -52,6 +54,8 @@ class GameMapRenderBudget {
       maxWashTiles: heavyScene ? 170 : 360,
       maxVeilTiles: heavyScene ? 120 : 260,
       maxLabels: heavyScene ? 4 : 7,
+      maxBuildings: heavyScene ? 30 : 72,
+      enableBuildingRoofDetail: !heavyScene,
     );
   }
 
@@ -61,6 +65,8 @@ class GameMapRenderBudget {
   final int maxWashTiles;
   final int maxVeilTiles;
   final int maxLabels;
+  final int maxBuildings;
+  final bool enableBuildingRoofDetail;
 }
 
 class GameMapTexturePack {

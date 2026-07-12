@@ -86,29 +86,54 @@ void main() {
       osmRoadCacheJson:
           File('data/hk_geo/osm_road_geometry_cache.json').readAsStringSync(),
     );
-    final buildings = (asset['features'] as List<Map<String, Object>>)
+    final cache = jsonDecode(
+      File('data/hk_geo/osm_vector_cache.json').readAsStringSync(),
+    ) as Map<String, dynamic>;
+    final cachedBuildings = (cache['features'] as List<dynamic>)
+        .map((feature) => Map<String, dynamic>.from(feature as Map))
         .where((feature) => feature['kind'] == 'building')
         .toList();
+    final bundledBuildings = (asset['features'] as List<Map<String, Object>>)
+        .where((feature) => feature['kind'] == 'building')
+        .map((feature) => Map<String, dynamic>.from(feature))
+        .toList();
+    const expectedBuildingOsmIds = {
+      188704698,
+      188704701,
+      25589595,
+      1483823682,
+    };
+
+    void expectClosedBuildingPolygons(
+      Iterable<Map<String, dynamic>> buildings,
+    ) {
+      for (final building in buildings) {
+        final geometry = building['geometry'] as Map<String, dynamic>;
+        final coordinates = geometry['coordinates'] as List<dynamic>;
+
+        expect(geometry['type'], 'polygon');
+        expect(coordinates.length, greaterThanOrEqualTo(4));
+        expect(coordinates.first, equals(coordinates.last));
+      }
+    }
 
     expect(
-      buildings.map((feature) => feature['osmId']),
-      containsAll([
-        188704698,
-        188704701,
-        25589595,
-        1483823682,
-      ]),
+      cachedBuildings.map((feature) => feature['osmId']).toSet(),
+      equals(expectedBuildingOsmIds),
     );
+    expect(cachedBuildings, hasLength(expectedBuildingOsmIds.length));
     expect(
-      buildings
+      bundledBuildings.map((feature) => feature['osmId']).toSet(),
+      equals(expectedBuildingOsmIds),
+    );
+    expect(bundledBuildings, hasLength(expectedBuildingOsmIds.length));
+    expectClosedBuildingPolygons(cachedBuildings);
+    expectClosedBuildingPolygons(bundledBuildings);
+    expect(
+      bundledBuildings
           .where((feature) => feature['region'] == 'central-waterfront')
           .map((feature) => feature['heightMeters']),
       containsAll([415.8, 14]),
-    );
-    expect(
-      buildings.every((feature) =>
-          (feature['geometry'] as Map<String, Object>)['type'] == 'polygon'),
-      isTrue,
     );
   });
 

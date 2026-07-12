@@ -5,6 +5,25 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:latlong2/latlong.dart';
 
 void main() {
+  test('terrain polygon containment distinguishes land and water positions',
+      () {
+    const polygon = [
+      LatLng(22.38, 114.18),
+      LatLng(22.38, 114.20),
+      LatLng(22.40, 114.20),
+      LatLng(22.40, 114.18),
+    ];
+
+    expect(
+      terrainPolygonContains(const LatLng(22.39, 114.19), polygon),
+      isTrue,
+    );
+    expect(
+      terrainPolygonContains(const LatLng(22.41, 114.19), polygon),
+      isFalse,
+    );
+  });
+
   group('LocalTerrainDataSource', () {
     test('builds a deterministic grid with all gameplay terrain types', () {
       const source = LocalTerrainDataSource();
@@ -107,6 +126,22 @@ void main() {
         }),
       );
       expect(dataset.features.map((feature) => feature.name), contains('青馬大橋'));
+    });
+
+    test('production sampling identifies Sha Tin as land-dominant', () {
+      final json = File('assets/maps/hk_terrain_mvp.json').readAsStringSync();
+      final source = GeoTerrainDataSource(GeoTerrainDataset.fromJson(json));
+      final tiles = source.buildTiles(
+        playerLatLng: const LatLng(22.3819, 114.1874),
+        rows: 11,
+        cols: 9,
+      );
+      final landCount =
+          tiles.where((tile) => tile.kind == TerrainKind.land).length;
+      final waterCount =
+          tiles.where((tile) => tile.kind == TerrainKind.water).length;
+
+      expect(landCount, greaterThan(waterCount));
     });
 
     test('classifies Tsing Ma area from real terrain features', () {

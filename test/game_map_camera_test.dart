@@ -16,6 +16,65 @@ void main() {
   });
 
   group('GameMapCamera', () {
+    test('supports a lower gameplay anchor without changing GPS center', () {
+      final camera = GameMapCamera(
+        center: const LatLng(22.35, 114.07),
+        visibleRadiusMeters: 500,
+        bearingDegrees: 0,
+        viewportSize: const Size(390, 844),
+        viewportAnchorY: 0.56,
+      );
+
+      expect(camera.viewportCenter.dx, 195);
+      expect(camera.viewportCenter.dy, closeTo(472.64, 0.0001));
+      expect(camera.project(camera.center), camera.viewportCenter);
+    });
+
+    test('ground perspective compresses far features and enlarges near ones',
+        () {
+      final flat = GameMapCamera(
+        center: const LatLng(22.35, 114.07),
+        visibleRadiusMeters: 500,
+        bearingDegrees: 0,
+        viewportSize: const Size(390, 844),
+      );
+      final perspective = GameMapCamera(
+        center: const LatLng(22.35, 114.07),
+        visibleRadiusMeters: 500,
+        bearingDegrees: 0,
+        viewportSize: const Size(390, 844),
+        perspectiveStrength: 0.3,
+      );
+      const north = LatLng(22.353, 114.07);
+      const south = LatLng(22.347, 114.07);
+
+      expect(
+        (perspective.project(north) - perspective.viewportCenter).distance,
+        lessThan((flat.project(north) - flat.viewportCenter).distance),
+      );
+      expect(
+        (perspective.project(south) - perspective.viewportCenter).distance,
+        greaterThan((flat.project(south) - flat.viewportCenter).distance),
+      );
+      expect(perspective.depthScaleFor(north), lessThan(1));
+      expect(perspective.depthScaleFor(south), greaterThan(1));
+    });
+
+    test('perspective depth follows bearing rotation', () {
+      final camera = GameMapCamera(
+        center: const LatLng(22.35, 114.07),
+        visibleRadiusMeters: 500,
+        bearingDegrees: 90,
+        viewportSize: const Size(390, 844),
+        perspectiveStrength: 0.3,
+      );
+      const east = LatLng(22.35, 114.073);
+      const west = LatLng(22.35, 114.067);
+
+      expect(camera.depthScaleFor(east), greaterThan(1));
+      expect(camera.depthScaleFor(west), lessThan(1));
+    });
+
     test('projects center GPS to viewport center', () {
       final camera = GameMapCamera(
         center: const LatLng(22.3517, 114.0743),

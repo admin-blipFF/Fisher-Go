@@ -19,6 +19,8 @@ void main() {
     expect(source, contains('GameMapCamera'));
     expect(source, contains('GameMapFeatureStore'));
     expect(source, contains('GameMapGridLayout.forViewport'));
+    expect(source, contains('perspectiveStrength: 0.3'));
+    expect(source, contains('viewportAnchorY: gameMapPlayerAnchorY'));
     expect(source, contains('hasVectorWorldSurface'));
     expect(
         source, contains('verticalCellCount: hasVectorWorldSurface ? 10 : 28'));
@@ -43,6 +45,9 @@ void main() {
     expect(source, contains('onSpotSelected'));
     expect(source, contains('_buildProjectedSpotButtons'));
     expect(source, contains('_projectedSpotLiftPixels'));
+    expect(source, contains('_projectedSpotScale'));
+    expect(source, contains('camera.depthScaleFor(projectedSpot.position)'));
+    expect(source, contains('Transform.scale'));
     expect(source, contains('© OpenStreetMap contributors'));
     expect(source, contains('https://www.openstreetmap.org/copyright'));
     expect(source, contains('launchUrl'));
@@ -70,8 +75,21 @@ void main() {
     expect(rendererSource, contains('class GameMapPainter'));
     expect(rendererSource, contains('_drawVectorWorldSurfaceLayer'));
     expect(rendererSource, contains('_hasVectorWorldSurface'));
+    expect(rendererSource, contains('_vectorBaseTerrainKind'));
+    expect(rendererSource, contains('terrainPolygonContains(camera.center'));
+    expect(rendererSource, contains('_drawVectorBaseSurface'));
+    expect(
+      rendererSource,
+      contains('_drawVectorBaseSurface(canvas, size);\n'
+          '      _drawPerspectiveMicroTileLayer(canvas, size);'),
+    );
+    expect(rendererSource, contains('_drawVectorWaterFeatures'));
+    expect(rendererSource, contains('? 0.082'));
+    expect(rendererSource, contains('texturePaint.colorFilter'));
     expect(rendererSource, contains('_drawVectorLandColorGrade'));
     expect(rendererSource, contains('seenLabelKeys'));
+    expect(rendererSource, contains('labelSafeRight'));
+    expect(rendererSource, contains('final maxCenterX = math.max'));
     final seaLayerSource = rendererSource.substring(
       rendererSource.indexOf('void _drawSeaLayer'),
       rendererSource.indexOf('void _drawLandLayer'),

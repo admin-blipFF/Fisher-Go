@@ -35,6 +35,8 @@ import '../../profile/presentation/profile_screen.dart';
 import 'game_fishing_spot_marker.dart';
 import 'game_map_renderer.dart';
 
+const double gameMapPlayerAnchorY = 0.56;
+
 /// 地圖首頁
 class GameHomeScreen extends StatefulWidget {
   const GameHomeScreen({
@@ -726,7 +728,8 @@ class _GameHomeScreenState extends State<GameHomeScreen>
           onHorizontalDragUpdate: _rotateMapByDrag,
           child: mapWorld,
         ),
-        Center(
+        Align(
+          alignment: const Alignment(0, gameMapPlayerAnchorY * 2 - 1),
           child: IgnorePointer(
             child: _PlayerAvatar(
               equipped: _equipped,
@@ -739,7 +742,7 @@ class _GameHomeScreenState extends State<GameHomeScreen>
         IgnorePointer(
           child: CustomPaint(
             size: Size.infinite,
-            painter: _RadarGridPainter(),
+            painter: const _RadarGridPainter(anchorY: gameMapPlayerAnchorY),
           ),
         ),
         Positioned(
@@ -3312,9 +3315,13 @@ const List<_SpotDemo> _developerTestSpots = [
 ];
 
 class _RadarGridPainter extends CustomPainter {
+  const _RadarGridPainter({required this.anchorY});
+
+  final double anchorY;
+
   @override
   void paint(Canvas canvas, Size size) {
-    final c = Offset(size.width / 2, size.height / 2);
+    final c = Offset(size.width / 2, size.height * anchorY);
     final maxR = (size.width > size.height ? size.width : size.height) / 2;
     final rp = Paint()
       ..style = PaintingStyle.stroke
@@ -3355,7 +3362,8 @@ class _RadarGridPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter old) => false;
+  bool shouldRepaint(covariant _RadarGridPainter oldDelegate) =>
+      oldDelegate.anchorY != anchorY;
 }
 
 class _GameWorldMapShell extends StatelessWidget {
@@ -3393,6 +3401,8 @@ class _GameWorldMapShell extends StatelessWidget {
               visibleRadiusMeters: 500,
               bearingDegrees: mapBearingDegrees,
               viewportSize: viewportSize,
+              perspectiveStrength: 0.3,
+              viewportAnchorY: gameMapPlayerAnchorY,
             );
             final featureStore = terrainDataSource is GeoTerrainDataSource
                 ? GameMapFeatureStore(
@@ -3454,7 +3464,7 @@ class _GameWorldMapShell extends StatelessWidget {
                     fishingSpots: const <ProjectedFishingSpot>[],
                   ),
                 ),
-                ..._buildProjectedSpotButtons(fishingSpots),
+                ..._buildProjectedSpotButtons(camera, fishingSpots),
               ],
             );
           },
@@ -3473,6 +3483,7 @@ class _GameWorldMapShell extends StatelessWidget {
   }
 
   List<Widget> _buildProjectedSpotButtons(
+    GameMapCamera camera,
     List<ProjectedFishingSpot> projectedSpots,
   ) {
     final spotsById = {
@@ -3491,11 +3502,21 @@ class _GameWorldMapShell extends StatelessWidget {
             child: GestureDetector(
               behavior: HitTestBehavior.translucent,
               onTap: () => onSpotSelected(spot),
-              child: _SpotMarker(spot: spot),
+              child: Transform.scale(
+                scale: _projectedSpotScale(camera, projectedSpot),
+                alignment: Alignment.bottomCenter,
+                child: _SpotMarker(spot: spot),
+              ),
             ),
           ),
     ];
   }
+
+  double _projectedSpotScale(
+    GameMapCamera camera,
+    ProjectedFishingSpot projectedSpot,
+  ) =>
+      camera.depthScaleFor(projectedSpot.position).clamp(0.82, 1.16);
 
   double _projectedSpotLiftPixels(_SpotDemo spot) {
     final distance = Geolocator.distanceBetween(

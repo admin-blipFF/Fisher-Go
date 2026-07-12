@@ -30,6 +30,8 @@ class GameMapCamera {
     required this.visibleRadiusMeters,
     required this.bearingDegrees,
     required this.viewportSize,
+    this.perspectiveStrength = 0,
+    this.viewportAnchorY = 0.5,
   });
 
   final LatLng center;
@@ -40,18 +42,26 @@ class GameMapCamera {
   /// At 90 degrees, a point north of the player projects to the right.
   final double bearingDegrees;
   final Size viewportSize;
+  final double perspectiveStrength;
+  final double viewportAnchorY;
 
   Offset get viewportCenter =>
-      Offset(viewportSize.width * 0.5, viewportSize.height * 0.5);
+      Offset(viewportSize.width * 0.5, viewportSize.height * viewportAnchorY);
 
   Offset project(LatLng point) {
     final meters = _metersFromCenter(point);
     final rotated = _rotate(meters, bearingDegrees);
     final pixelsPerMeter = _pixelsPerMeter;
+    final depthScale = _depthScale(rotated);
     return Offset(
-      viewportCenter.dx + rotated.dx * pixelsPerMeter,
-      viewportCenter.dy - rotated.dy * pixelsPerMeter,
+      viewportCenter.dx + rotated.dx * pixelsPerMeter * depthScale,
+      viewportCenter.dy - rotated.dy * pixelsPerMeter * depthScale,
     );
+  }
+
+  double depthScaleFor(LatLng point) {
+    final meters = _metersFromCenter(point);
+    return _depthScale(_rotate(meters, bearingDegrees));
   }
 
   bool isVisible(LatLng point, {double paddingMeters = 450}) {
@@ -86,5 +96,12 @@ class GameMapCamera {
       meters.dx * cosA + meters.dy * sinA,
       -meters.dx * sinA + meters.dy * cosA,
     );
+  }
+
+  double _depthScale(Offset rotatedMeters) {
+    if (perspectiveStrength == 0) return 1;
+    final normalizedDepth =
+        (rotatedMeters.dy / visibleRadiusMeters).clamp(-1.0, 1.0);
+    return (1 - normalizedDepth * perspectiveStrength).clamp(0.68, 1.32);
   }
 }

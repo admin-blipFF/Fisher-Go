@@ -232,6 +232,7 @@ class GameMapPainter extends CustomPainter {
     if (_hasVectorWorldSurface) {
       _drawVectorWorldSurfaceLayer(canvas, size);
     } else {
+      _drawVectorBaseSurface(canvas, size);
       _drawPerspectiveMicroTileLayer(canvas, size);
       _drawReadableTerrainToneLayer(canvas, size);
       _drawTerrainBoundaryBlendLayer(canvas, size);
@@ -254,9 +255,129 @@ class GameMapPainter extends CustomPainter {
       );
 
   void _drawVectorWorldSurfaceLayer(Canvas canvas, Size size) {
-    _drawSeaLayer(canvas, size);
+    _drawVectorBaseSurface(canvas, size);
+    _drawVectorWaterFeatures(canvas);
     _drawLandLayer(canvas, size);
     _drawCoastlineLayer(canvas, size);
+  }
+
+  TerrainKind get _vectorBaseTerrainKind {
+    for (final kind in const [TerrainKind.land, TerrainKind.shore]) {
+      for (final feature in terrainFeatures) {
+        if (feature.kind == kind &&
+            feature.isClosed &&
+            terrainPolygonContains(camera.center, feature.points)) {
+          return kind;
+        }
+      }
+    }
+    final surfaceTiles = terrainTiles.where(
+      (tile) =>
+          tile.kind == TerrainKind.land ||
+          tile.kind == TerrainKind.shore ||
+          tile.kind == TerrainKind.water,
+    );
+    if (surfaceTiles.isEmpty) return TerrainKind.water;
+    final counts = <TerrainKind, int>{
+      TerrainKind.land: 0,
+      TerrainKind.shore: 0,
+      TerrainKind.water: 0,
+    };
+    for (final tile in surfaceTiles) {
+      counts[tile.kind] = counts[tile.kind]! + 1;
+    }
+    final majorityKind = counts.entries.reduce(
+      (left, right) => left.value >= right.value ? left : right,
+    );
+    if (majorityKind.value > 1) return majorityKind.key;
+    return surfaceTiles.reduce((left, right) {
+      final leftDistance =
+          (camera.project(left.centerLatLng) - camera.viewportCenter).distance;
+      final rightDistance =
+          (camera.project(right.centerLatLng) - camera.viewportCenter).distance;
+      return leftDistance <= rightDistance ? left : right;
+    }).kind;
+  }
+
+  void _drawVectorBaseSurface(Canvas canvas, Size size) {
+    final rect = Offset.zero & size;
+    final baseKind = _vectorBaseTerrainKind;
+    final isLand = baseKind == TerrainKind.land;
+    final isShore = baseKind == TerrainKind.shore;
+    if (isLand || isShore) {
+      canvas.drawRect(rect, _paintForTerrainCell(baseKind, rect));
+    }
+    final texturePaint = _texturedFillPaint(
+      baseKind,
+      rect,
+      fallbackColors: isLand
+          ? const [Color(0xFF72D86D), Color(0xFF2FAE67)]
+          : isShore
+              ? const [Color(0xFFE8DB88), Color(0xFF69C983)]
+              : const [
+                  Color(0xFF6BE5E0),
+                  Color(0xFF28B9CC),
+                  Color(0xFF147B93),
+                ],
+      textureScale: isLand
+          ? 0.082
+          : isShore
+              ? 0.075
+              : 1.15,
+    );
+    if (isLand) {
+      texturePaint.colorFilter = ColorFilter.mode(
+        const Color(0xFFD6FFB0).withValues(alpha: 0.28),
+        BlendMode.modulate,
+      );
+    } else if (isShore) {
+      texturePaint.colorFilter = ColorFilter.mode(
+        const Color(0xFFFFF0B6).withValues(alpha: 0.62),
+        BlendMode.modulate,
+      );
+    }
+    canvas.drawRect(
+      rect,
+      texturePaint,
+    );
+    canvas.drawRect(
+      rect,
+      Paint()
+        ..shader = LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: isLand
+              ? const [Color(0x113FD36B), Color(0x221B8F59)]
+              : const [Color(0x228EFFF7), Color(0x55063F54)],
+        ).createShader(rect),
+    );
+  }
+
+  void _drawVectorWaterFeatures(Canvas canvas) {
+    for (final feature in terrainFeatures) {
+      if (feature.kind != TerrainKind.water || !feature.isClosed) continue;
+      final path = _pathForFeature(feature);
+      if (path == null) continue;
+      final bounds = path.getBounds();
+      canvas.drawPath(
+        path,
+        _texturedFillPaint(
+          TerrainKind.water,
+          bounds,
+          fallbackColors: const [Color(0xFF6BE5E0), Color(0xFF147B93)],
+          textureScale: 1.15,
+        ),
+      );
+      canvas.drawPath(
+        path,
+        Paint()
+          ..shader = const LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Color(0x337AF5EF), Color(0x66036C8C)],
+          ).createShader(bounds),
+      );
+    }
   }
 
   void _drawHorizonLayer(Canvas canvas, Size size) {
@@ -2219,6 +2340,8 @@ class GameMapPainter extends CustomPainter {
     );
   }
 
+  // Retained for the procedural fallback renderer.
+  // ignore: unused_element
   void _drawSeaLayer(Canvas canvas, Size size) {
     final rect = Offset.zero & size;
     final waterPaint = _texturedFillPaint(
@@ -3360,6 +3483,7 @@ class GameMapPainter extends CustomPainter {
   void _drawLandmarkLabelLayer(Canvas canvas, Size size) {
     final labels = <_MapLabel>[];
     final seenLabelKeys = <String>{};
+    final labelSafeRight = size.width - 96;
     for (final feature in terrainFeatures) {
       final label = _labelForFeature(feature);
       if (label == null) continue;
@@ -3368,7 +3492,7 @@ class GameMapPainter extends CustomPainter {
       final anchor = _featureAnchor(feature);
       if (anchor == null) continue;
       if (anchor.dx < 18 ||
-          anchor.dx > size.width - 18 ||
+          anchor.dx > labelSafeRight ||
           anchor.dy < 92 ||
           anchor.dy > size.height - 118) {
         continue;
@@ -3386,7 +3510,7 @@ class GameMapPainter extends CustomPainter {
       }
       final anchor = camera.project(tile.centerLatLng);
       if (anchor.dx < 18 ||
-          anchor.dx > size.width - 18 ||
+          anchor.dx > labelSafeRight ||
           anchor.dy < 92 ||
           anchor.dy > size.height - 118) {
         continue;
@@ -3535,11 +3659,16 @@ class GameMapPainter extends CustomPainter {
   Rect _labelRect(_MapLabel label, Size size) {
     final width = 58.0 + label.text.runes.length * 9.0;
     final clampedWidth = width.clamp(74.0, 142.0).toDouble();
+    final minCenterX = 12 + clampedWidth * 0.5;
+    final maxCenterX = math.max(
+      minCenterX,
+      size.width - 96 - clampedWidth * 0.5,
+    );
     final center = Offset(
       label.anchor.dx
           .clamp(
-            12 + clampedWidth * 0.5,
-            size.width - 12 - clampedWidth * 0.5,
+            minCenterX,
+            maxCenterX,
           )
           .toDouble(),
       (label.anchor.dy - 18).clamp(108.0, size.height - 132).toDouble(),

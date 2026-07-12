@@ -85,7 +85,10 @@ void main() {
     ).readAsStringSync();
 
     expect(source, contains('fishingSpots: const <ProjectedFishingSpot>[],'));
-    expect(source, contains('..._buildProjectedSpotButtons(fishingSpots),'));
+    expect(
+      source,
+      contains('..._buildProjectedSpotButtons(camera, fishingSpots),'),
+    );
     expect(source, contains('=> GameFishingSpotMarker('));
   });
 }

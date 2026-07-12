@@ -18,6 +18,21 @@ enum RoadClass {
   unknown,
 }
 
+bool terrainPolygonContains(LatLng point, List<LatLng> polygon) {
+  if (polygon.length < 3) return false;
+  var inside = false;
+  for (var i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+    final xi = polygon[i].longitude;
+    final yi = polygon[i].latitude;
+    final xj = polygon[j].longitude;
+    final yj = polygon[j].latitude;
+    final intersects = ((yi > point.latitude) != (yj > point.latitude)) &&
+        (point.longitude < (xj - xi) * (point.latitude - yi) / (yj - yi) + xi);
+    if (intersects) inside = !inside;
+  }
+  return inside;
+}
+
 class TerrainTile {
   const TerrainTile({
     required this.kind,

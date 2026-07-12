@@ -248,34 +248,44 @@ void main() {
     expect(source, isNot(contains('spotCount.clamp(0, 7)')));
   });
 
-  test('renderer gives buildings land surfaces and neutral legacy output', () {
+  test('renderer orders coastline and buildings below roads and spots', () {
     final rendererSource = File(
       'lib/features/game_home/presentation/game_map_renderer.dart',
     ).readAsStringSync();
+    final paint = rendererSource.substring(
+      rendererSource.indexOf('void paint(Canvas canvas, Size size)'),
+      rendererSource.indexOf('bool get _hasVectorWorldSurface'),
+    );
 
     expect(
-      RegExp(r'TerrainKind\.land \|\| TerrainKind\.building').allMatches(
-        rendererSource,
-      ),
-      hasLength(6),
+      paint.indexOf('_drawCoastlineDepthLayer'),
+      lessThan(paint.indexOf('_drawBuildingLayer')),
     );
     expect(
-      RegExp(r'case TerrainKind\.building:\s+break;').allMatches(
-        rendererSource,
-      ),
-      hasLength(7),
+      paint.indexOf('_drawBuildingLayer'),
+      lessThan(paint.indexOf('_drawRoadLayer')),
     );
     expect(
-      RegExp(r'TerrainKind\.building => null').allMatches(rendererSource),
-      hasLength(2),
+      paint.indexOf('_drawRoadLayer'),
+      lessThan(paint.indexOf('_drawFishingSpotLayer')),
     );
-    expect(
-      RegExp(r"TerrainKind\.building => ''").allMatches(rendererSource),
-      hasLength(2),
+  });
+
+  test('building painter projects real footprints with depth and budget', () {
+    final rendererSource = File(
+      'lib/features/game_home/presentation/game_map_renderer.dart',
+    ).readAsStringSync();
+    final buildingLayer = rendererSource.substring(
+      rendererSource.indexOf('void _drawBuildingLayer'),
+      rendererSource.indexOf('void _drawRoadLayer'),
     );
+
+    expect(buildingLayer, contains('_pathForFeature(feature)'));
+    expect(buildingLayer, contains('camera.depthScaleFor(midpoint)'));
+    expect(buildingLayer, contains('take(budget.maxBuildings)'));
     expect(
-      RegExp(r'TerrainKind\.building').allMatches(rendererSource),
-      hasLength(18),
+      buildingLayer,
+      contains('simplified: !budget.enableBuildingRoofDetail'),
     );
   });
 }

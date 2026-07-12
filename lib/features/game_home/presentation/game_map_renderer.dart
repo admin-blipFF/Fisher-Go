@@ -7,8 +7,14 @@ import 'package:latlong2/latlong.dart' hide Path;
 
 import '../domain/game_map_camera.dart';
 import '../domain/game_map_feature_store.dart';
+import '../domain/game_building_style.dart';
 import '../domain/game_road_style.dart';
 import '../domain/terrain_data_source.dart';
+
+bool isRenderableBuildingFeature(TerrainVectorFeature feature) =>
+    feature.kind == TerrainKind.building &&
+    feature.isClosed &&
+    feature.points.length >= 4;
 
 class _ProjectedTerrainTile {
   const _ProjectedTerrainTile(this.data, this.center);
@@ -246,6 +252,8 @@ class GameMapPainter extends CustomPainter {
     }
     _drawWorldSeamFusionLayer(canvas, size);
     _drawImagegenInspiredMapLayer(canvas, size);
+    _drawCoastlineDepthLayer(canvas, size);
+    _drawBuildingLayer(canvas, size);
     _drawRoadLayer(canvas, size);
     _drawPierLayer(canvas, size);
     _drawLandmarkLabelLayer(canvas, size);
@@ -2906,7 +2914,131 @@ class GameMapPainter extends CustomPainter {
     }
   }
 
-  // ignore: unused_element
+  void _drawCoastlineDepthLayer(Canvas canvas, Size size) {
+    const coastlineKinds = {
+      TerrainKind.water,
+      TerrainKind.land,
+      TerrainKind.shore,
+    };
+    final viewport = Offset.zero & size;
+    for (final feature in terrainFeatures) {
+      if (!coastlineKinds.contains(feature.kind)) continue;
+      final path = _pathForFeature(feature);
+      if (path == null || !path.getBounds().inflate(14).overlaps(viewport)) {
+        continue;
+      }
+      final midpoint = feature.points[feature.points.length ~/ 2];
+      final depthScale = camera.depthScaleFor(midpoint);
+      final submergedWidth = (10 * depthScale).clamp(6.0, 13.0).toDouble();
+      final shallowWidth = (5.5 * depthScale).clamp(3.2, 7.2).toDouble();
+      final foamWidth = (1.4 * depthScale).clamp(0.8, 1.9).toDouble();
+
+      canvas.drawPath(
+        path,
+        Paint()
+          ..color = const Color(0xFF07596A).withValues(alpha: 0.56)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = submergedWidth
+          ..strokeCap = StrokeCap.round
+          ..strokeJoin = StrokeJoin.round,
+      );
+      canvas.drawPath(
+        path,
+        Paint()
+          ..color = const Color(0xFF38D6CF).withValues(alpha: 0.34)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = shallowWidth
+          ..strokeCap = StrokeCap.round
+          ..strokeJoin = StrokeJoin.round,
+      );
+      canvas.drawPath(
+        path,
+        Paint()
+          ..color = const Color(0xFFFFF8E8).withValues(alpha: 0.34)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = foamWidth
+          ..strokeCap = StrokeCap.round
+          ..strokeJoin = StrokeJoin.round,
+      );
+    }
+  }
+
+  void _drawBuildingLayer(Canvas canvas, Size size) {
+    final budget = _renderBudget;
+    final visibleBuildings = terrainFeatures
+        .where(isRenderableBuildingFeature)
+        .where(
+          (feature) => feature.points.any(
+            (point) => camera.isVisible(point, paddingMeters: 80),
+          ),
+        )
+        .toList()
+      ..sort((left, right) {
+        final leftMidpoint = left.points[left.points.length ~/ 2];
+        final rightMidpoint = right.points[right.points.length ~/ 2];
+        return camera
+            .project(leftMidpoint)
+            .dy
+            .compareTo(camera.project(rightMidpoint).dy);
+      });
+    final viewport = Offset.zero & size;
+
+    for (final feature in visibleBuildings.take(budget.maxBuildings)) {
+      final path = _pathForFeature(feature);
+      if (path == null || !path.getBounds().inflate(18).overlaps(viewport)) {
+        continue;
+      }
+      final midpoint = feature.points[feature.points.length ~/ 2];
+      final style = GameBuildingStyle.forFeature(
+        feature,
+        depthScale: camera.depthScaleFor(midpoint),
+        simplified: !budget.enableBuildingRoofDetail,
+      );
+      final extrusion = Offset(0, style.extrusionPixels);
+      final shadowPaint = Paint()
+        ..color = const Color(0xFF102F34).withValues(alpha: 0.24);
+      if (style.drawRoofDetail) {
+        shadowPaint.maskFilter = const MaskFilter.blur(BlurStyle.normal, 3);
+      }
+
+      canvas.drawPath(
+        path.shift(extrusion + const Offset(0, 2)),
+        shadowPaint,
+      );
+      canvas.drawPath(path.shift(extrusion), Paint()..color = style.sideColor);
+      canvas.drawPath(
+        path.shift(extrusion),
+        Paint()
+          ..color = style.outlineColor.withValues(alpha: 0.72)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.1,
+      );
+      canvas.drawPath(path, Paint()..color = style.roofColor);
+      canvas.drawPath(
+        path,
+        Paint()
+          ..color = style.outlineColor
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.2
+          ..strokeJoin = StrokeJoin.round,
+      );
+      if (style.drawRoofDetail) {
+        final bounds = path.getBounds();
+        canvas.save();
+        canvas.clipPath(path);
+        canvas.drawLine(
+          Offset(bounds.left + 3, bounds.top + 3),
+          Offset(bounds.right - 3, bounds.top + 3),
+          Paint()
+            ..color = Colors.white.withValues(alpha: 0.34)
+            ..strokeWidth = 1.2
+            ..strokeCap = StrokeCap.round,
+        );
+        canvas.restore();
+      }
+    }
+  }
+
   void _drawRoadLayer(Canvas canvas, Size size) {
     final budget = _renderBudget;
     final roads = [

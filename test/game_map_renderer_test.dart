@@ -97,7 +97,69 @@ void main() {
     expect(budget.enableVectorTransitions, isTrue);
     expect(budget.enableRoadMicroDetails, isTrue);
     expect(budget.maxLabels, 7);
+    expect(budget.maxBuildings, 72);
+    expect(budget.enableBuildingRoofDetail, isTrue);
   });
+
+  test('building textures use the same terrain surface as land', () async {
+    final image = await _testImage();
+    final textures = GameMapTexturePack(land: image);
+
+    expect(
+      textures.imageFor(TerrainKind.building),
+      same(textures.imageFor(TerrainKind.land)),
+    );
+  });
+
+  test('rejects open and underspecified building footprints', () {
+    expect(
+      isRenderableBuildingFeature(
+        _buildingFeature(isClosed: false, pointCount: 4),
+      ),
+      isFalse,
+    );
+    expect(
+      isRenderableBuildingFeature(
+        _buildingFeature(isClosed: true, pointCount: 3),
+      ),
+      isFalse,
+    );
+    expect(
+      isRenderableBuildingFeature(
+        _buildingFeature(isClosed: true, pointCount: 4),
+      ),
+      isTrue,
+    );
+  });
+}
+
+Future<Image> _testImage() {
+  final recorder = PictureRecorder();
+  final canvas = Canvas(recorder);
+  canvas.drawRect(
+    const Rect.fromLTWH(0, 0, 1, 1),
+    Paint()..color = const Color(0xFFFFFFFF),
+  );
+  return recorder.endRecording().toImage(1, 1);
+}
+
+TerrainVectorFeature _buildingFeature({
+  required bool isClosed,
+  required int pointCount,
+}) {
+  const points = [
+    LatLng(22.3308, 114.1028),
+    LatLng(22.3308, 114.1032),
+    LatLng(22.3312, 114.1032),
+    LatLng(22.3308, 114.1028),
+  ];
+  return TerrainVectorFeature(
+    kind: TerrainKind.building,
+    name: 'Block',
+    points: points.take(pointCount).toList(growable: false),
+    isClosed: isClosed,
+    heightMeters: 24,
+  );
 }
 
 TerrainTile _waterTile() {

@@ -6,6 +6,24 @@ import 'package:flutter_test/flutter_test.dart';
 import '../tool/generate_hk_terrain_mvp.dart';
 
 void main() {
+  test('retains OSM building polygons and heights', () {
+    final asset = buildTerrainAsset(
+      sourceCsv: 'name,type,lat,lon\n',
+      osmVectorCacheJson: '''{"features":[{
+        "osmId":9001,"kind":"building","name":"Test Block",
+        "heightMeters":24,"radiusMeters":35,
+        "geometry":{"type":"polygon","coordinates":[
+          [22.3818,114.1873],[22.3818,114.1875],[22.3820,114.1875],
+          [22.3818,114.1873]]}}]}''',
+    );
+    final building = (asset['features'] as List<Map<String, Object>>)
+        .singleWhere((feature) => feature['kind'] == 'building');
+    expect(building['kind'], 'building');
+    expect(building['heightMeters'], 24);
+    expect((building['geometry'] as Map)['type'], 'polygon');
+    expect(asset['attribution'], '© OpenStreetMap contributors');
+  });
+
   test('builds terrain asset from geocoded Hong Kong source data', () {
     final asset = buildTerrainAsset(
       sourceCsv: File(
@@ -33,7 +51,9 @@ void main() {
       File('data/hk_geo/osm_road_geometry_cache.json').readAsStringSync(),
     ) as Map<String, dynamic>;
     final cachedRoads = roadCache['features'] as List<dynamic>;
-    final osmRoads = features.where((feature) => feature['osmId'] != null);
+    final osmRoads = features.where(
+      (feature) => feature['kind'] == 'road' && feature['osmId'] != null,
+    );
     final roadClasses = osmRoads.map((feature) => feature['roadClass']).toSet();
 
     expect(osmRoads.length, cachedRoads.length);
@@ -52,6 +72,43 @@ void main() {
     expect(
       asset['licenseUrl'],
       'https://www.openstreetmap.org/copyright',
+    );
+  });
+
+  test('bundles cached OSM buildings for Sha Tin and the Central waterfront',
+      () {
+    final asset = buildTerrainAsset(
+      sourceCsv: File(
+        'data/hk_geo/hk_fishing_spots_master_all_geocoded_gov.csv',
+      ).readAsStringSync(),
+      osmVectorCacheJson:
+          File('data/hk_geo/osm_vector_cache.json').readAsStringSync(),
+      osmRoadCacheJson:
+          File('data/hk_geo/osm_road_geometry_cache.json').readAsStringSync(),
+    );
+    final buildings = (asset['features'] as List<Map<String, Object>>)
+        .where((feature) => feature['kind'] == 'building')
+        .toList();
+
+    expect(
+      buildings.map((feature) => feature['osmId']),
+      containsAll([
+        188704698,
+        188704701,
+        25589595,
+        1483823682,
+      ]),
+    );
+    expect(
+      buildings
+          .where((feature) => feature['region'] == 'central-waterfront')
+          .map((feature) => feature['heightMeters']),
+      containsAll([415.8, 14]),
+    );
+    expect(
+      buildings.every((feature) =>
+          (feature['geometry'] as Map<String, Object>)['type'] == 'polygon'),
+      isTrue,
     );
   });
 

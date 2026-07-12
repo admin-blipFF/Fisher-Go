@@ -36,7 +36,7 @@ Map<String, Object> buildTerrainAsset({
       if (osmVectorCacheJson != null) _osmVectorCachePath,
       if (osmRoadCacheJson != null) _osmRoadCachePath,
     ],
-    if (osmRoadCacheJson != null) ...{
+    if (osmVectorCacheJson != null || osmRoadCacheJson != null) ...{
       'attribution': '© OpenStreetMap contributors',
       'license': 'ODbL-1.0',
       'licenseUrl': 'https://www.openstreetmap.org/copyright',
@@ -99,6 +99,7 @@ Map<String, Object> _featureFromOsmCache(Map<String, dynamic> raw) {
     },
     osmId: (raw['osmId'] as num?)?.toInt(),
     region: raw['region'] as String?,
+    heightMeters: (raw['heightMeters'] as num?)?.toDouble(),
     roadClass: raw['roadClass'] as String?,
     isBridge: raw['isBridge'] as bool?,
     lanes: (raw['lanes'] as num?)?.toInt(),
@@ -320,6 +321,7 @@ Map<String, Object> _feature({
   Map<String, Object>? geometry,
   int? osmId,
   String? region,
+  double? heightMeters,
   String? roadClass,
   bool? isBridge,
   int? lanes,
@@ -333,6 +335,7 @@ Map<String, Object> _feature({
       if (geometry != null) 'geometry': geometry,
       if (osmId != null) 'osmId': osmId,
       if (region != null) 'region': region,
+      if (heightMeters != null) 'heightMeters': _round(heightMeters),
       if (roadClass != null) 'roadClass': roadClass,
       if (isBridge != null) 'isBridge': isBridge,
       if (lanes != null) 'lanes': lanes,

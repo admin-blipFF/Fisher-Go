@@ -247,4 +247,35 @@ void main() {
     expect(source, isNot(contains('_drawFishingBeacons')));
     expect(source, isNot(contains('spotCount.clamp(0, 7)')));
   });
+
+  test('renderer gives buildings land surfaces and neutral legacy output', () {
+    final rendererSource = File(
+      'lib/features/game_home/presentation/game_map_renderer.dart',
+    ).readAsStringSync();
+
+    expect(
+      RegExp(r'TerrainKind\.land \|\| TerrainKind\.building').allMatches(
+        rendererSource,
+      ),
+      hasLength(6),
+    );
+    expect(
+      RegExp(r'case TerrainKind\.building:\s+break;').allMatches(
+        rendererSource,
+      ),
+      hasLength(7),
+    );
+    expect(
+      RegExp(r'TerrainKind\.building => null').allMatches(rendererSource),
+      hasLength(2),
+    );
+    expect(
+      RegExp(r"TerrainKind\.building => ''").allMatches(rendererSource),
+      hasLength(2),
+    );
+    expect(
+      RegExp(r'TerrainKind\.building').allMatches(rendererSource),
+      hasLength(18),
+    );
+  });
 }

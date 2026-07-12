@@ -91,7 +91,7 @@ class GameMapTexturePack {
   ui.Image? imageFor(TerrainKind kind) {
     return switch (kind) {
       TerrainKind.water => water,
-      TerrainKind.land => grassMicro ?? land,
+      TerrainKind.land || TerrainKind.building => grassMicro ?? land,
       TerrainKind.shore => shore,
       TerrainKind.road => road,
       TerrainKind.pier => road,
@@ -556,7 +556,7 @@ class GameMapPainter extends CustomPainter {
               Color(0xFFB5DB74),
               Color(0xFF56C67B),
             ],
-          TerrainKind.land => const [
+          TerrainKind.land || TerrainKind.building => const [
               Color(0xFF57CB68),
               Color(0xFF50C765),
               Color(0xFF49BF61),
@@ -649,6 +649,8 @@ class GameMapPainter extends CustomPainter {
         case TerrainKind.road:
         case TerrainKind.pier:
         case TerrainKind.fishingNode:
+          break;
+        case TerrainKind.building:
           break;
       }
     }
@@ -838,6 +840,8 @@ class GameMapPainter extends CustomPainter {
         case TerrainKind.pier:
         case TerrainKind.fishingNode:
           break;
+        case TerrainKind.building:
+          break;
       }
       canvas.restore();
     }
@@ -871,6 +875,8 @@ class GameMapPainter extends CustomPainter {
         case TerrainKind.road:
         case TerrainKind.pier:
         case TerrainKind.fishingNode:
+          break;
+        case TerrainKind.building:
           break;
       }
       canvas.restore();
@@ -948,7 +954,11 @@ class GameMapPainter extends CustomPainter {
           const Color(0xFF8DDE8D).withValues(alpha: 0.08),
           Colors.transparent,
         ],
-      TerrainKind.road || TerrainKind.pier || TerrainKind.fishingNode => [
+      TerrainKind.road ||
+      TerrainKind.pier ||
+      TerrainKind.fishingNode ||
+      TerrainKind.building =>
+        [
           Colors.transparent,
           Colors.transparent,
           Colors.transparent,
@@ -1000,6 +1010,8 @@ class GameMapPainter extends CustomPainter {
           case TerrainKind.road:
           case TerrainKind.pier:
           case TerrainKind.fishingNode:
+            break;
+          case TerrainKind.building:
             break;
         }
       }
@@ -1331,6 +1343,8 @@ class GameMapPainter extends CustomPainter {
         case TerrainKind.pier:
         case TerrainKind.fishingNode:
           break;
+        case TerrainKind.building:
+          break;
       }
       canvas.restore();
     }
@@ -1543,7 +1557,7 @@ class GameMapPainter extends CustomPainter {
 
   List<Color> _terrainReliefPaletteFor(TerrainKind kind) {
     return switch (kind) {
-      TerrainKind.land => const [
+      TerrainKind.land || TerrainKind.building => const [
           Color(0xFFE6FF91),
           Color(0xFF0B6F48),
           Color(0xFF0C7A50),
@@ -1688,7 +1702,7 @@ class GameMapPainter extends CustomPainter {
     final baseWidth = switch (kind) {
       TerrainKind.water => 18.0,
       TerrainKind.shore => 16.0,
-      TerrainKind.land => 13.0,
+      TerrainKind.land || TerrainKind.building => 13.0,
       TerrainKind.pier => 10.0,
       TerrainKind.road || TerrainKind.fishingNode => 0.0,
     };
@@ -1723,7 +1737,7 @@ class GameMapPainter extends CustomPainter {
           const Color(0xFFFFEFA8).withValues(alpha: 0.14),
           const Color(0xFF96E188).withValues(alpha: 0.08),
         ),
-      TerrainKind.land => (
+      TerrainKind.land || TerrainKind.building => (
           const Color(0xFFB9FF79).withValues(alpha: 0.09),
           const Color(0xFF2FB66C).withValues(alpha: 0.06),
         ),
@@ -2201,6 +2215,8 @@ class GameMapPainter extends CustomPainter {
         );
       case TerrainKind.fishingNode:
         break;
+      case TerrainKind.building:
+        break;
     }
   }
 
@@ -2292,7 +2308,7 @@ class GameMapPainter extends CustomPainter {
     return switch (kind) {
       TerrainKind.water => const Color(0xFFD8FFFB).withValues(alpha: 0.1),
       TerrainKind.shore => const Color(0xFFFFFFC8).withValues(alpha: 0.18),
-      TerrainKind.land => Colors.transparent,
+      TerrainKind.land || TerrainKind.building => Colors.transparent,
       TerrainKind.road ||
       TerrainKind.pier =>
         const Color(0xFFFFFFFF).withValues(alpha: 0.3),
@@ -2487,6 +2503,8 @@ class GameMapPainter extends CustomPainter {
           color: const Color(0xFFFFFFFF).withValues(alpha: 0.08),
         );
       case TerrainKind.fishingNode:
+        break;
+      case TerrainKind.building:
         break;
     }
     canvas.restore();
@@ -3611,6 +3629,7 @@ class GameMapPainter extends CustomPainter {
       TerrainKind.shore => _shortLabel(feature.name),
       TerrainKind.land => null,
       TerrainKind.fishingNode => null,
+      TerrainKind.building => null,
     };
   }
 
@@ -3622,6 +3641,7 @@ class GameMapPainter extends CustomPainter {
       TerrainKind.water => null,
       TerrainKind.land => null,
       TerrainKind.fishingNode => null,
+      TerrainKind.building => null,
     };
   }
 
@@ -3640,6 +3660,7 @@ class GameMapPainter extends CustomPainter {
       TerrainKind.shore => '.',
       TerrainKind.land => '+',
       TerrainKind.fishingNode => 'o',
+      TerrainKind.building => '',
     };
   }
 
@@ -3651,6 +3672,7 @@ class GameMapPainter extends CustomPainter {
       TerrainKind.water => '~',
       TerrainKind.land => '+',
       TerrainKind.fishingNode => 'o',
+      TerrainKind.building => '',
     };
   }
 

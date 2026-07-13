@@ -107,4 +107,3 @@ The Android 6.0 / API 23 device `0123456789ABCDEF` is excluded from all verifica
 - continuous animated water or Seedance video layers;
 - compass sensor auto-heading;
 - invented buildings or fishing spots where OSM/game data has none.
-

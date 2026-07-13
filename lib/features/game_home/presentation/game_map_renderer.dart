@@ -14,7 +14,14 @@ import '../domain/terrain_data_source.dart';
 bool isRenderableBuildingFeature(TerrainVectorFeature feature) =>
     feature.kind == TerrainKind.building &&
     feature.isClosed &&
-    feature.points.length >= 4;
+    feature.points.length >= 4 &&
+    feature.points.first.latitude == feature.points.last.latitude &&
+    feature.points.first.longitude == feature.points.last.longitude;
+
+bool isRenderableTerrainTransitionFeature(TerrainVectorFeature feature) =>
+    feature.kind != TerrainKind.fishingNode &&
+    (feature.kind != TerrainKind.building ||
+        isRenderableBuildingFeature(feature));
 
 bool isRenderableCoastlineDepthFeature(TerrainVectorFeature feature) =>
     feature.isOsmDerived &&
@@ -65,12 +72,30 @@ List<ProjectedBuildingCandidate> selectBuildingCandidates({
       ),
     );
   }
+  viewportCandidates.sort((left, right) {
+    final leftCenter = left.path.getBounds().center;
+    final rightCenter = right.path.getBounds().center;
+    final screenCenter = viewport.center;
+    final leftDistance = (leftCenter - screenCenter).distanceSquared;
+    final rightDistance = (rightCenter - screenCenter).distanceSquared;
+    final relevanceCompare = leftDistance.compareTo(rightDistance);
+    if (relevanceCompare != 0) return relevanceCompare;
+    final depthCompare = leftCenter.dy.compareTo(rightCenter.dy);
+    if (depthCompare != 0) return depthCompare;
+    final horizontalCompare = leftCenter.dx.compareTo(rightCenter.dx);
+    if (horizontalCompare != 0) return horizontalCompare;
+    return left.feature.name.compareTo(right.feature.name);
+  });
   final selected = viewportCandidates.take(maxBuildings).toList();
   selected.sort(
-    (left, right) => camera
-        .project(left.midpoint)
-        .dy
-        .compareTo(camera.project(right.midpoint).dy),
+    (left, right) {
+      final depthCompare = camera
+          .project(left.midpoint)
+          .dy
+          .compareTo(camera.project(right.midpoint).dy);
+      if (depthCompare != 0) return depthCompare;
+      return left.feature.name.compareTo(right.feature.name);
+    },
   );
   return List.unmodifiable(selected);
 }
@@ -1776,7 +1801,7 @@ class GameMapPainter extends CustomPainter {
   void _drawWorldSeamFusionLayer(Canvas canvas, Size size) {
     if (!_renderBudget.enableVectorTransitions) return;
     for (final feature in terrainFeatures) {
-      if (feature.kind == TerrainKind.fishingNode) continue;
+      if (!isRenderableTerrainTransitionFeature(feature)) continue;
       final path = _pathForFeature(feature);
       if (path == null) continue;
       if (feature.kind == TerrainKind.road) {

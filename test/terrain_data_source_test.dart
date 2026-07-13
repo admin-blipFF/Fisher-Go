@@ -166,7 +166,6 @@ void main() {
       final source = GeoTerrainDataSource(GeoTerrainDataset.fromJson(json));
 
       for (final seaPoint in const [
-        LatLng(22.298, 114.17), // Victoria Harbour open water.
         LatLng(22.3332, 114.1112), // Rambler Channel.
         LatLng(22.4489, 114.2261), // Tolo Harbour.
       ]) {
@@ -184,6 +183,22 @@ void main() {
           isIn([TerrainKind.water, TerrainKind.shore]),
         );
       }
+    });
+
+    test('degrades unsupported Central water classification without closure',
+        () {
+      final json = File('assets/maps/hk_terrain_mvp.json').readAsStringSync();
+      final source = GeoTerrainDataSource(GeoTerrainDataset.fromJson(json));
+      final tiles = source.buildTiles(
+        playerLatLng: const LatLng(22.298, 114.17),
+        rows: 7,
+        cols: 7,
+      );
+      final centerTile = tiles.singleWhere(
+        (tile) => tile.row == 3 && tile.col == 3,
+      );
+
+      expect(centerTile.kind, TerrainKind.land);
     });
 
     test('centers generated game tiles on the player GPS position', () {
@@ -251,7 +266,8 @@ void main() {
           [22.405, 114.000],
           [22.405, 114.080],
           [22.300, 114.080],
-          [22.300, 114.000]
+          [22.300, 114.000],
+          [22.405, 114.000]
         ]
       }
     },
@@ -267,7 +283,8 @@ void main() {
           [22.405, 114.080],
           [22.405, 114.170],
           [22.300, 114.170],
-          [22.300, 114.080]
+          [22.300, 114.080],
+          [22.405, 114.080]
         ]
       }
     },
@@ -441,6 +458,78 @@ void main() {
       expect(dataset.features.single.isOsmDerived, isTrue);
       expect(feature.osmId, 123456);
       expect(feature.isOsmDerived, isTrue);
+    });
+
+    test('polygon validity requires four coordinates and exact closure', () {
+      final tooShort = GeoTerrainGeometry.fromJson({
+        'type': 'polygon',
+        'coordinates': [
+          [22.0, 114.0],
+          [22.0, 114.1],
+          [22.0, 114.0],
+        ],
+      });
+      final open = GeoTerrainGeometry.fromJson({
+        'type': 'polygon',
+        'coordinates': [
+          [22.0, 114.0],
+          [22.0, 114.1],
+          [22.1, 114.1],
+          [22.1, 114.0],
+        ],
+      });
+      final closed = GeoTerrainGeometry.fromJson({
+        'type': 'polygon',
+        'coordinates': [
+          [22.0, 114.0],
+          [22.0, 114.1],
+          [22.1, 114.1],
+          [22.0, 114.0],
+        ],
+      });
+
+      expect(tooShort.isPolygon, isFalse);
+      expect(open.isPolygon, isFalse);
+      expect(closed.isPolygon, isTrue);
+    });
+
+    test('invalid building polygon JSON remains open at runtime', () {
+      final dataset = GeoTerrainDataset.fromJson('''
+      {"features":[{"kind":"building","name":"Open Block",
+      "lat":22.3819,"lng":114.1874,"radiusMeters":40,
+      "geometry":{"type":"polygon","coordinates":[
+      [22.3818,114.1873],[22.3818,114.1875],[22.3820,114.1875],
+      [22.3820,114.1873]]}}]}''');
+      final source = GeoTerrainDataSource(dataset);
+      final feature = source
+          .visibleVectorFeatures(
+            playerLatLng: const LatLng(22.3819, 114.1874),
+            radiusMeters: 500,
+          )
+          .single;
+
+      expect(dataset.features.single.geometry!.isPolygon, isFalse);
+      expect(feature.isClosed, isFalse);
+    });
+
+    test('Central exposes real open OSM coastline geometry', () {
+      final dataset = GeoTerrainDataset.fromJson(
+        File('assets/maps/hk_terrain_mvp.json').readAsStringSync(),
+      );
+      final source = GeoTerrainDataSource(dataset);
+      final coastlines = source
+          .visibleVectorFeatures(
+            playerLatLng: const LatLng(22.2869, 114.1611),
+            radiusMeters: 500,
+          )
+          .where((feature) =>
+              feature.kind == TerrainKind.shore && feature.isOsmDerived)
+          .toList();
+
+      expect(coastlines.map((feature) => feature.osmId).toSet(),
+          containsAll({276452994, 1114868225}));
+      expect(coastlines.every((feature) => !feature.isClosed), isTrue);
+      expect(coastlines.every((feature) => feature.points.length >= 2), isTrue);
     });
 
     test('manual terrain geometry remains explicitly non-OSM', () {

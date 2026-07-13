@@ -173,6 +173,33 @@ void main() {
       ),
       isTrue,
     );
+    expect(
+      isRenderableBuildingFeature(
+        _buildingFeature(
+          isClosed: true,
+          pointCount: 4,
+          exactClosure: false,
+        ),
+      ),
+      isFalse,
+    );
+  });
+
+  test('invalid building JSON stays non-renderable through the store', () {
+    final dataset = GeoTerrainDataset.fromJson('''
+    {"features":[{"kind":"building","name":"Open Block",
+    "lat":22.331,"lng":114.103,"radiusMeters":40,
+    "geometry":{"type":"polygon","coordinates":[
+    [22.3308,114.1028],[22.3308,114.1032],[22.3312,114.1032],
+    [22.3312,114.1028]]}}]}''');
+    final camera = _camera();
+    final feature = GameMapFeatureStore(dataset: dataset)
+        .visibleTerrainFeatures(camera)
+        .single;
+
+    expect(feature.isClosed, isFalse);
+    expect(isRenderableBuildingFeature(feature), isFalse);
+    expect(isRenderableTerrainTransitionFeature(feature), isFalse);
   });
 
   test('coastline depth accepts OSM geometry but rejects manual polygons', () {
@@ -193,7 +220,8 @@ void main() {
     );
   });
 
-  test('terrain gradient bounds use the viewport for water and the cell otherwise',
+  test(
+      'terrain gradient bounds use the viewport for water and the cell otherwise',
       () {
     const cellBounds = Rect.fromLTWH(20, 40, 60, 80);
     const viewportBounds = Rect.fromLTWH(0, 0, 390, 780);
@@ -222,7 +250,8 @@ void main() {
     expect(terrainBoundaryBlendWidth(100), 42);
   });
 
-  test('perspective terrain cells select gradient bounds from tile, cell, and viewport',
+  test(
+      'perspective terrain cells select gradient bounds from tile, cell, and viewport',
       () {
     final rendererSource = File(
       'lib/features/game_home/presentation/game_map_renderer.dart',
@@ -254,36 +283,27 @@ void main() {
     );
   });
 
-  test('current bundle distinguishes cached coastlines from manual polygons',
-      () {
+  test('current bundle exposes eligible real Central OSM coastline', () {
     final dataset = GeoTerrainDataset.fromJson(
       File('assets/maps/hk_terrain_mvp.json').readAsStringSync(),
     );
     final source = GeoTerrainDataSource(dataset);
-    final cachedGeo = dataset.features.singleWhere(
-      (feature) => feature.name == 'OSM 汲水門水域',
-    );
-    final manualGeo = dataset.features.singleWhere(
-      (feature) => feature.name == '維多利亞港海面',
-    );
-    final cachedVector = source
+    final centralCoastlines = source
         .visibleVectorFeatures(
-          playerLatLng: cachedGeo.center,
-          radiusMeters: 1000,
+          playerLatLng: const LatLng(22.2869, 114.1611),
+          radiusMeters: 500,
         )
-        .singleWhere((feature) => feature.name == cachedGeo.name);
-    final manualVector = source
-        .visibleVectorFeatures(
-          playerLatLng: manualGeo.center,
-          radiusMeters: 1000,
-        )
-        .singleWhere((feature) => feature.name == manualGeo.name);
+        .where((feature) =>
+            feature.kind == TerrainKind.shore && feature.isOsmDerived)
+        .toList();
 
-    expect(cachedGeo.osmId, isNull);
-    expect(cachedGeo.provenance, TerrainFeatureProvenance.openStreetMap);
-    expect(isRenderableCoastlineDepthFeature(cachedVector), isTrue);
-    expect(manualGeo.provenance, isNull);
-    expect(isRenderableCoastlineDepthFeature(manualVector), isFalse);
+    expect(centralCoastlines.map((feature) => feature.osmId).toSet(),
+        containsAll({276452994, 1114868225}));
+    expect(centralCoastlines.every(isRenderableCoastlineDepthFeature), isTrue);
+    expect(
+      dataset.features.any((feature) => feature.name == '維多利亞港海面'),
+      isFalse,
+    );
   });
 
   test('building cap ignores buffered geometry outside projected viewport', () {
@@ -375,6 +395,25 @@ void main() {
       ['far', 'near'],
     );
   });
+
+  test('building selection ranks relevance before truncating over cap', () {
+    final candidates = selectBuildingCandidates(
+      features: [
+        _buildingAt('left edge', const LatLng(22.331, 114.1015)),
+        _buildingAt('right edge', const LatLng(22.331, 114.1045)),
+        _buildingAt('near', const LatLng(22.3308, 114.103)),
+        _buildingAt('far', const LatLng(22.3312, 114.103)),
+      ],
+      camera: _camera(perspectiveStrength: 0.3),
+      viewportSize: viewport,
+      maxBuildings: 2,
+    );
+
+    expect(candidates.map((candidate) => candidate.feature.name), [
+      'far',
+      'near',
+    ]);
+  });
 }
 
 GameMapCamera _camera({double perspectiveStrength = 0}) => GameMapCamera(
@@ -418,13 +457,16 @@ Future<Image> _testImage() {
 TerrainVectorFeature _buildingFeature({
   bool isClosed = true,
   int pointCount = 4,
+  bool exactClosure = true,
   double heightMeters = 24,
 }) {
-  const points = [
+  final points = [
     LatLng(22.3308, 114.1028),
     LatLng(22.3308, 114.1032),
     LatLng(22.3312, 114.1032),
-    LatLng(22.3308, 114.1028),
+    exactClosure
+        ? const LatLng(22.3308, 114.1028)
+        : const LatLng(22.3312, 114.1028),
   ];
   return TerrainVectorFeature(
     kind: TerrainKind.building,

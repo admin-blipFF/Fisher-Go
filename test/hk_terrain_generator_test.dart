@@ -25,7 +25,7 @@ void main() {
     expect(asset['attribution'], '© OpenStreetMap contributors');
   });
 
-  test('marks both OSM caches without marking manual or CSV features', () {
+  test('does not relabel cache coordinates without OSM ids as OSM', () {
     final asset = buildTerrainAsset(
       sourceCsv: 'name,type,lat,lon\nCSV Game Island,island,22.3,114.1\n',
       osmVectorCacheJson: '''{"features":[{
@@ -46,18 +46,40 @@ void main() {
     final cachedRoad = features.singleWhere(
       (feature) => feature['name'] == 'Cached Road',
     );
-    final manualPolygon = features.singleWhere(
-      (feature) => feature['name'] == '維多利亞港海面',
-    );
     final csvIsland = features.singleWhere(
       (feature) => feature['name'] == 'CSV Game Island',
     );
 
     expect(coastline['osmId'], isNull);
-    expect(coastline['provenance'], 'openStreetMap');
+    expect(coastline.containsKey('provenance'), isFalse);
     expect(cachedRoad['provenance'], 'openStreetMap');
-    expect(manualPolygon.containsKey('provenance'), isFalse);
+    expect(
+      features.any((feature) => feature['name'] == '維多利亞港海面'),
+      isFalse,
+    );
     expect(csvIsland.containsKey('provenance'), isFalse);
+  });
+
+  test('omits malformed OSM building polygons', () {
+    final asset = buildTerrainAsset(
+      sourceCsv: 'name,type,lat,lon\n',
+      osmVectorCacheJson: '''{"features":[
+        {"osmId":9001,"kind":"building","name":"Open Block",
+        "radiusMeters":35,"geometry":{"type":"polygon","coordinates":[
+          [22.3818,114.1873],[22.3818,114.1875],
+          [22.3820,114.1875],[22.3820,114.1873]]}},
+        {"osmId":9002,"kind":"building","name":"Triangle Block",
+        "radiusMeters":35,"geometry":{"type":"polygon","coordinates":[
+          [22.3818,114.1873],[22.3818,114.1875],
+          [22.3818,114.1873]]}}
+      ]}''',
+    );
+
+    expect(
+      (asset['features'] as List<Map<String, Object>>)
+          .where((feature) => feature['kind'] == 'building'),
+      isEmpty,
+    );
   });
 
   test('builds terrain asset from geocoded Hong Kong source data', () {
@@ -81,7 +103,7 @@ void main() {
         kinds, containsAll(['water', 'land', 'road', 'pier', 'fishingNode']));
     expect(names, containsAll(['青馬大橋', '三門仔村碼頭', '長洲公眾碼頭', '跑道尾立魚位']));
     expect(geometryFeatures.length, greaterThanOrEqualTo(6));
-    expect(names, containsAll(['OSM 汲水門水域', 'OSM 青馬主幹道']));
+    expect(names, containsAll(['簡化汲水門水域', '簡化青馬主幹道']));
 
     final roadCache = jsonDecode(
       File('data/hk_geo/osm_road_geometry_cache.json').readAsStringSync(),
@@ -170,6 +192,72 @@ void main() {
           .where((feature) => feature['region'] == 'central-waterfront')
           .map((feature) => feature['heightMeters']),
       containsAll([415.8, 14]),
+    );
+  });
+
+  test('bundles exact current OSM coastline ways at Central Star Ferry', () {
+    final cache = jsonDecode(
+      File('data/hk_geo/osm_vector_cache.json').readAsStringSync(),
+    ) as Map<String, dynamic>;
+    final generated = buildTerrainAsset(
+      sourceCsv: File(
+        'data/hk_geo/hk_fishing_spots_master_all_geocoded_gov.csv',
+      ).readAsStringSync(),
+      osmVectorCacheJson: jsonEncode(cache),
+      osmRoadCacheJson:
+          File('data/hk_geo/osm_road_geometry_cache.json').readAsStringSync(),
+    );
+    final cachedCoastline = (cache['features'] as List<dynamic>)
+        .map((feature) => Map<String, dynamic>.from(feature as Map))
+        .where((feature) =>
+            feature['region'] == 'central-waterfront' &&
+            feature['kind'] == 'shore')
+        .toList();
+    final bundledCoastline =
+        (generated['features'] as List<Map<String, Object>>)
+            .where((feature) =>
+                feature['region'] == 'central-waterfront' &&
+                feature['kind'] == 'shore')
+            .map((feature) => Map<String, dynamic>.from(feature))
+            .toList();
+    final snapshot = cache['osmCoastlineImport'] as Map<String, dynamic>;
+
+    expect(
+      (generated['features'] as List<Map<String, Object>>)
+          .any((feature) => feature['name'] == '維多利亞港海面'),
+      isFalse,
+    );
+    expect(cachedCoastline.map((feature) => feature['osmId']).toSet(),
+        {276452994, 1114868225});
+    expect(cachedCoastline.map((feature) => feature['osmVersion']).toSet(),
+        {56, 7});
+    expect(bundledCoastline, hasLength(2));
+    for (final cached in cachedCoastline) {
+      final bundled = bundledCoastline.singleWhere(
+        (feature) => feature['osmId'] == cached['osmId'],
+      );
+      final geometry = cached['geometry'] as Map<String, dynamic>;
+      final coordinates = geometry['coordinates'] as List<dynamic>;
+      final nodeIds = cached['osmNodeIds'] as List<dynamic>;
+
+      expect(geometry['type'], 'lineString');
+      expect(coordinates, hasLength(nodeIds.length));
+      expect(coordinates.first, isNot(equals(coordinates.last)));
+      expect(bundled['provenance'], 'openStreetMap');
+      expect(bundled['osmVersion'], cached['osmVersion']);
+      expect(bundled['osmNodeIds'], nodeIds);
+      expect((bundled['geometry'] as Map)['coordinates'], coordinates);
+    }
+    expect(
+      snapshot['queryUrl'],
+      'https://api.openstreetmap.org/api/0.6/map?bbox='
+      '114.1580,22.2838,114.1630,22.2875',
+    );
+    expect(snapshot['retrievedAt'], '2026-07-13T03:20:26.5709106Z');
+    expect(snapshot['attribution'], '© OpenStreetMap contributors');
+    expect(
+      (generated['osmCoastlineImport'] as Map)['ways'],
+      snapshot['ways'],
     );
   });
 

@@ -12,6 +12,9 @@ Map<String, Object> buildTerrainAsset({
   String? osmVectorCacheJson,
   String? osmRoadCacheJson,
 }) {
+  final osmCoastlineImport = osmVectorCacheJson == null
+      ? null
+      : _cacheMetadata(osmVectorCacheJson, 'osmCoastlineImport');
   final features = <Map<String, Object>>[
     if (osmVectorCacheJson != null)
       ..._featuresFromOsmVectorCache(osmVectorCacheJson),
@@ -41,6 +44,7 @@ Map<String, Object> buildTerrainAsset({
       'license': 'ODbL-1.0',
       'licenseUrl': 'https://www.openstreetmap.org/copyright',
     },
+    if (osmCoastlineImport != null) 'osmCoastlineImport': osmCoastlineImport,
     'features': uniqueFeatures.values.toList(),
   };
 }
@@ -72,13 +76,15 @@ void main() {
 List<Map<String, Object>> _featuresFromOsmVectorCache(String sourceJson) {
   final decoded = jsonDecode(sourceJson) as Map<String, dynamic>;
   final featuresJson = decoded['features'] as List<dynamic>? ?? const [];
-  return [
-    for (final raw in featuresJson)
-      _featureFromOsmCache(raw as Map<String, dynamic>),
-  ];
+  final features = <Map<String, Object>>[];
+  for (final raw in featuresJson) {
+    final feature = _featureFromOsmCache(raw as Map<String, dynamic>);
+    if (feature != null) features.add(feature);
+  }
+  return features;
 }
 
-Map<String, Object> _featureFromOsmCache(Map<String, dynamic> raw) {
+Map<String, Object>? _featureFromOsmCache(Map<String, dynamic> raw) {
   final geometry = raw['geometry'] as Map<String, dynamic>;
   final coordinates = (geometry['coordinates'] as List<dynamic>)
       .map((coordinate) => [
@@ -86,19 +92,31 @@ Map<String, Object> _featureFromOsmCache(Map<String, dynamic> raw) {
             _round((coordinate[1] as num).toDouble()),
           ])
       .toList();
+  final geometryType = geometry['type'] as String;
+  final kind = raw['kind'] as String;
+  if (kind == 'building' &&
+      (geometryType != 'polygon' || !_isValidPolygon(coordinates))) {
+    return null;
+  }
+  final osmId = (raw['osmId'] as num?)?.toInt();
   final center = _centerOf(coordinates);
   return _feature(
-    kind: raw['kind'] as String,
+    kind: kind,
     name: raw['name'] as String,
     lat: (raw['lat'] as num?)?.toDouble() ?? center.$1,
     lng: (raw['lng'] as num?)?.toDouble() ?? center.$2,
     radiusMeters: raw['radiusMeters'] as num,
     geometry: {
-      'type': geometry['type'] as String,
+      'type': geometryType,
       'coordinates': coordinates,
     },
-    provenance: 'openStreetMap',
-    osmId: (raw['osmId'] as num?)?.toInt(),
+    provenance: osmId != null ? 'openStreetMap' : raw['provenance'] as String?,
+    osmId: osmId,
+    osmVersion: (raw['osmVersion'] as num?)?.toInt(),
+    osmTimestamp: raw['osmTimestamp'] as String?,
+    osmNodeIds: (raw['osmNodeIds'] as List<dynamic>?)
+        ?.map((id) => (id as num).toInt())
+        .toList(growable: false),
     region: raw['region'] as String?,
     heightMeters: (raw['heightMeters'] as num?)?.toDouble(),
     roadClass: raw['roadClass'] as String?,
@@ -106,6 +124,17 @@ Map<String, Object> _featureFromOsmCache(Map<String, dynamic> raw) {
     lanes: (raw['lanes'] as num?)?.toInt(),
   );
 }
+
+Map<String, dynamic>? _cacheMetadata(String sourceJson, String key) {
+  final decoded = jsonDecode(sourceJson) as Map<String, dynamic>;
+  final value = decoded[key];
+  return value is Map<String, dynamic> ? value : null;
+}
+
+bool _isValidPolygon(List<List<double>> coordinates) =>
+    coordinates.length >= 4 &&
+    coordinates.first[0] == coordinates.last[0] &&
+    coordinates.first[1] == coordinates.last[1];
 
 List<Map<String, Object>> _featuresFromCsv(String sourceCsv) {
   final rows = _parseCsv(sourceCsv);
@@ -237,24 +266,6 @@ List<Map<String, Object>> get _manualGameplayFeatures => [
       ),
       _feature(
         kind: 'water',
-        name: '維多利亞港海面',
-        lat: 22.2936,
-        lng: 114.1698,
-        radiusMeters: 1,
-        geometry: {
-          'type': 'polygon',
-          'coordinates': [
-            [22.315, 114.122],
-            [22.309, 114.208],
-            [22.289, 114.238],
-            [22.271, 114.205],
-            [22.279, 114.142],
-            [22.292, 114.119],
-          ],
-        },
-      ),
-      _feature(
-        kind: 'water',
         name: '藍巴勒海峽',
         lat: 22.3332,
         lng: 114.1112,
@@ -267,6 +278,7 @@ List<Map<String, Object>> get _manualGameplayFeatures => [
             [22.321, 114.128],
             [22.304, 114.110],
             [22.321, 114.094],
+            [22.360, 114.096],
           ],
         },
       ),
@@ -284,6 +296,7 @@ List<Map<String, Object>> get _manualGameplayFeatures => [
             [22.441, 114.279],
             [22.419, 114.236],
             [22.424, 114.191],
+            [22.485, 114.190],
           ],
         },
       ),
@@ -301,6 +314,7 @@ List<Map<String, Object>> get _manualGameplayFeatures => [
             [22.339, 114.354],
             [22.312, 114.292],
             [22.338, 114.238],
+            [22.402, 114.248],
           ],
         },
       ),
@@ -322,6 +336,9 @@ Map<String, Object> _feature({
   Map<String, Object>? geometry,
   String? provenance,
   int? osmId,
+  int? osmVersion,
+  String? osmTimestamp,
+  List<int>? osmNodeIds,
   String? region,
   double? heightMeters,
   String? roadClass,
@@ -337,6 +354,9 @@ Map<String, Object> _feature({
       if (geometry != null) 'geometry': geometry,
       if (provenance != null) 'provenance': provenance,
       if (osmId != null) 'osmId': osmId,
+      if (osmVersion != null) 'osmVersion': osmVersion,
+      if (osmTimestamp != null) 'osmTimestamp': osmTimestamp,
+      if (osmNodeIds != null) 'osmNodeIds': osmNodeIds,
       if (region != null) 'region': region,
       if (heightMeters != null) 'heightMeters': _round(heightMeters),
       if (roadClass != null) 'roadClass': roadClass,

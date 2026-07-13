@@ -377,4 +377,3 @@ Launch only `FisherGO_API35`, install the release APK, grant location, inject th
 - [ ] **Step 6: Final review and commit any verification fixes**
 
 Run: `git diff --check` and inspect the complete diff. If verification required fixes, rerun the relevant focused test and commit with a precise message. Keep generated screenshots and browser artifacts out of Git.
-

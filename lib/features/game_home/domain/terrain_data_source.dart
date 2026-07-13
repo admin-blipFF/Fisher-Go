@@ -177,7 +177,11 @@ class GeoTerrainGeometry {
   final String type;
   final List<LatLng> coordinates;
 
-  bool get isPolygon => type == 'polygon';
+  bool get isPolygon =>
+      type == 'polygon' &&
+      coordinates.length >= 4 &&
+      coordinates.first.latitude == coordinates.last.latitude &&
+      coordinates.first.longitude == coordinates.last.longitude;
   bool get isLineString => type == 'lineString';
 
   factory GeoTerrainGeometry.fromJson(Map<String, dynamic> source) {

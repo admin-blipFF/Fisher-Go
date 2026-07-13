@@ -71,6 +71,7 @@ Android uses the same painter and data. Platform-specific work is limited to pac
 ## Failure Behaviour
 
 - If OSM building geometry is absent, render land, water, roads, and spots normally.
+- If an area has only authoritative open OSM coastline lines, render those lines but keep the base terrain on the neutral land fallback; never synthesize or label a closing water contour as OSM geometry.
 - If textures fail to load, use the established colour gradients without blank frames.
 - Invalid or undersized polygons are ignored rather than producing malformed paths.
 - Dense scenes fall back to simplified buildings instead of dropping input or blocking gestures.

@@ -22,6 +22,16 @@ bool isRenderableCoastlineDepthFeature(TerrainVectorFeature feature) =>
         .contains(feature.kind) &&
     feature.points.length >= 2;
 
+Rect terrainGradientBoundsFor({
+  required TerrainKind kind,
+  required Rect cellBounds,
+  required Rect viewportBounds,
+}) =>
+    kind == TerrainKind.water ? viewportBounds : cellBounds;
+
+double terrainBoundaryBlendWidth(double tileSize) =>
+    (tileSize * 0.78).clamp(18.0, 42.0).toDouble();
+
 class ProjectedBuildingCandidate {
   const ProjectedBuildingCandidate({
     required this.feature,
@@ -540,7 +550,12 @@ class GameMapPainter extends CustomPainter {
     final rect = _projectTileToPerspective(size, tile);
     if (rect == null) return;
     final path = _terrainCellPathFromCamera(rect, tile);
-    canvas.drawPath(path, _paintForTerrainCell(tile.kind, rect));
+    final gradientBounds = terrainGradientBoundsFor(
+      kind: tile.kind,
+      cellBounds: rect,
+      viewportBounds: Offset.zero & size,
+    );
+    canvas.drawPath(path, _paintForTerrainCell(tile.kind, gradientBounds));
     canvas.save();
     canvas.clipPath(path);
     _drawPerspectiveCellTexture(canvas, rect, tile.kind, tile.row + tile.col);
@@ -1725,23 +1740,23 @@ class GameMapPainter extends CustomPainter {
   ) {
     if (current == neighbor) return;
     final baseColor = _boundaryBlendColorFor(current, neighbor);
-    final width = tileSize * 0.28;
+    final width = terrainBoundaryBlendWidth(tileSize);
     canvas.drawPath(
       edgePath,
       Paint()
-        ..color = baseColor.withValues(alpha: 0.22)
+        ..color = baseColor.withValues(alpha: 0.3)
         ..style = PaintingStyle.stroke
-        ..strokeWidth = width.clamp(7.0, 18.0)
+        ..strokeWidth = width
         ..strokeCap = StrokeCap.round
         ..strokeJoin = StrokeJoin.round
-        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 5),
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 9),
     );
     canvas.drawPath(
       edgePath,
       Paint()
         ..color = Colors.white.withValues(alpha: 0.09)
         ..style = PaintingStyle.stroke
-        ..strokeWidth = (width * 0.32).clamp(2.0, 5.0)
+        ..strokeWidth = (width * 0.16).clamp(2.0, 5.0)
         ..strokeCap = StrokeCap.round
         ..strokeJoin = StrokeJoin.round,
     );

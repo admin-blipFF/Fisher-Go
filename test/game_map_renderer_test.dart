@@ -193,6 +193,25 @@ void main() {
     );
   });
 
+  test('sampled water cells share one viewport-space gradient', () {
+    const cellBounds = Rect.fromLTWH(20, 40, 60, 80);
+    const viewportBounds = Rect.fromLTWH(0, 0, 390, 780);
+
+    expect(
+      terrainGradientBoundsFor(
+        kind: TerrainKind.water,
+        cellBounds: cellBounds,
+        viewportBounds: viewportBounds,
+      ),
+      viewportBounds,
+    );
+  });
+
+  test('sampled coastline blend spans enough of a cell to hide grid steps', () {
+    expect(terrainBoundaryBlendWidth(50), 39);
+    expect(terrainBoundaryBlendWidth(12), 18);
+  });
+
   test('current bundle distinguishes cached coastlines from manual polygons',
       () {
     final dataset = GeoTerrainDataset.fromJson(

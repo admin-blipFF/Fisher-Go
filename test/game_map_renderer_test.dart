@@ -193,7 +193,8 @@ void main() {
     );
   });
 
-  test('sampled water cells share one viewport-space gradient', () {
+  test('terrain gradient bounds use the viewport for water and the cell otherwise',
+      () {
     const cellBounds = Rect.fromLTWH(20, 40, 60, 80);
     const viewportBounds = Rect.fromLTWH(0, 0, 390, 780);
 
@@ -205,11 +206,52 @@ void main() {
       ),
       viewportBounds,
     );
+    expect(
+      terrainGradientBoundsFor(
+        kind: TerrainKind.land,
+        cellBounds: cellBounds,
+        viewportBounds: viewportBounds,
+      ),
+      cellBounds,
+    );
   });
 
-  test('sampled coastline blend spans enough of a cell to hide grid steps', () {
+  test('sampled coastline blend scales and clamps the boundary width', () {
     expect(terrainBoundaryBlendWidth(50), 39);
     expect(terrainBoundaryBlendWidth(12), 18);
+    expect(terrainBoundaryBlendWidth(100), 42);
+  });
+
+  test('perspective terrain cells select gradient bounds from tile, cell, and viewport',
+      () {
+    final rendererSource = File(
+      'lib/features/game_home/presentation/game_map_renderer.dart',
+    ).readAsStringSync();
+    final terrainCellStart = rendererSource.indexOf(
+      'void _drawPerspectiveTerrainCell(',
+    );
+    final terrainCellEnd = rendererSource.indexOf(
+      '\n  void ',
+      terrainCellStart + 1,
+    );
+    final terrainCellSource = rendererSource.substring(
+      terrainCellStart,
+      terrainCellEnd,
+    );
+
+    expect(
+      terrainCellSource,
+      contains(
+        'terrainGradientBoundsFor(\n'
+        '      kind: tile.kind,\n'
+        '      cellBounds: rect,\n'
+        '      viewportBounds: Offset.zero & size,',
+      ),
+    );
+    expect(
+      terrainCellSource,
+      contains('_paintForTerrainCell(tile.kind, gradientBounds)'),
+    );
   });
 
   test('current bundle distinguishes cached coastlines from manual polygons',

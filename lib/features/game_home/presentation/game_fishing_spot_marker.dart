@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../domain/fishing_biome_rules.dart';
+
 /// The shared fishing spot body for the GPS and panoramic maps.
 class GameFishingSpotMarker extends StatelessWidget {
   const GameFishingSpotMarker({
@@ -7,6 +9,7 @@ class GameFishingSpotMarker extends StatelessWidget {
     required this.name,
     required this.rarity,
     required this.isNew,
+    this.biome = FishingSpotBiome.pier,
   });
 
   static const _beaconAsset =
@@ -15,6 +18,7 @@ class GameFishingSpotMarker extends StatelessWidget {
   final String name;
   final int rarity;
   final bool isNew;
+  final FishingSpotBiome biome;
 
   Color get _rarityColor {
     switch (rarity) {
@@ -50,11 +54,38 @@ class GameFishingSpotMarker extends StatelessWidget {
     }
   }
 
+  Color get _biomeColor => switch (biome) {
+        FishingSpotBiome.pier => const Color(0xFF4DE8FF),
+        FishingSpotBiome.rock => const Color(0xFFFFB86B),
+        FishingSpotBiome.reef => const Color(0xFFFF6CCB),
+        FishingSpotBiome.beach => const Color(0xFFFFE68A),
+        FishingSpotBiome.boat => const Color(0xFFB993FF),
+        FishingSpotBiome.island => const Color(0xFF7CFFAA),
+        FishingSpotBiome.innerSea => const Color(0xFF63D7FF),
+        FishingSpotBiome.bridge => const Color(0xFFFF8E65),
+      };
+
+  IconData get _biomeIcon => switch (biome) {
+        FishingSpotBiome.pier => Icons.anchor,
+        FishingSpotBiome.rock => Icons.terrain,
+        FishingSpotBiome.reef => Icons.coronavirus_outlined,
+        FishingSpotBiome.beach => Icons.waves,
+        FishingSpotBiome.boat => Icons.directions_boat,
+        FishingSpotBiome.island => Icons.park,
+        FishingSpotBiome.innerSea => Icons.water,
+        FishingSpotBiome.bridge => Icons.architecture,
+      };
+
   @override
   Widget build(BuildContext context) {
     final rarityColor = _rarityColor;
+    final biomeColor = _biomeColor;
+    final biomeLabel = biome == FishingSpotBiome.pier
+        ? ''
+        : ', ${FishingBiomeRules.labelFor(biome)}';
     return Semantics(
-      label: 'Fishing spot: $name, $_rarityLabel rarity${isNew ? ', new' : ''}',
+      label:
+          'Fishing spot: $name$biomeLabel, $_rarityLabel rarity${isNew ? ', new' : ''}',
       child: ExcludeSemantics(
         child: SizedBox(
           width: 118,
@@ -112,7 +143,7 @@ class GameFishingSpotMarker extends StatelessWidget {
                     border: Border.all(color: Colors.white, width: 2),
                     boxShadow: [
                       BoxShadow(
-                        color: rarityColor.withValues(alpha: 0.55),
+                        color: biomeColor.withValues(alpha: 0.6),
                         blurRadius: 8,
                       ),
                     ],
@@ -122,6 +153,26 @@ class GameFishingSpotMarker extends StatelessWidget {
                     color: Color(0xFF7DF9FF),
                     size: 14,
                   ),
+                ),
+              ),
+              Positioned(
+                left: 14,
+                top: 28,
+                child: Container(
+                  width: 27,
+                  height: 27,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: const Color(0xE6072730),
+                    border: Border.all(color: biomeColor, width: 1.6),
+                    boxShadow: [
+                      BoxShadow(
+                        color: biomeColor.withValues(alpha: 0.35),
+                        blurRadius: 7,
+                      ),
+                    ],
+                  ),
+                  child: Icon(_biomeIcon, color: biomeColor, size: 15),
                 ),
               ),
               Positioned(

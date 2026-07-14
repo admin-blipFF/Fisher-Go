@@ -4451,6 +4451,7 @@ class _SpotMarker extends StatelessWidget {
         name: spot.name,
         rarity: spot.rarity,
         isNew: spot.isNew,
+        biome: spot.biome,
       );
 }
 

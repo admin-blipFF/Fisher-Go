@@ -2413,6 +2413,12 @@ class GameMapPainter extends CustomPainter {
     return;
   }
 
+  // Kept as the asset palette hook for the next texture-backed terrain pass.
+  // ignore: unused_element
+  ui.Image? _landMicroImageForVariant(int variant) {
+    return texturePack.landMicroImageForVariant(variant);
+  }
+
   Color _cellEdgeColor(TerrainKind kind) {
     return switch (kind) {
       TerrainKind.water => const Color(0xFFD8FFFB).withValues(alpha: 0.1),
@@ -3157,12 +3163,7 @@ class GameMapPainter extends CustomPainter {
       );
       canvas.drawPath(
         path,
-        _texturedStrokePaint(
-          TerrainKind.road,
-          path.getBounds(),
-          fallbackColor: const Color(0xFFE5ECE6).withValues(alpha: 0.96),
-          width: style.surfaceWidth,
-        ),
+        _roadSurfacePaint(feature, path.getBounds(), style),
       );
       if (budget.enableRoadMicroDetails) {
         _drawRoadSurfaceGrain(canvas, path, style);
@@ -3187,6 +3188,45 @@ class GameMapPainter extends CustomPainter {
     return GameRoadStyle.forFeature(feature).scaledBy(
       camera.depthScaleFor(midpoint),
     );
+  }
+
+  Paint _roadSurfacePaint(
+    TerrainVectorFeature feature,
+    Rect bounds,
+    GameRoadStyle style,
+  ) {
+    final colors = switch (feature.roadClass) {
+      RoadClass.motorway || RoadClass.trunk => const [
+          Color(0xFFFFF0C4),
+          Color(0xFFD7E8D2),
+        ],
+      RoadClass.primary => const [
+          Color(0xFFF5E8C3),
+          Color(0xFFC7DEC9),
+        ],
+      RoadClass.secondary => const [
+          Color(0xFFE8F3D8),
+          Color(0xFFB4D8C3),
+        ],
+      RoadClass.tertiary => const [
+          Color(0xFFDCEDE2),
+          Color(0xFFA5CBBE),
+        ],
+      _ => const [
+          Color(0xFFE5ECE6),
+          Color(0xFFB5D7CB),
+        ],
+    };
+    return Paint()
+      ..shader = LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: colors,
+      ).createShader(bounds)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = style.surfaceWidth
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
   }
 
   void _drawRoadShoulderBlend(

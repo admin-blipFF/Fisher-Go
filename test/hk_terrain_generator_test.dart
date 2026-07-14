@@ -277,4 +277,33 @@ void main() {
 
     expect(current, generated);
   });
+
+  test('bundles Victoria Harbour and major river surface geometry', () {
+    final generated = buildTerrainAsset(
+      sourceCsv: File(
+        'data/hk_geo/hk_fishing_spots_master_all_geocoded_gov.csv',
+      ).readAsStringSync(),
+      osmVectorCacheJson:
+          File('data/hk_geo/osm_vector_cache.json').readAsStringSync(),
+      osmRoadCacheJson:
+          File('data/hk_geo/osm_road_geometry_cache.json').readAsStringSync(),
+    );
+    final water = (generated['features'] as List)
+        .whereType<Map<String, Object>>()
+        .where((feature) => feature['kind'] == 'water')
+        .toList();
+    final names = water.map((feature) => feature['name']).toSet();
+
+    expect(names, contains('維多利亞港'));
+    expect(names, contains('城門河'));
+    expect(names, contains('屯門河'));
+    expect(
+      water.any(
+        (feature) =>
+            feature['name'] == '維多利亞港' &&
+            (feature['geometry'] as Map)['type'] == 'polygon',
+      ),
+      isTrue,
+    );
+  });
 }

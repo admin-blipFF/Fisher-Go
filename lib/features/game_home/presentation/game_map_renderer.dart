@@ -471,9 +471,32 @@ class GameMapPainter extends CustomPainter {
 
   void _drawVectorWaterFeatures(Canvas canvas) {
     for (final feature in terrainFeatures) {
-      if (feature.kind != TerrainKind.water || !feature.isClosed) continue;
+      if (feature.kind != TerrainKind.water) continue;
       final path = _pathForFeature(feature);
       if (path == null) continue;
+      if (!feature.isClosed) {
+        final midpoint = feature.points[feature.points.length ~/ 2];
+        final width =
+            (18 * camera.depthScaleFor(midpoint)).clamp(7.0, 24.0).toDouble();
+        canvas.drawPath(
+          path,
+          Paint()
+            ..color = const Color(0xFF1BAFC4).withValues(alpha: 0.74)
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = width
+            ..strokeCap = StrokeCap.round
+            ..strokeJoin = StrokeJoin.round,
+        );
+        canvas.drawPath(
+          path,
+          Paint()
+            ..color = const Color(0xFF9BF7EC).withValues(alpha: 0.28)
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = width * 0.34
+            ..strokeCap = StrokeCap.round,
+        );
+        continue;
+      }
       final bounds = path.getBounds();
       canvas.drawPath(
         path,
@@ -3100,7 +3123,9 @@ class GameMapPainter extends CustomPainter {
     final budget = _renderBudget;
     final roads = [
       for (final feature in terrainFeatures)
-        if (feature.kind == TerrainKind.road) feature,
+        if (feature.kind == TerrainKind.road &&
+            GameRoadStyle.isMainRoad(feature.roadClass, feature.name))
+          feature,
     ]..sort(
         (left, right) => GameRoadStyle.forFeature(left).drawPriority.compareTo(
               GameRoadStyle.forFeature(right).drawPriority,
@@ -3808,7 +3833,7 @@ class GameMapPainter extends CustomPainter {
   String? _labelForFeature(TerrainVectorFeature feature) {
     if (feature.name.isEmpty) return null;
     return switch (feature.kind) {
-      TerrainKind.road => _shortLabel(feature.name),
+      TerrainKind.road => null,
       TerrainKind.pier => _shortLabel(feature.name),
       TerrainKind.water => _shortLabel(feature.name),
       TerrainKind.shore => _shortLabel(feature.name),
@@ -3820,7 +3845,7 @@ class GameMapPainter extends CustomPainter {
 
   String? _fallbackLabelForTile(TerrainTile tile) {
     return switch (tile.kind) {
-      TerrainKind.road => '道路',
+      TerrainKind.road => null,
       TerrainKind.pier => '碼頭',
       TerrainKind.shore => '岸線',
       TerrainKind.water => null,

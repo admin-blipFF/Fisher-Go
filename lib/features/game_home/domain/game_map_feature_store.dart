@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:latlong2/latlong.dart';
 
 import 'game_map_camera.dart';
+import 'game_road_style.dart';
 import 'terrain_data_source.dart';
 
 class GameMapFishingSpot {
@@ -46,7 +47,9 @@ class GameMapFeatureStore {
     return [
       for (final indexed in _candidateFeatures(camera))
         if (indexed.feature case final feature)
-          if (_isVisibleTerrainFeature(camera, feature))
+          if (_isVisibleTerrainFeature(camera, feature) &&
+              (feature.kind != TerrainKind.road ||
+                  GameRoadStyle.isMainRoad(feature.roadClass, feature.name)))
             TerrainVectorFeature(
               kind: feature.kind,
               name: feature.name,

@@ -350,6 +350,55 @@ void main() {
       expect(store.visibleTerrainFeatures(camera).single.name, 'nearby road');
     });
 
+    test('keeps only main roads in the render feature list', () {
+      final dataset = GeoTerrainDataset(features: [
+        const GeoTerrainFeature(
+          kind: TerrainKind.road,
+          name: 'Main Road',
+          lat: 22.3517,
+          lng: 114.0743,
+          radiusMeters: 50,
+          roadClass: RoadClass.primary,
+          geometry: GeoTerrainGeometry(
+            type: 'lineString',
+            coordinates: [
+              LatLng(22.3515, 114.0740),
+              LatLng(22.3520, 114.0748),
+            ],
+          ),
+        ),
+        const GeoTerrainFeature(
+          kind: TerrainKind.road,
+          name: 'Footpath',
+          lat: 22.3517,
+          lng: 114.0743,
+          radiusMeters: 50,
+          roadClass: RoadClass.footway,
+          geometry: GeoTerrainGeometry(
+            type: 'lineString',
+            coordinates: [
+              LatLng(22.3515, 114.0741),
+              LatLng(22.3520, 114.0749),
+            ],
+          ),
+        ),
+      ]);
+      final store = GameMapFeatureStore(dataset: dataset);
+      final camera = GameMapCamera(
+        center: const LatLng(22.3517, 114.0743),
+        visibleRadiusMeters: 500,
+        bearingDegrees: 0,
+        viewportSize: const Size(390, 844),
+      );
+
+      final roads = store
+          .visibleTerrainFeatures(camera)
+          .where((feature) => feature.kind == TerrainKind.road)
+          .toList();
+
+      expect(roads.map((road) => road.name), ['Main Road']);
+    });
+
     test('preserves building height in visible terrain features', () {
       final dataset = GeoTerrainDataset.fromJson('''
       {"features":[{"kind":"building","name":"Hilton Centre",

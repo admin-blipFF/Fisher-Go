@@ -22,6 +22,23 @@ class GameRoadStyle {
   bool get hasPedestrianHighlight =>
       laneMarking == GameRoadLaneMarking.pedestrianHighlight;
 
+  static bool isMainRoad(RoadClass roadClass, String name) =>
+      switch (roadClass) {
+        RoadClass.motorway ||
+        RoadClass.trunk ||
+        RoadClass.primary ||
+        RoadClass.secondary ||
+        RoadClass.tertiary =>
+          true,
+        // Keep named manual/gameplay roads such as Tsing Ma Bridge visible.
+        RoadClass.unknown => name.trim().isNotEmpty,
+        RoadClass.local ||
+        RoadClass.service ||
+        RoadClass.footway ||
+        RoadClass.cycleway =>
+          false,
+      };
+
   GameRoadStyle scaledBy(double factor) {
     final safeFactor = factor.clamp(0.86, 1.12).toDouble();
     return GameRoadStyle(

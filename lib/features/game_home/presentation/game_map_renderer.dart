@@ -439,6 +439,7 @@ class GameMapPainter extends CustomPainter {
           : isShore
               ? 0.075
               : 1.15,
+      repeat: false,
     );
     if (isLand) {
       texturePaint.colorFilter = ColorFilter.mode(
@@ -481,6 +482,7 @@ class GameMapPainter extends CustomPainter {
           bounds,
           fallbackColors: const [Color(0xFF6BE5E0), Color(0xFF147B93)],
           textureScale: 1.15,
+          repeat: false,
         ),
       );
       canvas.drawPath(
@@ -2341,87 +2343,51 @@ class GameMapPainter extends CustomPainter {
   }
 
   void _drawSeedreamLandMicroTile(Canvas canvas, Rect rect, int variant) {
-    final baseImage =
-        texturePack.grassMicro ?? texturePack.grassMid ?? texturePack.land;
-    if (baseImage == null) return;
-    const tileScale = 0.082;
-    final matrix = Matrix4.identity()
-      ..translateByDouble(
-        -camera.project(camera.center).dx * 0.18,
-        -camera.project(camera.center).dy * 0.18,
-        0,
-        1,
-      )
-      ..scaleByDouble(tileScale, tileScale, 1, 1);
-    canvas.drawRect(
-      rect,
-      Paint()
-        ..shader = ui.ImageShader(
-          baseImage,
-          ui.TileMode.repeated,
-          ui.TileMode.repeated,
-          matrix.storage,
-        )
-        ..colorFilter = ColorFilter.mode(
-          const Color(0xFFD6FFB0).withValues(alpha: 0.28),
-          BlendMode.modulate,
-        )
-        ..style = PaintingStyle.fill,
-    );
-    final toneImage = _landMicroImageForVariant(variant);
-    if (toneImage == null || identical(toneImage, baseImage)) return;
-    final toneAlpha = switch (variant.abs() % 6) {
-      0 => 0.02,
-      1 => 0.026,
-      2 => 0.018,
-      3 => 0.03,
-      4 => 0.024,
-      _ => 0.016,
-    };
-    canvas.drawRect(
-      rect,
-      Paint()
-        ..shader = ui.ImageShader(
-          toneImage,
-          ui.TileMode.repeated,
-          ui.TileMode.repeated,
-          matrix.storage,
-        )
-        ..colorFilter = ColorFilter.mode(
-          Color.fromRGBO(255, 255, 255, toneAlpha),
-          BlendMode.modulate,
-        )
-        ..style = PaintingStyle.fill,
-    );
-  }
-
-  ui.Image? _landMicroImageForVariant(int variant) {
-    return texturePack.landMicroImageForVariant(variant);
+    // Fallback terrain uses procedural detail so generated bitmap edges never
+    // form a visible checkerboard on the Web canvas.
+    final seed = variant * 17 + rect.left.round() * 3 + rect.top.round();
+    final bladePaint = Paint()
+      ..color = const Color(0xFFB9F07A).withValues(alpha: 0.2)
+      ..strokeWidth = 0.8
+      ..strokeCap = StrokeCap.round;
+    final shadowPaint = Paint()
+      ..color = const Color(0xFF1D895C).withValues(alpha: 0.12)
+      ..strokeWidth = 1.1
+      ..strokeCap = StrokeCap.round;
+    for (var index = 0; index < 7; index++) {
+      final x = rect.left + rect.width * _detailNoise(seed + index * 11);
+      final y = rect.top + rect.height * _detailNoise(seed + index * 19);
+      final height =
+          2.5 + rect.height * (0.04 + _detailNoise(seed + index) * 0.08);
+      final lean = (_detailNoise(seed + index * 23) - 0.5) * 4;
+      canvas.drawLine(Offset(x, y), Offset(x + lean, y - height), bladePaint);
+      if (index.isEven) {
+        canvas.drawLine(
+          Offset(x + 1, y + 1),
+          Offset(x + lean + 1, y - height * 0.7),
+          shadowPaint,
+        );
+      }
+    }
+    return;
   }
 
   void _drawShoreGrassMicroTile(Canvas canvas, Rect rect, int variant) {
-    final image =
-        texturePack.shoreGrass ?? texturePack.groundMoss ?? texturePack.shore;
-    if (image == null) return;
-    const tileScale = 0.075;
-    final matrix = Matrix4.identity()
-      ..translateByDouble((variant % 5) * 41.0, (variant % 7) * 31.0, 0, 1)
-      ..scaleByDouble(tileScale, tileScale, 1, 1);
-    canvas.drawRect(
-      rect,
-      Paint()
-        ..shader = ui.ImageShader(
-          image,
-          ui.TileMode.repeated,
-          ui.TileMode.repeated,
-          matrix.storage,
-        )
-        ..colorFilter = ColorFilter.mode(
-          const Color(0xFFFFF0B6).withValues(alpha: 0.62),
-          BlendMode.modulate,
-        )
-        ..style = PaintingStyle.fill,
-    );
+    final pebblePaint = Paint()
+      ..color = const Color(0xFFFFF0B6).withValues(alpha: 0.26)
+      ..style = PaintingStyle.fill;
+    for (var index = 0; index < 4; index++) {
+      final seed = variant * 31 + index * 13;
+      final center = Offset(
+        rect.left + rect.width * _detailNoise(seed),
+        rect.top + rect.height * _detailNoise(seed + 7),
+      );
+      canvas.drawOval(
+        Rect.fromCenter(center: center, width: 2.5, height: 1.4),
+        pebblePaint,
+      );
+    }
+    return;
   }
 
   Color _cellEdgeColor(TerrainKind kind) {
@@ -2821,6 +2787,7 @@ class GameMapPainter extends CustomPainter {
                   ],
             fallbackAlpha: feature.kind == TerrainKind.shore ? 0.56 : 0.62,
             textureScale: feature.kind == TerrainKind.shore ? 0.3 : 0.24,
+            repeat: false,
           ),
         );
         canvas.drawPath(
@@ -4026,6 +3993,7 @@ class GameMapPainter extends CustomPainter {
     required List<Color> fallbackColors,
     double fallbackAlpha = 1,
     double textureScale = 0.28,
+    bool repeat = true,
   }) {
     final image = texturePack.imageFor(kind);
     if (image == null) {
@@ -4040,12 +4008,22 @@ class GameMapPainter extends CustomPainter {
         ).createShader(rect)
         ..style = PaintingStyle.fill;
     }
+    // Large vector surfaces must use one cover image. Repeating the generated
+    // Seedream bitmap exposes its non-seamless edges as a regular checkerboard
+    // on the Web renderer. Small detail cells still use the repeated texture.
+    final matrix = repeat
+        ? Matrix4.diagonal3Values(textureScale, textureScale, 1).storage
+        : Matrix4.diagonal3Values(
+            image.width / rect.width,
+            image.height / rect.height,
+            1,
+          ).storage;
     return Paint()
       ..shader = ui.ImageShader(
         image,
-        ui.TileMode.repeated,
-        ui.TileMode.repeated,
-        Matrix4.diagonal3Values(textureScale, textureScale, 1).storage,
+        repeat ? ui.TileMode.repeated : ui.TileMode.clamp,
+        repeat ? ui.TileMode.repeated : ui.TileMode.clamp,
+        matrix,
       )
       ..style = PaintingStyle.fill;
   }

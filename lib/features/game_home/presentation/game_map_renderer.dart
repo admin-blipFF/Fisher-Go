@@ -136,13 +136,6 @@ class _ProjectedTerrainTile {
   final Offset center;
 }
 
-class _RoadEndpoint {
-  const _RoadEndpoint({required this.position, required this.style});
-
-  final Offset position;
-  final GameRoadStyle style;
-}
-
 enum _TerrainCellEdge { top, right, bottom, left }
 
 enum _FishingSpotMarkerDetail { compact, full }
@@ -369,6 +362,7 @@ class GameMapPainter extends CustomPainter {
     _drawBuildingLayer(canvas, size);
     _drawRoadLayer(canvas, size);
     _drawPierLayer(canvas, size);
+    _drawTiltedHorizonAtmosphere(canvas, size);
     _drawLandmarkLabelLayer(canvas, size);
     _drawFishingSpotLayer(canvas, size);
     _drawAtmosphereLayer(canvas, size);
@@ -3190,9 +3184,6 @@ class GameMapPainter extends CustomPainter {
         _drawRoadLaneMarkings(canvas, path, style);
       }
     }
-    if (budget.enableRoadMicroDetails) {
-      _drawRoadIntersectionLayer(canvas, roads);
-    }
   }
 
   GameRoadStyle _roadStyleForFeature(TerrainVectorFeature feature) {
@@ -3441,27 +3432,27 @@ class GameMapPainter extends CustomPainter {
     GameRoadStyle style,
   ) {
     final markPaint = Paint()
-      ..color = const Color(0xFFFFF8DE).withValues(alpha: 0.5)
+      ..color = const Color(0xFFFFF8DE).withValues(alpha: 0.32)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = style.surfaceWidth >= 7 ? 1.35 : 1.0
+      ..strokeWidth = style.surfaceWidth >= 7 ? 1.1 : 0.8
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round;
     final glowPaint = Paint()
-      ..color = const Color(0xFFFFFFFF).withValues(alpha: 0.18)
+      ..color = const Color(0xFFFFFFFF).withValues(alpha: 0.08)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = style.surfaceWidth >= 7 ? 3.2 : 2.4
+      ..strokeWidth = style.surfaceWidth >= 7 ? 2.4 : 1.8
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 1.4);
 
     for (final metric in path.computeMetrics()) {
-      var distance = 12.0;
+      var distance = 18.0;
       while (distance < metric.length) {
-        final end = math.min(distance + 9, metric.length);
+        final end = math.min(distance + 11, metric.length);
         final dash = metric.extractPath(distance, end);
         canvas.drawPath(dash, glowPaint);
         canvas.drawPath(dash, markPaint);
-        distance += 26;
+        distance += 38;
       }
     }
   }
@@ -3520,68 +3511,6 @@ class GameMapPainter extends CustomPainter {
         distance += 13 + (index % 4) * 3;
         index++;
       }
-    }
-  }
-
-  void _drawRoadIntersectionLayer(
-    Canvas canvas,
-    List<TerrainVectorFeature> roads,
-  ) {
-    final groups = <List<_RoadEndpoint>>[];
-    for (final road in roads) {
-      if (road.points.length < 2) continue;
-      final style = _roadStyleForFeature(road);
-      for (final point in [road.points.first, road.points.last]) {
-        final endpoint = _RoadEndpoint(
-          position: camera.project(point),
-          style: style,
-        );
-        List<_RoadEndpoint>? group;
-        for (final candidate in groups) {
-          if ((candidate.first.position - endpoint.position).distance <= 3) {
-            group = candidate;
-            break;
-          }
-        }
-        final endpointGroup = group ?? <_RoadEndpoint>[];
-        if (group == null) groups.add(endpointGroup);
-        endpointGroup.add(endpoint);
-      }
-    }
-
-    for (final group in groups) {
-      // OSM commonly splits one continuous road into many two-endpoint ways.
-      // Treating each split as a junction produces a visible chain of dots.
-      if (group.length < 3) continue;
-      var highestPriority = group.first.style;
-      for (final endpoint in group.skip(1)) {
-        if (endpoint.style.drawPriority > highestPriority.drawPriority) {
-          highestPriority = endpoint.style;
-        }
-      }
-      final center = Offset(
-        group.map((endpoint) => endpoint.position.dx).reduce((a, b) => a + b) /
-            group.length,
-        group.map((endpoint) => endpoint.position.dy).reduce((a, b) => a + b) /
-            group.length,
-      );
-      canvas.drawCircle(
-        center.translate(1.1, 1.8),
-        highestPriority.casingWidth * 0.58,
-        Paint()
-          ..color = const Color(0xFF012C35).withValues(alpha: 0.22)
-          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2),
-      );
-      canvas.drawCircle(
-        center,
-        highestPriority.casingWidth * 0.54,
-        Paint()..color = const Color(0xFF07313A).withValues(alpha: 0.76),
-      );
-      canvas.drawCircle(
-        center,
-        highestPriority.surfaceWidth * 0.54,
-        Paint()..color = const Color(0xFFE5ECE6).withValues(alpha: 0.96),
-      );
     }
   }
 
@@ -3857,6 +3786,64 @@ class GameMapPainter extends CustomPainter {
         ..color = Colors.white.withValues(alpha: 0.08)
         ..style = PaintingStyle.stroke
         ..strokeWidth = 1.1,
+    );
+  }
+
+  void _drawTiltedHorizonAtmosphere(Canvas canvas, Size size) {
+    if (camera.perspectiveStrength < 0.4) return;
+    final horizonY = size.height * 0.19;
+    final fadeBottom = size.height * 0.34;
+    final fadeRect = Rect.fromLTWH(0, 0, size.width, fadeBottom);
+
+    canvas.drawRect(
+      fadeRect,
+      Paint()
+        ..shader = LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            const Color(0xFF9EE9FA).withValues(alpha: 0.88),
+            const Color(0xFFB8F4EE).withValues(alpha: 0.6),
+            const Color(0xFFBFF4E1).withValues(alpha: 0.2),
+            Colors.transparent,
+          ],
+          stops: const [0, 0.42, 0.72, 1],
+        ).createShader(fadeRect),
+    );
+
+    final farHills = Path()
+      ..moveTo(0, horizonY + 18)
+      ..lineTo(size.width * 0.12, horizonY - 3)
+      ..lineTo(size.width * 0.22, horizonY + 11)
+      ..lineTo(size.width * 0.36, horizonY - 22)
+      ..lineTo(size.width * 0.49, horizonY + 7)
+      ..lineTo(size.width * 0.64, horizonY - 14)
+      ..lineTo(size.width * 0.78, horizonY + 8)
+      ..lineTo(size.width * 0.9, horizonY - 7)
+      ..lineTo(size.width, horizonY + 14)
+      ..lineTo(size.width, fadeBottom)
+      ..lineTo(0, fadeBottom)
+      ..close();
+    canvas.drawPath(
+      farHills,
+      Paint()
+        ..shader = LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            const Color(0xFF428F86).withValues(alpha: 0.24),
+            const Color(0xFF5BC5A5).withValues(alpha: 0.06),
+          ],
+        ).createShader(fadeRect),
+    );
+
+    canvas.drawLine(
+      Offset(0, horizonY + 15),
+      Offset(size.width, horizonY + 15),
+      Paint()
+        ..color = Colors.white.withValues(alpha: 0.26)
+        ..strokeWidth = 1.1
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4),
     );
   }
 

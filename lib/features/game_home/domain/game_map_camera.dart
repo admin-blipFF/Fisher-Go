@@ -53,9 +53,10 @@ class GameMapCamera {
     final rotated = _rotate(meters, bearingDegrees);
     final pixelsPerMeter = _pixelsPerMeter;
     final depthScale = _depthScale(rotated);
+    final verticalDepthScale = _verticalDepthScale(rotated);
     return Offset(
       viewportCenter.dx + rotated.dx * pixelsPerMeter * depthScale,
-      viewportCenter.dy - rotated.dy * pixelsPerMeter * depthScale,
+      viewportCenter.dy - rotated.dy * pixelsPerMeter * verticalDepthScale,
     );
   }
 
@@ -103,5 +104,12 @@ class GameMapCamera {
     final normalizedDepth =
         (rotatedMeters.dy / visibleRadiusMeters).clamp(-1.0, 1.0);
     return (1 - normalizedDepth * perspectiveStrength).clamp(0.68, 1.32);
+  }
+
+  double _verticalDepthScale(Offset rotatedMeters) {
+    if (perspectiveStrength == 0) return 1;
+    final normalizedDepth =
+        (rotatedMeters.dy / visibleRadiusMeters).clamp(-1.0, 1.0);
+    return (1 - normalizedDepth * perspectiveStrength * 0.18).clamp(0.88, 1.12);
   }
 }

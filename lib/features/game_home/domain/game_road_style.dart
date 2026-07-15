@@ -27,11 +27,10 @@ class GameRoadStyle {
         RoadClass.motorway ||
         RoadClass.trunk ||
         RoadClass.primary ||
-        RoadClass.secondary ||
-        RoadClass.tertiary =>
+        RoadClass.secondary =>
           true,
-        // Keep named manual/gameplay roads such as Tsing Ma Bridge visible.
-        RoadClass.unknown => name.trim().isNotEmpty,
+        RoadClass.unknown => false,
+        RoadClass.tertiary ||
         RoadClass.local ||
         RoadClass.service ||
         RoadClass.footway ||
@@ -69,7 +68,7 @@ class GameRoadStyle {
       RoadClass.primary ||
       RoadClass.secondary ||
       RoadClass.tertiary =>
-        GameRoadLaneMarking.dashed,
+        GameRoadLaneMarking.none,
       RoadClass.cycleway ||
       RoadClass.footway =>
         GameRoadLaneMarking.pedestrianHighlight,

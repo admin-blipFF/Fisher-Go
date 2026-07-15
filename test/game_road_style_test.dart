@@ -47,6 +47,39 @@ void main() {
     );
   });
 
+  test('main map roads omit dashed lane markings for clean game readability',
+      () {
+    expect(
+      GameRoadStyle.forFeature(road(RoadClass.primary)).hasVehicleLaneMarkings,
+      isFalse,
+    );
+    expect(
+        GameRoadStyle.forFeature(road(RoadClass.primary, isBridge: true))
+            .hasVehicleLaneMarkings,
+        isFalse);
+  });
+
+  test('main map only includes the four highest OSM road classes', () {
+    for (final roadClass in const [
+      RoadClass.motorway,
+      RoadClass.trunk,
+      RoadClass.primary,
+      RoadClass.secondary,
+    ]) {
+      expect(GameRoadStyle.isMainRoad(roadClass, ''), isTrue);
+    }
+    for (final roadClass in const [
+      RoadClass.tertiary,
+      RoadClass.local,
+      RoadClass.service,
+      RoadClass.footway,
+      RoadClass.cycleway,
+      RoadClass.unknown,
+    ]) {
+      expect(GameRoadStyle.isMainRoad(roadClass, 'Named road'), isFalse);
+    }
+  });
+
   test('depth scaling changes widths while preserving road semantics', () {
     final original =
         GameRoadStyle.forFeature(road(RoadClass.primary, isBridge: true));

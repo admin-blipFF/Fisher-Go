@@ -5,12 +5,14 @@ import 'dart:math' as math;
 const _sourcePath = 'data/hk_geo/hk_fishing_spots_master_all_geocoded_gov.csv';
 const _osmVectorCachePath = 'data/hk_geo/osm_vector_cache.json';
 const _osmRoadCachePath = 'data/hk_geo/osm_road_geometry_cache.json';
+const _osmHydroCachePath = 'data/hk_geo/osm_hydro_geometry_cache.json';
 const _outputPath = 'assets/maps/hk_terrain_mvp.json';
 
 Map<String, Object> buildTerrainAsset({
   required String sourceCsv,
   String? osmVectorCacheJson,
   String? osmRoadCacheJson,
+  String? osmHydroCacheJson,
 }) {
   final osmCoastlineImport = osmVectorCacheJson == null
       ? null
@@ -20,6 +22,8 @@ Map<String, Object> buildTerrainAsset({
       ..._featuresFromOsmVectorCache(osmVectorCacheJson),
     if (osmRoadCacheJson != null)
       ..._featuresFromOsmVectorCache(osmRoadCacheJson),
+    if (osmHydroCacheJson != null)
+      ..._featuresFromOsmVectorCache(osmHydroCacheJson),
     ..._manualGameplayFeatures,
     ..._featuresFromCsv(sourceCsv),
   ];
@@ -28,7 +32,11 @@ Map<String, Object> buildTerrainAsset({
     final osmId = feature['osmId'];
     final key =
         osmId == null ? '${feature['kind']}|${feature['name']}' : 'osm|$osmId';
-    uniqueFeatures[key] = feature;
+    if (osmId == null) {
+      uniqueFeatures[key] = feature;
+    } else {
+      uniqueFeatures.putIfAbsent(key, () => feature);
+    }
   }
 
   return {
@@ -38,6 +46,7 @@ Map<String, Object> buildTerrainAsset({
       _sourcePath,
       if (osmVectorCacheJson != null) _osmVectorCachePath,
       if (osmRoadCacheJson != null) _osmRoadCachePath,
+      if (osmHydroCacheJson != null) _osmHydroCachePath,
     ],
     if (osmVectorCacheJson != null || osmRoadCacheJson != null) ...{
       'attribution': '© OpenStreetMap contributors',
@@ -55,14 +64,16 @@ void writeTerrainAsset({
 }) {
   final cache = File(_osmVectorCachePath);
   final roadCache = File(_osmRoadCachePath);
+  final hydroCache = File(_osmHydroCachePath);
   final asset = buildTerrainAsset(
     sourceCsv: source.readAsStringSync(),
     osmVectorCacheJson: cache.existsSync() ? cache.readAsStringSync() : null,
     osmRoadCacheJson:
         roadCache.existsSync() ? roadCache.readAsStringSync() : null,
+    osmHydroCacheJson:
+        hydroCache.existsSync() ? hydroCache.readAsStringSync() : null,
   );
-  const encoder = JsonEncoder.withIndent('  ');
-  output.writeAsStringSync('${encoder.convert(asset)}\n');
+  output.writeAsStringSync('${jsonEncode(asset)}\n');
 }
 
 void main() {

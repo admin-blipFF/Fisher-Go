@@ -36,7 +36,7 @@ import '../widgets/player_avatar_marker.dart';
 import 'game_fishing_spot_marker.dart';
 import 'game_map_renderer.dart';
 
-const double gameMapPlayerAnchorY = 0.56;
+const double gameMapPlayerAnchorY = 0.68;
 
 /// 地圖首頁
 class GameHomeScreen extends StatefulWidget {
@@ -3401,7 +3401,7 @@ class _GameWorldMapShell extends StatelessWidget {
               visibleRadiusMeters: 500,
               bearingDegrees: mapBearingDegrees,
               viewportSize: viewportSize,
-              perspectiveStrength: 0.3,
+              perspectiveStrength: 0.52,
               viewportAnchorY: gameMapPlayerAnchorY,
             );
             final featureStore = terrainDataSource is GeoTerrainDataSource

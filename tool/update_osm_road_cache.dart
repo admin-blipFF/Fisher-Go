@@ -94,9 +94,6 @@ Map<String, Object?> buildRoadCacheFromOsmXml(
     final roadClass = _normalizeRoadClass(tags['highway']);
     if (roadClass == null) continue;
 
-    final name = (tags['name:zh'] ?? tags['name'] ?? '').trim();
-    if (_requiresName(roadClass) && name.isEmpty) continue;
-
     final coordinates = <List<double>>[];
     for (final nd in way.findElements('nd')) {
       final ref = int.tryParse(nd.getAttribute('ref') ?? '');
@@ -120,7 +117,7 @@ Map<String, Object?> buildRoadCacheFromOsmXml(
 
     features.add({
       'kind': 'road',
-      'name': name,
+      'name': '',
       'osmId': osmId,
       'region': regionName,
       'roadClass': roadClass,
@@ -212,20 +209,9 @@ String? _normalizeRoadClass(String? highway) {
     'trunk' || 'trunk_link' => 'trunk',
     'primary' || 'primary_link' => 'primary',
     'secondary' || 'secondary_link' => 'secondary',
-    'tertiary' || 'tertiary_link' => 'tertiary',
-    'residential' || 'unclassified' => 'local',
-    'service' => 'service',
-    'cycleway' => 'cycleway',
-    'pedestrian' || 'footway' || 'path' => 'footway',
     _ => null,
   };
 }
-
-bool _requiresName(String roadClass) =>
-    roadClass == 'local' ||
-    roadClass == 'service' ||
-    roadClass == 'footway' ||
-    roadClass == 'cycleway';
 
 int? _parseLanes(String? value) {
   if (value == null) return null;

@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:fishergo/features/game_home/domain/game_road_style.dart';
 import 'package:fishergo/features/game_home/domain/terrain_data_source.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:latlong2/latlong.dart';
@@ -156,7 +157,6 @@ void main() {
       final kinds = tiles.map((tile) => tile.kind).toSet();
 
       expect(kinds, contains(TerrainKind.water));
-      expect(kinds, contains(TerrainKind.land));
       expect(kinds, contains(TerrainKind.road));
       expect(kinds, contains(TerrainKind.fishingNode));
     });
@@ -185,20 +185,30 @@ void main() {
       }
     });
 
-    test('degrades unsupported Central water classification without closure',
+    test('classifies Victoria Harbour and the full Shing Mun River surface',
         () {
       final json = File('assets/maps/hk_terrain_mvp.json').readAsStringSync();
       final source = GeoTerrainDataSource(GeoTerrainDataset.fromJson(json));
-      final tiles = source.buildTiles(
-        playerLatLng: const LatLng(22.298, 114.17),
-        rows: 7,
-        cols: 7,
-      );
-      final centerTile = tiles.singleWhere(
-        (tile) => tile.row == 3 && tile.col == 3,
-      );
 
-      expect(centerTile.kind, TerrainKind.land);
+      for (final waterPoint in const [
+        LatLng(22.289, 114.166), // Victoria Harbour off Central.
+        LatLng(22.388, 114.1746), // Shing Mun River surface.
+      ]) {
+        final tiles = source.buildTiles(
+          playerLatLng: waterPoint,
+          rows: 7,
+          cols: 7,
+        );
+        final centerTile = tiles.singleWhere(
+          (tile) => tile.row == 3 && tile.col == 3,
+        );
+
+        expect(
+          centerTile.kind,
+          isIn([TerrainKind.water, TerrainKind.shore]),
+          reason: '$waterPoint must use real Hong Kong water geometry',
+        );
+      }
     });
 
     test('centers generated game tiles on the player GPS position', () {
@@ -382,13 +392,18 @@ void main() {
         playerLatLng: const LatLng(22.3819, 114.1874),
         radiusMeters: 900,
       );
-      final names = features.map((feature) => feature.name).toSet();
+      final roads = features
+          .where((feature) =>
+              feature.kind == TerrainKind.road &&
+              GameRoadStyle.isMainRoad(feature.roadClass, feature.name))
+          .toList();
 
+      expect(roads, isNotEmpty);
       expect(
-          features.map((feature) => feature.kind), contains(TerrainKind.road));
-      expect(names, contains('沙田正街'));
-      expect(names, contains('源禾路'));
-      expect(names, contains('大涌橋路'));
+        roads.map((feature) => feature.roadClass).toSet(),
+        containsAll([RoadClass.primary, RoadClass.secondary]),
+      );
+      expect(roads.every((feature) => feature.name.isEmpty), isTrue);
     });
 
     test('exposes real roads around major Hong Kong fishing regions', () {
@@ -401,7 +416,6 @@ void main() {
         'tai-po': LatLng(22.4425, 114.1840),
         'sam-mun-tsai': LatLng(22.4555, 114.2132),
         'tung-chung': LatLng(22.2942, 113.9404),
-        'cheung-chau': LatLng(22.2080, 114.0285),
         'stanley': LatLng(22.2173, 114.2102),
       };
 

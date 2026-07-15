@@ -262,10 +262,18 @@ class GeoTerrainDataSource implements TerrainDataSource {
               for (final feature in dataset.features)
                 if (feature.kind == kind) _GeoIndexedFeature(feature),
             ],
-        };
+        },
+        _coastlineFeatures = [
+          for (final feature in dataset.features)
+            if (feature.kind == TerrainKind.shore &&
+                feature.isOsmDerived &&
+                feature.geometry?.isLineString == true)
+              _GeoIndexedFeature(feature),
+        ];
 
   final GeoTerrainDataset dataset;
   final Map<TerrainKind, List<_GeoIndexedFeature>> _indexedFeaturesByKind;
+  final List<_GeoIndexedFeature> _coastlineFeatures;
   static const _fallback = LocalTerrainDataSource();
   static const _distance = Distance();
   LatLng? _cachedTileCenter;
@@ -375,6 +383,15 @@ class GeoTerrainDataSource implements TerrainDataSource {
 
     final land = _firstContaining(point, TerrainKind.land);
     final water = _firstContaining(point, TerrainKind.water);
+    if (water?.geometry != null) return TerrainKind.water;
+    if (land?.geometry?.isPolygon == true) return TerrainKind.land;
+
+    final coast = _nearestCoastlineSide(point);
+    if (coast != null) {
+      if (coast.distanceMeters <= 32) return TerrainKind.shore;
+      return coast.isWaterSide ? TerrainKind.water : TerrainKind.land;
+    }
+
     if (land != null && water != null) {
       final landDistance = _distance.as(LengthUnit.Meter, point, land.center);
       final waterDistance = _distance.as(LengthUnit.Meter, point, water.center);
@@ -392,12 +409,69 @@ class GeoTerrainDataSource implements TerrainDataSource {
     if (water != null) return TerrainKind.water;
 
     final nearWater = _nearestOfKind(point, TerrainKind.water);
-    if (nearWater != null) {
+    if (nearWater != null && nearWater.geometry == null) {
       final distance = _distance.as(LengthUnit.Meter, point, nearWater.center);
       if (distance <= nearWater.radiusMeters + 650) return TerrainKind.shore;
     }
 
     return TerrainKind.land;
+  }
+
+  _CoastlineSide? _nearestCoastlineSide(LatLng point) {
+    const searchRadiusMeters = 4200.0;
+    final latitudePadding = searchRadiusMeters / 111320;
+    final longitudePadding = searchRadiusMeters /
+        (111320 * math.cos(point.latitude * math.pi / 180));
+    _CoastlineSide? best;
+    for (final indexed in _coastlineFeatures) {
+      if (!indexed.intersects(
+        point.latitude - latitudePadding,
+        point.latitude + latitudePadding,
+        point.longitude - longitudePadding,
+        point.longitude + longitudePadding,
+      )) {
+        continue;
+      }
+      final points = indexed.feature.geometry!.coordinates;
+      for (var index = 0; index < points.length - 1; index++) {
+        final side =
+            _coastlineSideForSegment(point, points[index], points[index + 1]);
+        if (best == null || side.distanceMeters < best.distanceMeters) {
+          best = side;
+        }
+      }
+    }
+    return best;
+  }
+
+  _CoastlineSide _coastlineSideForSegment(
+    LatLng point,
+    LatLng a,
+    LatLng b,
+  ) {
+    final metersPerDegreeLng =
+        111320.0 * math.cos(point.latitude * math.pi / 180);
+    const metersPerDegreeLat = 111320.0;
+    final ax = (a.longitude - point.longitude) * metersPerDegreeLng;
+    final ay = (a.latitude - point.latitude) * metersPerDegreeLat;
+    final bx = (b.longitude - point.longitude) * metersPerDegreeLng;
+    final by = (b.latitude - point.latitude) * metersPerDegreeLat;
+    final dx = bx - ax;
+    final dy = by - ay;
+    final lengthSquared = dx * dx + dy * dy;
+    final t = lengthSquared == 0
+        ? 0.0
+        : ((-ax * dx - ay * dy) / lengthSquared).clamp(0.0, 1.0);
+    final closestX = ax + dx * t;
+    final closestY = ay + dy * t;
+    final cross = dx * -ay - dy * -ax;
+    return _CoastlineSide(
+      distanceMeters: math.sqrt(
+        closestX * closestX + closestY * closestY,
+      ),
+      // OSM coastline ways are directed with land on the left.
+      isWaterSide: cross < 0,
+    );
   }
 
   GeoTerrainFeature? _firstContaining(LatLng point, TerrainKind kind) {
@@ -565,6 +639,17 @@ class _GeoIndexedFeature {
       point.longitude >= minLng &&
       point.longitude <= maxLng;
 
+  bool intersects(
+    double viewportMinLat,
+    double viewportMaxLat,
+    double viewportMinLng,
+    double viewportMaxLng,
+  ) =>
+      maxLat >= viewportMinLat &&
+      minLat <= viewportMaxLat &&
+      maxLng >= viewportMinLng &&
+      minLng <= viewportMaxLng;
+
   static Iterable<LatLng> _points(GeoTerrainFeature feature) sync* {
     final geometry = feature.geometry;
     if (geometry != null && geometry.coordinates.isNotEmpty) {
@@ -579,6 +664,8 @@ class _GeoIndexedFeature {
         TerrainKind.road => math.min(feature.radiusMeters, 160),
         TerrainKind.pier => math.min(feature.radiusMeters, 90),
         TerrainKind.fishingNode => math.min(feature.radiusMeters, 95),
+        TerrainKind.water when feature.geometry?.isLineString == true =>
+          feature.radiusMeters,
         _ => feature.geometry == null ? feature.radiusMeters : 20,
       };
 
@@ -603,6 +690,16 @@ class _GeoIndexedFeature {
   static double _maximumLongitude(GeoTerrainFeature feature) => _points(feature)
       .map((point) => point.longitude)
       .reduce((left, right) => left > right ? left : right);
+}
+
+class _CoastlineSide {
+  const _CoastlineSide({
+    required this.distanceMeters,
+    required this.isWaterSide,
+  });
+
+  final double distanceMeters;
+  final bool isWaterSide;
 }
 
 class LocalTerrainDataSource implements TerrainDataSource {

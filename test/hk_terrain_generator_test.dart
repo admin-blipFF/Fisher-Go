@@ -119,7 +119,11 @@ void main() {
         cachedRoads.length);
     expect(
       roadClasses,
-      containsAll(['primary', 'secondary', 'local', 'footway', 'cycleway']),
+      containsAll(['motorway', 'trunk', 'primary', 'secondary']),
+    );
+    expect(
+      roadClasses.intersection({'tertiary', 'local', 'service', 'footway'}),
+      isEmpty,
     );
     expect(osmRoads.any((feature) => feature['isBridge'] == true), isTrue);
     expect(
@@ -206,6 +210,8 @@ void main() {
       osmVectorCacheJson: jsonEncode(cache),
       osmRoadCacheJson:
           File('data/hk_geo/osm_road_geometry_cache.json').readAsStringSync(),
+      osmHydroCacheJson:
+          File('data/hk_geo/osm_hydro_geometry_cache.json').readAsStringSync(),
     );
     final cachedCoastline = (cache['features'] as List<dynamic>)
         .map((feature) => Map<String, dynamic>.from(feature as Map))
@@ -270,6 +276,8 @@ void main() {
           File('data/hk_geo/osm_vector_cache.json').readAsStringSync(),
       osmRoadCacheJson:
           File('data/hk_geo/osm_road_geometry_cache.json').readAsStringSync(),
+      osmHydroCacheJson:
+          File('data/hk_geo/osm_hydro_geometry_cache.json').readAsStringSync(),
     );
     final current = jsonDecode(
       File('assets/maps/hk_terrain_mvp.json').readAsStringSync(),

@@ -144,6 +144,7 @@ void main() {
             lat: 23,
             lng: 115,
             radiusMeters: 10,
+            roadClass: RoadClass.primary,
             geometry: GeoTerrainGeometry(
               type: 'lineString',
               coordinates: [
@@ -312,6 +313,7 @@ void main() {
           lat: 22.3522,
           lng: 114.0740,
           radiusMeters: 50,
+          roadClass: RoadClass.primary,
           geometry: GeoTerrainGeometry(
             type: 'lineString',
             coordinates: [

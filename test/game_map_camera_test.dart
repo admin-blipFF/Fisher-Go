@@ -75,6 +75,24 @@ void main() {
       expect(camera.depthScaleFor(west), lessThan(1));
     });
 
+    test('tilted gameplay projection creates a near, middle, and far plane',
+        () {
+      final camera = GameMapCamera(
+        center: const LatLng(22.35, 114.07),
+        visibleRadiusMeters: 500,
+        bearingDegrees: 0,
+        viewportSize: const Size(390, 844),
+        perspectiveStrength: 0.52,
+        viewportAnchorY: 0.68,
+      );
+      const farNorth = LatLng(22.35449, 114.07);
+      const nearSouth = LatLng(22.34730, 114.07);
+
+      expect(camera.project(farNorth).dy, lessThan(844 * 0.28));
+      expect(camera.project(nearSouth).dy, greaterThan(844 * 0.9));
+      expect(camera.project(camera.center).dy, closeTo(844 * 0.68, 0.001));
+    });
+
     test('projects center GPS to viewport center', () {
       final camera = GameMapCamera(
         center: const LatLng(22.3517, 114.0743),

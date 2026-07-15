@@ -19,7 +19,7 @@ void main() {
     expect(source, contains('GameMapCamera'));
     expect(source, contains('GameMapFeatureStore'));
     expect(source, contains('GameMapGridLayout.forViewport'));
-    expect(source, contains('perspectiveStrength: 0.3'));
+    expect(source, contains('perspectiveStrength: 0.52'));
     expect(source, contains('viewportAnchorY: gameMapPlayerAnchorY'));
     expect(source, contains('hasVectorWorldSurface'));
     expect(
@@ -218,8 +218,7 @@ void main() {
     );
     expect(rendererSource, contains('required bool enableMicroDetails'));
     expect(rendererSource, contains('if (!enableMicroDetails) return;'));
-    expect(rendererSource, contains('_drawRoadIntersectionLayer'));
-    expect(rendererSource, contains('if (group.length < 3) continue;'));
+    expect(rendererSource, isNot(contains('_drawRoadIntersectionLayer')));
     expect(rendererSource, contains('_drawPedestrianRoadHighlight'));
     expect(rendererSource, contains('left.roadClass != right.roadClass'));
     expect(rendererSource, contains('left.isBridge != right.isBridge'));
@@ -242,6 +241,7 @@ void main() {
     expect(rendererSource, contains('_drawFishingSpotDepthShadow'));
     expect(rendererSource, contains('_drawFishingSpotHookBadge'));
     expect(rendererSource, contains('_drawAtmosphereLayer'));
+    expect(rendererSource, contains('_drawTiltedHorizonAtmosphere'));
     expect(rendererSource, contains('_labelForFeature'));
     expect(rendererSource, contains('_fallbackLabelForTile'));
     expect(rendererSource, contains('_iconForFeature'));

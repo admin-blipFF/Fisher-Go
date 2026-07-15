@@ -38,7 +38,7 @@ void main() {
     );
 
     expect(road['kind'], 'road');
-    expect(road['name'], '沙田鄉事會路');
+    expect(road['name'], isEmpty);
     expect(road['roadClass'], 'primary');
     expect(road['isBridge'], isTrue);
     expect(road['lanes'], 3);
@@ -62,10 +62,10 @@ void main() {
     );
 
     expect(ramp['roadClass'], 'motorway');
-    expect(ramp['name'], '青衣西北交匯處');
+    expect(ramp['name'], isEmpty);
   });
 
-  test('keeps named footways and excludes unnamed footways', () {
+  test('excludes tertiary and pedestrian roads from the gameplay cache', () {
     final cache = buildRoadCacheFromOsmXml(
       _osmFixture,
       regionName: 'sha-tin',
@@ -73,12 +73,9 @@ void main() {
     final features = cache['features']! as List<Map<String, Object?>>;
     final ids = features.map((feature) => feature['osmId']).toSet();
 
-    expect(ids, contains(103));
+    expect(ids, isNot(contains(103)));
     expect(ids, isNot(contains(104)));
-    expect(
-      features.singleWhere((feature) => feature['osmId'] == 103)['roadClass'],
-      'footway',
-    );
+    expect(ids, isNot(contains(106)));
   });
 
   test('keeps unnamed major-road geometry without exposing an OSM id label',
@@ -128,6 +125,11 @@ const _osmFixture = '''
   <way id="105">
     <nd ref="1" /><nd ref="3" />
     <tag k="highway" v="trunk" />
+  </way>
+  <way id="106">
+    <nd ref="2" /><nd ref="4" />
+    <tag k="highway" v="tertiary" />
+    <tag k="name:zh" v="次要道路" />
   </way>
 </osm>
 ''';

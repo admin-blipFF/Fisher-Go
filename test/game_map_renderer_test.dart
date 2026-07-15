@@ -256,6 +256,95 @@ void main() {
     expect(transform[13], closeTo(80, 0.0001));
   });
 
+  test('world texture transform is stable for the same GPS camera', () {
+    const camera = GameMapCamera(
+      center: LatLng(22.3833, 114.1886),
+      visibleRadiusMeters: 250,
+      bearingDegrees: 24,
+      viewportSize: Size(390, 780),
+      perspectiveStrength: 0.18,
+    );
+
+    final first = terrainWorldShaderTransform(
+      imageSize: const Size(1024, 1024),
+      camera: camera,
+    ).storage;
+    final second = terrainWorldShaderTransform(
+      imageSize: const Size(1024, 1024),
+      camera: camera,
+    ).storage;
+
+    expect(first, orderedEquals(second));
+  });
+
+  test('world texture transform follows GPS movement and bearing', () {
+    const baseCamera = GameMapCamera(
+      center: LatLng(22.3833, 114.1886),
+      visibleRadiusMeters: 250,
+      bearingDegrees: 0,
+      viewportSize: Size(390, 780),
+    );
+    const movedCamera = GameMapCamera(
+      center: LatLng(22.3838, 114.1891),
+      visibleRadiusMeters: 250,
+      bearingDegrees: 0,
+      viewportSize: Size(390, 780),
+    );
+    const rotatedCamera = GameMapCamera(
+      center: LatLng(22.3833, 114.1886),
+      visibleRadiusMeters: 250,
+      bearingDegrees: 90,
+      viewportSize: Size(390, 780),
+    );
+
+    final base = terrainWorldShaderTransform(
+      imageSize: const Size(1024, 1024),
+      camera: baseCamera,
+    ).storage;
+    final moved = terrainWorldShaderTransform(
+      imageSize: const Size(1024, 1024),
+      camera: movedCamera,
+    ).storage;
+    final rotated = terrainWorldShaderTransform(
+      imageSize: const Size(1024, 1024),
+      camera: rotatedCamera,
+    ).storage;
+
+    expect(moved, isNot(orderedEquals(base)));
+    expect(rotated, isNot(orderedEquals(base)));
+    expect(rotated[1].abs(), greaterThan(0.0001));
+    expect(rotated[4].abs(), greaterThan(0.0001));
+  });
+
+  test('legacy simplified land masks yield to nearby OSM coastline', () {
+    final simplifiedLand = TerrainVectorFeature(
+      kind: TerrainKind.land,
+      name: '簡化馬灣陸地',
+      points: const [
+        LatLng(22.34, 114.05),
+        LatLng(22.36, 114.05),
+        LatLng(22.36, 114.07),
+        LatLng(22.34, 114.05),
+      ],
+      isClosed: true,
+    );
+
+    expect(
+      shouldRenderTerrainSurfaceFeature(
+        simplifiedLand,
+        hasOsmCoastline: true,
+      ),
+      isFalse,
+    );
+    expect(
+      shouldRenderTerrainSurfaceFeature(
+        simplifiedLand,
+        hasOsmCoastline: false,
+      ),
+      isTrue,
+    );
+  });
+
   test('sampled coastline blend scales and clamps the boundary width', () {
     expect(terrainBoundaryBlendWidth(50), 39);
     expect(terrainBoundaryBlendWidth(12), 18);

@@ -10,6 +10,7 @@ class GameFishingSpotMarker extends StatelessWidget {
     required this.rarity,
     required this.isNew,
     this.biome = FishingSpotBiome.pier,
+    this.compact = false,
   });
 
   static const _beaconAsset =
@@ -19,6 +20,7 @@ class GameFishingSpotMarker extends StatelessWidget {
   final int rarity;
   final bool isNew;
   final FishingSpotBiome biome;
+  final bool compact;
 
   Color get _rarityColor {
     switch (rarity) {
@@ -155,63 +157,65 @@ class GameFishingSpotMarker extends StatelessWidget {
                   ),
                 ),
               ),
-              Positioned(
-                left: 14,
-                top: 28,
-                child: Container(
-                  width: 27,
-                  height: 27,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: const Color(0xE6072730),
-                    border: Border.all(color: biomeColor, width: 1.6),
-                    boxShadow: [
-                      BoxShadow(
-                        color: biomeColor.withValues(alpha: 0.35),
-                        blurRadius: 7,
-                      ),
-                    ],
-                  ),
-                  child: Icon(_biomeIcon, color: biomeColor, size: 15),
-                ),
-              ),
-              Positioned(
-                left: 3,
-                right: 3,
-                bottom: 18,
-                child: Align(
+              if (!compact)
+                Positioned(
+                  left: 14,
+                  top: 28,
                   child: Container(
-                    constraints: const BoxConstraints(maxWidth: 112),
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                    width: 27,
+                    height: 27,
                     decoration: BoxDecoration(
-                      color: const Color(0xE6091D24),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color: rarityColor.withValues(alpha: 0.7),
-                      ),
-                      boxShadow: const [
+                      shape: BoxShape.circle,
+                      color: const Color(0xE6072730),
+                      border: Border.all(color: biomeColor, width: 1.6),
+                      boxShadow: [
                         BoxShadow(
-                          color: Colors.black38,
-                          blurRadius: 8,
-                          offset: Offset(0, 3),
+                          color: biomeColor.withValues(alpha: 0.35),
+                          blurRadius: 7,
                         ),
                       ],
                     ),
-                    child: Text(
-                      name,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
+                    child: Icon(_biomeIcon, color: biomeColor, size: 15),
+                  ),
+                ),
+              if (!compact)
+                Positioned(
+                  left: 3,
+                  right: 3,
+                  bottom: 18,
+                  child: Align(
+                    child: Container(
+                      constraints: const BoxConstraints(maxWidth: 112),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 7, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: const Color(0xE6091D24),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: rarityColor.withValues(alpha: 0.7),
+                        ),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: Colors.black38,
+                            blurRadius: 8,
+                            offset: Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      child: Text(
+                        name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
-              if (isNew)
+              if (isNew && !compact)
                 const Positioned(
                   bottom: 2,
                   child: _NewSpotBadge(),

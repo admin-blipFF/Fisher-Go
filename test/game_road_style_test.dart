@@ -32,6 +32,22 @@ void main() {
     );
   });
 
+  test('main road widths stay restrained when parallel carriageways overlap',
+      () {
+    expect(
+      GameRoadStyle.forFeature(road(RoadClass.motorway)).surfaceWidth,
+      lessThanOrEqualTo(7.8),
+    );
+    expect(
+      GameRoadStyle.forFeature(road(RoadClass.primary)).surfaceWidth,
+      lessThanOrEqualTo(6.4),
+    );
+    expect(
+      GameRoadStyle.forFeature(road(RoadClass.secondary)).surfaceWidth,
+      lessThanOrEqualTo(5.4),
+    );
+  });
+
   test('footways disable vehicle lane markings', () {
     expect(
       GameRoadStyle.forFeature(road(RoadClass.footway)).hasVehicleLaneMarkings,

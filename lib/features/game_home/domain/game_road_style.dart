@@ -52,9 +52,9 @@ class GameRoadStyle {
   factory GameRoadStyle.forFeature(TerrainVectorFeature feature) {
     final roadClass = feature.roadClass;
     final surfaceWidth = switch (roadClass) {
-      RoadClass.motorway || RoadClass.trunk => 9.0,
-      RoadClass.primary => 7.4,
-      RoadClass.secondary => 6.2,
+      RoadClass.motorway || RoadClass.trunk => 7.8,
+      RoadClass.primary => 6.4,
+      RoadClass.secondary => 5.4,
       RoadClass.tertiary => 5.4,
       RoadClass.local => 4.6,
       RoadClass.service => 3.8,
@@ -91,8 +91,8 @@ class GameRoadStyle {
     };
 
     final casingExtra = switch (roadClass) {
-      RoadClass.motorway || RoadClass.trunk => 3.6,
-      RoadClass.primary || RoadClass.secondary || RoadClass.tertiary => 3.0,
+      RoadClass.motorway || RoadClass.trunk => 2.8,
+      RoadClass.primary || RoadClass.secondary || RoadClass.tertiary => 2.4,
       RoadClass.local || RoadClass.unknown => 2.2,
       RoadClass.service => 1.8,
       RoadClass.cycleway || RoadClass.footway => 1.4,

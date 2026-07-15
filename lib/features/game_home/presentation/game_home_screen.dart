@@ -3489,8 +3489,9 @@ class _GameWorldMapShell extends StatelessWidget {
     final spotsById = {
       for (final spot in spots) '${spot.name}:${spot.lat}:${spot.lng}': spot,
     };
+    final orderedSpots = [...projectedSpots]..sort(_compareProjectedSpotDepth);
     return [
-      for (final projectedSpot in projectedSpots)
+      for (final projectedSpot in orderedSpots)
         if (spotsById[projectedSpot.id] case final spot?)
           Positioned(
             left: projectedSpot.screenPosition.dx - 59,
@@ -3505,7 +3506,10 @@ class _GameWorldMapShell extends StatelessWidget {
               child: Transform.scale(
                 scale: _projectedSpotScale(camera, projectedSpot),
                 alignment: Alignment.bottomCenter,
-                child: _SpotMarker(spot: spot),
+                child: _SpotMarker(
+                  spot: spot,
+                  compact: _isProjectedSpotCompact(camera, projectedSpot),
+                ),
               ),
             ),
           ),
@@ -3516,7 +3520,20 @@ class _GameWorldMapShell extends StatelessWidget {
     GameMapCamera camera,
     ProjectedFishingSpot projectedSpot,
   ) =>
-      camera.depthScaleFor(projectedSpot.position).clamp(0.82, 1.16);
+      camera.depthScaleFor(projectedSpot.position).clamp(0.7, 1.16);
+
+  int _compareProjectedSpotDepth(
+    ProjectedFishingSpot left,
+    ProjectedFishingSpot right,
+  ) =>
+      left.screenPosition.dy.compareTo(right.screenPosition.dy);
+
+  bool _isProjectedSpotCompact(
+    GameMapCamera camera,
+    ProjectedFishingSpot projectedSpot,
+  ) =>
+      projectedSpot.screenPosition.dy < camera.viewportSize.height * 0.42 ||
+      camera.depthScaleFor(projectedSpot.position) < 0.88;
 
   double _projectedSpotLiftPixels(_SpotDemo spot) {
     final distance = Geolocator.distanceBetween(
@@ -4363,9 +4380,10 @@ class _MapAvatarSnapshot {
 }
 
 class _SpotMarker extends StatelessWidget {
-  const _SpotMarker({required this.spot});
+  const _SpotMarker({required this.spot, this.compact = false});
 
   final _SpotDemo spot;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) => GameFishingSpotMarker(
@@ -4373,6 +4391,7 @@ class _SpotMarker extends StatelessWidget {
         rarity: spot.rarity,
         isNew: spot.isNew,
         biome: spot.biome,
+        compact: compact,
       );
 }
 

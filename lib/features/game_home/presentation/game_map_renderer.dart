@@ -29,6 +29,18 @@ bool isRenderableCoastlineDepthFeature(TerrainVectorFeature feature) =>
         .contains(feature.kind) &&
     feature.points.length >= 2;
 
+bool shouldRenderTerrainSurfaceFeature(
+  TerrainVectorFeature feature, {
+  required bool hasOsmCoastline,
+}) {
+  if (feature.kind != TerrainKind.land && feature.kind != TerrainKind.shore) {
+    return false;
+  }
+  if (!feature.isClosed) return true;
+  if (!hasOsmCoastline) return true;
+  return !feature.name.trimLeft().startsWith('簡化');
+}
+
 Rect terrainGradientBoundsFor({
   required TerrainKind kind,
   required Rect cellBounds,
@@ -50,6 +62,51 @@ Matrix4 terrainCoverShaderTransform({
     ..setTranslationRaw(rect.left, rect.top, 0);
   return transform;
 }
+
+Matrix4 terrainWorldShaderTransform({
+  required Size imageSize,
+  required GameMapCamera camera,
+  double tileWorldMeters = 420,
+}) {
+  const earthRadiusMeters = 6378137.0;
+  final latitudeRadians = camera.center.latitude * math.pi / 180;
+  final longitudeRadians = camera.center.longitude * math.pi / 180;
+  final worldEastMeters = earthRadiusMeters * longitudeRadians;
+  final clampedLatitude = latitudeRadians.clamp(-1.48, 1.48).toDouble();
+  final worldSouthMeters = -earthRadiusMeters *
+      math.log(math.tan(math.pi / 4 + clampedLatitude / 2));
+  final phaseX = _positiveModulo(
+    worldEastMeters / tileWorldMeters * imageSize.width,
+    imageSize.width,
+  );
+  final phaseY = _positiveModulo(
+    worldSouthMeters / tileWorldMeters * imageSize.height,
+    imageSize.height,
+  );
+  final pixelsPerMeter =
+      camera.viewportSize.height / (camera.visibleRadiusMeters * 2);
+  final scaleX = tileWorldMeters * pixelsPerMeter / imageSize.width;
+  final scaleY = tileWorldMeters * pixelsPerMeter / imageSize.height;
+  final radians = camera.bearingDegrees * math.pi / 180;
+  final cosA = math.cos(radians);
+  final sinA = math.sin(radians);
+  final a = cosA * scaleX;
+  final b = sinA * scaleX;
+  final c = -sinA * scaleY;
+  final d = cosA * scaleY;
+  final center = camera.viewportCenter;
+
+  return Matrix4.identity()
+    ..setEntry(0, 0, a)
+    ..setEntry(1, 0, b)
+    ..setEntry(0, 1, c)
+    ..setEntry(1, 1, d)
+    ..setEntry(0, 3, center.dx - a * phaseX - c * phaseY)
+    ..setEntry(1, 3, center.dy - b * phaseX - d * phaseY);
+}
+
+double _positiveModulo(double value, double modulus) =>
+    ((value % modulus) + modulus) % modulus;
 
 class ProjectedBuildingCandidate {
   const ProjectedBuildingCandidate({
@@ -445,16 +502,27 @@ class GameMapPainter extends CustomPainter {
           : isShore
               ? 0.075
               : 1.15,
-      repeat: false,
+      repeat: true,
+      worldAnchored: true,
+      tileWorldMeters: isLand
+          ? 480
+          : isShore
+              ? 420
+              : 520,
     );
     if (isLand) {
       texturePaint.colorFilter = ColorFilter.mode(
-        const Color(0xFFD6FFB0).withValues(alpha: 0.28),
+        const Color(0xFFD6FFB0).withValues(alpha: 0.18),
         BlendMode.modulate,
       );
     } else if (isShore) {
       texturePaint.colorFilter = ColorFilter.mode(
-        const Color(0xFFFFF0B6).withValues(alpha: 0.62),
+        const Color(0xFFFFF0B6).withValues(alpha: 0.32),
+        BlendMode.modulate,
+      );
+    } else {
+      texturePaint.colorFilter = ColorFilter.mode(
+        const Color(0xFFA4FFF7).withValues(alpha: 0.5),
         BlendMode.modulate,
       );
     }
@@ -511,7 +579,9 @@ class GameMapPainter extends CustomPainter {
           bounds,
           fallbackColors: const [Color(0xFF6BE5E0), Color(0xFF147B93)],
           textureScale: 1.15,
-          repeat: false,
+          repeat: true,
+          worldAnchored: true,
+          tileWorldMeters: 520,
         ),
       );
       canvas.drawPath(
@@ -2796,34 +2866,51 @@ class GameMapPainter extends CustomPainter {
   }
 
   void _drawLandLayer(Canvas canvas, Size size) {
+    final hasOsmCoastline = terrainFeatures.any(
+      (feature) =>
+          feature.kind == TerrainKind.shore &&
+          feature.isOsmDerived &&
+          feature.points.length >= 2,
+    );
     for (final feature in terrainFeatures) {
-      if (feature.kind != TerrainKind.land &&
-          feature.kind != TerrainKind.shore) {
+      if (!shouldRenderTerrainSurfaceFeature(
+        feature,
+        hasOsmCoastline: hasOsmCoastline,
+      )) {
         continue;
       }
       final path = _pathForFeature(feature);
       if (path == null) continue;
       if (feature.isClosed) {
+        final surfacePaint = _texturedFillPaint(
+          feature.kind,
+          path.getBounds(),
+          fallbackColors: feature.kind == TerrainKind.shore
+              ? const [
+                  Color(0xFFEED98A),
+                  Color(0xFFB8D97B),
+                  Color(0xFF4DC88D),
+                ]
+              : const [
+                  Color(0xFFB7F06B),
+                  Color(0xFF55C76B),
+                  Color(0xFF2FAE77),
+                ],
+          fallbackAlpha: feature.kind == TerrainKind.shore ? 0.56 : 0.62,
+          textureScale: feature.kind == TerrainKind.shore ? 0.3 : 0.24,
+          repeat: true,
+          worldAnchored: true,
+          tileWorldMeters: feature.kind == TerrainKind.shore ? 420 : 480,
+        )..colorFilter = ColorFilter.mode(
+            (feature.kind == TerrainKind.shore
+                    ? const Color(0xFFFFF0B6)
+                    : const Color(0xFFD6FFB0))
+                .withValues(alpha: 0.22),
+            BlendMode.modulate,
+          );
         canvas.drawPath(
           path,
-          _texturedFillPaint(
-            feature.kind,
-            path.getBounds(),
-            fallbackColors: feature.kind == TerrainKind.shore
-                ? const [
-                    Color(0xFFEED98A),
-                    Color(0xFFB8D97B),
-                    Color(0xFF4DC88D),
-                  ]
-                : const [
-                    Color(0xFFB7F06B),
-                    Color(0xFF55C76B),
-                    Color(0xFF2FAE77),
-                  ],
-            fallbackAlpha: feature.kind == TerrainKind.shore ? 0.56 : 0.62,
-            textureScale: feature.kind == TerrainKind.shore ? 0.3 : 0.24,
-            repeat: false,
-          ),
+          surfacePaint,
         );
         canvas.drawPath(
           path,
@@ -4060,6 +4147,8 @@ class GameMapPainter extends CustomPainter {
     double fallbackAlpha = 1,
     double textureScale = 0.28,
     bool repeat = true,
+    bool worldAnchored = false,
+    double tileWorldMeters = 420,
   }) {
     final image = texturePack.imageFor(kind);
     if (image == null) {
@@ -4074,20 +4163,24 @@ class GameMapPainter extends CustomPainter {
         ).createShader(rect)
         ..style = PaintingStyle.fill;
     }
-    // Large vector surfaces must use one cover image. Repeating the generated
-    // Seedream bitmap exposes its non-seamless edges as a regular checkerboard
-    // on the Web renderer. Small detail cells still use the repeated texture.
-    final matrix = repeat
-        ? Matrix4.diagonal3Values(textureScale, textureScale, 1).storage
-        : terrainCoverShaderTransform(
+    final matrix = worldAnchored
+        ? terrainWorldShaderTransform(
             imageSize: Size(image.width.toDouble(), image.height.toDouble()),
-            rect: rect,
-          ).storage;
+            camera: camera,
+            tileWorldMeters: tileWorldMeters,
+          ).storage
+        : repeat
+            ? Matrix4.diagonal3Values(textureScale, textureScale, 1).storage
+            : terrainCoverShaderTransform(
+                imageSize:
+                    Size(image.width.toDouble(), image.height.toDouble()),
+                rect: rect,
+              ).storage;
     return Paint()
       ..shader = ui.ImageShader(
         image,
-        repeat ? ui.TileMode.repeated : ui.TileMode.clamp,
-        repeat ? ui.TileMode.repeated : ui.TileMode.clamp,
+        repeat || worldAnchored ? ui.TileMode.repeated : ui.TileMode.clamp,
+        repeat || worldAnchored ? ui.TileMode.repeated : ui.TileMode.clamp,
         matrix,
       )
       ..style = PaintingStyle.fill;

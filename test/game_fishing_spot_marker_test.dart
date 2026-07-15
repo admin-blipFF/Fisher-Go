@@ -9,6 +9,7 @@ void main() {
     required String name,
     required int rarity,
     bool isNew = false,
+    bool compact = false,
   }) {
     return MaterialApp(
       home: Scaffold(
@@ -17,6 +18,7 @@ void main() {
             name: name,
             rarity: rarity,
             isNew: isNew,
+            compact: compact,
           ),
         ),
       ),
@@ -68,6 +70,18 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('compact distant marker keeps the 3D beacon but hides labels',
+      (tester) async {
+    await tester.pumpWidget(
+      buildMarker(name: '遠處釣點', rarity: 3, isNew: true, compact: true),
+    );
+
+    expect(find.byType(Image), findsOneWidget);
+    expect(find.text('遠處釣點'), findsNothing);
+    expect(find.text('NEW'), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
   test('proximity ring uses a dedicated non-filled painter without spread', () {
     final source = File(
       'lib/features/game_home/presentation/game_fishing_spot_marker.dart',
@@ -90,5 +104,7 @@ void main() {
       contains('..._buildProjectedSpotButtons(camera, fishingSpots),'),
     );
     expect(source, contains('=> GameFishingSpotMarker('));
+    expect(source, contains('..sort(_compareProjectedSpotDepth)'));
+    expect(source, contains('compact: _isProjectedSpotCompact('));
   });
 }

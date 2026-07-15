@@ -39,6 +39,18 @@ Rect terrainGradientBoundsFor({
 double terrainBoundaryBlendWidth(double tileSize) =>
     (tileSize * 0.78).clamp(18.0, 42.0).toDouble();
 
+Matrix4 terrainCoverShaderTransform({
+  required Size imageSize,
+  required Rect rect,
+}) {
+  final transform = Matrix4.identity();
+  transform
+    ..setEntry(0, 0, rect.width / imageSize.width)
+    ..setEntry(1, 1, rect.height / imageSize.height)
+    ..setTranslationRaw(rect.left, rect.top, 0);
+  return transform;
+}
+
 class ProjectedBuildingCandidate {
   const ProjectedBuildingCandidate({
     required this.feature,
@@ -3538,7 +3550,9 @@ class GameMapPainter extends CustomPainter {
     }
 
     for (final group in groups) {
-      if (group.length < 2) continue;
+      // OSM commonly splits one continuous road into many two-endpoint ways.
+      // Treating each split as a junction produces a visible chain of dots.
+      if (group.length < 3) continue;
       var highestPriority = group.first.style;
       for (final endpoint in group.skip(1)) {
         if (endpoint.style.drawPriority > highestPriority.drawPriority) {
@@ -4078,10 +4092,9 @@ class GameMapPainter extends CustomPainter {
     // on the Web renderer. Small detail cells still use the repeated texture.
     final matrix = repeat
         ? Matrix4.diagonal3Values(textureScale, textureScale, 1).storage
-        : Matrix4.diagonal3Values(
-            image.width / rect.width,
-            image.height / rect.height,
-            1,
+        : terrainCoverShaderTransform(
+            imageSize: Size(image.width.toDouble(), image.height.toDouble()),
+            rect: rect,
           ).storage;
     return Paint()
       ..shader = ui.ImageShader(

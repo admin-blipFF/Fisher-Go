@@ -244,6 +244,18 @@ void main() {
     );
   });
 
+  test('cover texture transform maps image pixels into screen bounds', () {
+    final transform = terrainCoverShaderTransform(
+      imageSize: const Size(1024, 512),
+      rect: const Rect.fromLTWH(120, 80, 512, 256),
+    ).storage;
+
+    expect(transform[0], closeTo(0.5, 0.0001));
+    expect(transform[5], closeTo(0.5, 0.0001));
+    expect(transform[12], closeTo(120, 0.0001));
+    expect(transform[13], closeTo(80, 0.0001));
+  });
+
   test('sampled coastline blend scales and clamps the boundary width', () {
     expect(terrainBoundaryBlendWidth(50), 39);
     expect(terrainBoundaryBlendWidth(12), 18);

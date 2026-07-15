@@ -63,7 +63,7 @@ void main() {
     expect(source, contains('_loadAvatarSnapshot'));
     expect(source, contains('_MapAvatarSnapshot'));
     expect(source, contains('avatar_state'));
-    expect(source, contains('AvatarLayeredPreview'));
+    expect(source, contains('PlayerAvatarMarker'));
     expect(source, contains('_SpotMarkerHalo'));
     expect(source, contains('_SpotMarkerBuoy'));
     expect(source, contains('_SpotMarkerDepthShadow'));
@@ -219,6 +219,7 @@ void main() {
     expect(rendererSource, contains('required bool enableMicroDetails'));
     expect(rendererSource, contains('if (!enableMicroDetails) return;'));
     expect(rendererSource, contains('_drawRoadIntersectionLayer'));
+    expect(rendererSource, contains('if (group.length < 3) continue;'));
     expect(rendererSource, contains('_drawPedestrianRoadHighlight'));
     expect(rendererSource, contains('left.roadClass != right.roadClass'));
     expect(rendererSource, contains('left.isBridge != right.isBridge'));

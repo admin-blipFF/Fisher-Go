@@ -32,6 +32,7 @@ import '../../navigation/game_screen.dart';
 import '../../profile/data/player_progress_service.dart';
 import '../../profile/data/profile_wallet_service.dart';
 import '../../profile/presentation/profile_screen.dart';
+import '../widgets/player_avatar_marker.dart';
 import 'game_fishing_spot_marker.dart';
 import 'game_map_renderer.dart';
 
@@ -731,9 +732,8 @@ class _GameHomeScreenState extends State<GameHomeScreen>
         Align(
           alignment: const Alignment(0, gameMapPlayerAnchorY * 2 - 1),
           child: IgnorePointer(
-            child: _PlayerAvatar(
-              equipped: _equipped,
-              avatarSnapshot: _avatarSnapshot,
+            child: PlayerAvatarMarker(
+              avatarState: _avatarSnapshot.toAvatarProfileViewState(),
               isLiveLocation: _hasLiveLocation,
             ),
           ),
@@ -3680,13 +3680,12 @@ class _PanoramaMapSheet extends StatelessWidget {
       ),
       Marker(
         point: playerLatLng,
-        width: 60,
-        height: 60,
-        alignment: Alignment.center,
+        width: 82,
+        height: 100,
+        alignment: const Alignment(0, -0.28),
         child: IgnorePointer(
-          child: _PlayerAvatar(
-            equipped: equipped,
-            avatarSnapshot: avatarSnapshot,
+          child: PlayerAvatarMarker(
+            avatarState: avatarSnapshot.toAvatarProfileViewState(),
             isLiveLocation: hasLiveLocation,
           ),
         ),
@@ -4361,84 +4360,6 @@ class _MapAvatarSnapshot {
   final String selectedHairStyle;
   final int selectedPreset;
   final Map<String, String> equipped;
-}
-
-class _PlayerAvatar extends StatelessWidget {
-  const _PlayerAvatar({
-    required this.equipped,
-    required this.avatarSnapshot,
-    required this.isLiveLocation,
-  });
-
-  final Map<String, String> equipped;
-  final _MapAvatarSnapshot avatarSnapshot;
-  final bool isLiveLocation;
-
-  @override
-  Widget build(BuildContext context) {
-    final accent = isLiveLocation ? Colors.cyanAccent : Colors.orangeAccent;
-    return Stack(alignment: Alignment.center, children: [
-      Container(
-        width: 60,
-        height: 60,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          gradient: RadialGradient(
-            colors: [
-              accent.withValues(alpha: 0.8),
-              Colors.blueAccent.withValues(alpha: 0.2),
-              Colors.transparent,
-            ],
-          ),
-        ),
-      ),
-      Transform.translate(
-        offset: const Offset(0, -7),
-        child: Container(
-          width: 48,
-          height: 56,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            gradient: const LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [Colors.white, Color(0xFFE7FBFF)],
-            ),
-            border: Border.all(color: accent, width: 2.5),
-            boxShadow: [
-              BoxShadow(
-                color: accent.withValues(alpha: 0.5),
-                blurRadius: 14,
-                spreadRadius: 2,
-              ),
-              const BoxShadow(
-                color: Colors.black38,
-                blurRadius: 10,
-                offset: Offset(0, 5),
-              ),
-            ],
-          ),
-          child: ClipOval(
-            child: AvatarLayeredPreview(
-              avatarState: avatarSnapshot.toAvatarProfileViewState(),
-              size: 58,
-            ),
-          ),
-        ),
-      ),
-      Positioned(
-        bottom: 5,
-        child: Container(
-          width: 24,
-          height: 8,
-          decoration: BoxDecoration(
-            color: Colors.black.withValues(alpha: 0.22),
-            borderRadius: BorderRadius.circular(99),
-          ),
-        ),
-      ),
-    ]);
-  }
 }
 
 class _SpotMarker extends StatelessWidget {

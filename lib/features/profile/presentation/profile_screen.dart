@@ -1453,10 +1453,7 @@ class AvatarLayeredPreview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final preset = avatarState.selectedPreset.clamp(1, 5);
-    final bodyAsset = avatarState.selectedGender == 'female'
-        ? 'assets/avatar/layers/body_female_0$preset.png'
-        : 'assets/avatar/layers/body_male_0$preset.png';
+    final bodyAsset = avatarBodyAssetFor(avatarState);
 
     final frameHeight = size;
     final frameWidth = size * 2 / 3;
@@ -1491,6 +1488,21 @@ class AvatarLayeredPreview extends StatelessWidget {
     );
   }
 }
+
+String avatarBodyAssetFor(AvatarProfileViewState avatarState) {
+  final requestedPreset = avatarState.selectedPreset.clamp(1, 5);
+  // Presets 2-5 are legacy placeholder PNGs. Keep the chosen gender visible
+  // with the production-ready body until their full character art is ready.
+  final preset = requestedPreset == 1 ? requestedPreset : 1;
+  return avatarState.selectedGender == 'female'
+      ? 'assets/avatar/layers/body_female_0$preset.png'
+      : 'assets/avatar/layers/body_male_0$preset.png';
+}
+
+String avatarMapBodyAssetFor(AvatarProfileViewState avatarState) =>
+    avatarState.selectedGender == 'female'
+        ? 'assets/avatar/layers/body_female_map.png'
+        : 'assets/avatar/layers/body_male_map.png';
 
 String _assetForItemId(String itemId) => 'assets/avatar/layers/$itemId.png';
 

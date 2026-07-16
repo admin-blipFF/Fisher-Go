@@ -18,8 +18,12 @@ bool isRenderableBuildingFeature(TerrainVectorFeature feature) =>
     feature.points.first.latitude == feature.points.last.latitude &&
     feature.points.first.longitude == feature.points.last.longitude;
 
-bool isRenderableTerrainTransitionFeature(TerrainVectorFeature feature) =>
+bool isRenderableTerrainTransitionFeature(
+  TerrainVectorFeature feature, {
+  bool hasOsmLandSurface = false,
+}) =>
     feature.kind != TerrainKind.fishingNode &&
+    !(hasOsmLandSurface && feature.name.trimLeft().startsWith('簡化')) &&
     (feature.kind != TerrainKind.building ||
         isRenderableBuildingFeature(feature));
 
@@ -41,12 +45,66 @@ bool shouldRenderTerrainSurfaceFeature(
   return !feature.name.trimLeft().startsWith('簡化');
 }
 
+bool hasOsmLandSurface(Iterable<TerrainVectorFeature> features) => features.any(
+      (feature) =>
+          feature.kind == TerrainKind.land &&
+          feature.isOsmDerived &&
+          feature.isClosed &&
+          feature.points.length >= 4,
+    );
+
+bool shouldRenderTerrainWaterFeature(
+  TerrainVectorFeature feature, {
+  required bool hasOsmLandSurface,
+}) =>
+    feature.kind == TerrainKind.water &&
+    !(hasOsmLandSurface && feature.name.trimLeft().startsWith('簡化'));
+
 Rect terrainGradientBoundsFor({
   required TerrainKind kind,
   required Rect cellBounds,
   required Rect viewportBounds,
 }) =>
-    kind == TerrainKind.water ? viewportBounds : cellBounds;
+    switch (kind) {
+      TerrainKind.water ||
+      TerrainKind.land ||
+      TerrainKind.shore =>
+        viewportBounds,
+      TerrainKind.road ||
+      TerrainKind.pier ||
+      TerrainKind.fishingNode ||
+      TerrainKind.building =>
+        cellBounds,
+    };
+
+double terrainCellSeamStrokeWidthFor(TerrainKind kind) => switch (kind) {
+      TerrainKind.land || TerrainKind.water => 1.2,
+      TerrainKind.shore ||
+      TerrainKind.road ||
+      TerrainKind.pier ||
+      TerrainKind.fishingNode ||
+      TerrainKind.building =>
+        0,
+    };
+
+ui.TileMode terrainTextureTileMode({
+  required TerrainKind kind,
+  required bool repeat,
+  required bool worldAnchored,
+}) {
+  if (worldAnchored) {
+    return switch (kind) {
+      TerrainKind.water || TerrainKind.land || TerrainKind.building =>
+        ui.TileMode.repeated,
+      TerrainKind.shore ||
+      TerrainKind.road ||
+      TerrainKind.pier ||
+      TerrainKind.fishingNode =>
+        ui.TileMode.mirror,
+    };
+  }
+  return repeat ? ui.TileMode.repeated : ui.TileMode.clamp;
+}
 
 double terrainBoundaryBlendWidth(double tileSize) =>
     (tileSize * 0.78).clamp(18.0, 42.0).toDouble();
@@ -313,7 +371,7 @@ class GameMapRenderer extends StatefulWidget {
 }
 
 class _GameMapRendererState extends State<GameMapRenderer> {
-  static const _waterTexture = 'assets/maps/textures/water_tile.jpg';
+  static const _waterTexture = 'assets/maps/textures/water_tile_v2.jpg';
   static const _landTexture = 'assets/maps/textures/land_tile.jpg';
   static const _grassMicroTexture = 'assets/maps/textures/grass_micro_tile.jpg';
   static const _grassLightTexture = 'assets/maps/textures/grass_light_tile.jpg';
@@ -334,17 +392,29 @@ class _GameMapRendererState extends State<GameMapRenderer> {
 
   Future<void> _loadTextures() async {
     try {
+      final loaded = await Future.wait<ui.Image>([
+        _loadTexture(_waterTexture),
+        _loadTexture(_landTexture),
+        _loadTexture(_grassMicroTexture),
+        _loadTexture(_grassLightTexture),
+        _loadTexture(_grassMidTexture),
+        _loadTexture(_grassDarkTexture),
+        _loadTexture(_groundMossTexture),
+        _loadTexture(_shoreGrassTexture),
+        _loadTexture(_shoreTexture),
+        _loadTexture(_roadTexture),
+      ]);
       final textures = GameMapTexturePack(
-        water: await _loadTexture(_waterTexture),
-        land: await _loadTexture(_landTexture),
-        grassMicro: await _loadTexture(_grassMicroTexture),
-        grassLight: await _loadTexture(_grassLightTexture),
-        grassMid: await _loadTexture(_grassMidTexture),
-        grassDark: await _loadTexture(_grassDarkTexture),
-        groundMoss: await _loadTexture(_groundMossTexture),
-        shoreGrass: await _loadTexture(_shoreGrassTexture),
-        shore: await _loadTexture(_shoreTexture),
-        road: await _loadTexture(_roadTexture),
+        water: loaded[0],
+        land: loaded[1],
+        grassMicro: loaded[2],
+        grassLight: loaded[3],
+        grassMid: loaded[4],
+        grassDark: loaded[5],
+        groundMoss: loaded[6],
+        shoreGrass: loaded[7],
+        shore: loaded[8],
+        road: loaded[9],
       );
       if (!mounted) return;
       setState(() => _texturePack = textures);
@@ -432,6 +502,8 @@ class GameMapPainter extends CustomPainter {
             feature.points.length >= 3,
       );
 
+  bool get _hasOsmLandSurface => hasOsmLandSurface(terrainFeatures);
+
   void _drawVectorWorldSurfaceLayer(Canvas canvas, Size size) {
     _drawVectorBaseSurface(canvas, size);
     _drawVectorWaterFeatures(canvas);
@@ -440,6 +512,7 @@ class GameMapPainter extends CustomPainter {
   }
 
   TerrainKind get _vectorBaseTerrainKind {
+    if (_hasOsmLandSurface) return TerrainKind.water;
     for (final kind in const [TerrainKind.land, TerrainKind.shore]) {
       for (final feature in terrainFeatures) {
         if (feature.kind == kind &&
@@ -545,7 +618,12 @@ class GameMapPainter extends CustomPainter {
 
   void _drawVectorWaterFeatures(Canvas canvas) {
     for (final feature in terrainFeatures) {
-      if (feature.kind != TerrainKind.water) continue;
+      if (!shouldRenderTerrainWaterFeature(
+        feature,
+        hasOsmLandSurface: _hasOsmLandSurface,
+      )) {
+        continue;
+      }
       final path = _pathForFeature(feature);
       if (path == null) continue;
       if (!feature.isClosed) {
@@ -681,7 +759,17 @@ class GameMapPainter extends CustomPainter {
       cellBounds: rect,
       viewportBounds: Offset.zero & size,
     );
-    canvas.drawPath(path, _paintForTerrainCell(tile.kind, gradientBounds));
+    final terrainPaint = _paintForTerrainCell(tile.kind, gradientBounds);
+    canvas.drawPath(path, terrainPaint);
+    final seamStrokeWidth = terrainCellSeamStrokeWidthFor(tile.kind);
+    if (seamStrokeWidth > 0) {
+      canvas.drawPath(
+        path,
+        terrainPaint
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = seamStrokeWidth,
+      );
+    }
     canvas.save();
     canvas.clipPath(path);
     _drawPerspectiveCellTexture(canvas, rect, tile.kind, tile.row + tile.col);
@@ -1902,7 +1990,12 @@ class GameMapPainter extends CustomPainter {
   void _drawWorldSeamFusionLayer(Canvas canvas, Size size) {
     if (!_renderBudget.enableVectorTransitions) return;
     for (final feature in terrainFeatures) {
-      if (!isRenderableTerrainTransitionFeature(feature)) continue;
+      if (!isRenderableTerrainTransitionFeature(
+        feature,
+        hasOsmLandSurface: _hasOsmLandSurface,
+      )) {
+        continue;
+      }
       final path = _pathForFeature(feature);
       if (path == null) continue;
       if (feature.kind == TerrainKind.road) {
@@ -2868,7 +2961,8 @@ class GameMapPainter extends CustomPainter {
   void _drawLandLayer(Canvas canvas, Size size) {
     final hasOsmCoastline = terrainFeatures.any(
       (feature) =>
-          feature.kind == TerrainKind.shore &&
+          (feature.kind == TerrainKind.shore ||
+              feature.kind == TerrainKind.land) &&
           feature.isOsmDerived &&
           feature.points.length >= 2,
     );
@@ -3062,6 +3156,13 @@ class GameMapPainter extends CustomPainter {
           feature.kind != TerrainKind.shore) {
         continue;
       }
+      if (feature.kind == TerrainKind.water &&
+          !shouldRenderTerrainWaterFeature(
+            feature,
+            hasOsmLandSurface: _hasOsmLandSurface,
+          )) {
+        continue;
+      }
       final path = _pathForFeature(feature);
       if (path == null) continue;
 
@@ -3113,6 +3214,13 @@ class GameMapPainter extends CustomPainter {
     final viewport = Offset.zero & size;
     for (final feature in terrainFeatures) {
       if (!isRenderableCoastlineDepthFeature(feature)) continue;
+      if (feature.kind == TerrainKind.water &&
+          !shouldRenderTerrainWaterFeature(
+            feature,
+            hasOsmLandSurface: _hasOsmLandSurface,
+          )) {
+        continue;
+      }
       final path = _pathForFeature(feature);
       if (path == null || !path.getBounds().inflate(14).overlaps(viewport)) {
         continue;
@@ -3230,13 +3338,17 @@ class GameMapPainter extends CustomPainter {
               GameRoadStyle.forFeature(right).drawPriority,
             ),
       );
+    final useDetailedRoadTreatment = shouldUseDetailedRoadTreatment(
+      budgetAllowsDetails: budget.enableRoadMicroDetails,
+      visibleRoadCount: roads.length,
+    );
 
     for (final feature in roads) {
       final path = _pathForFeature(feature);
       if (path == null) continue;
       final style = _roadStyleForFeature(feature);
 
-      if (budget.enableRoadMicroDetails) {
+      if (useDetailedRoadTreatment) {
         _drawRoadShoulderBlend(canvas, path, style);
         _drawRoadBevelShadow(canvas, path, style);
       }
@@ -3245,30 +3357,30 @@ class GameMapPainter extends CustomPainter {
           canvas,
           path,
           style,
-          enableMicroDetails: budget.enableRoadMicroDetails,
+          enableMicroDetails: useDetailedRoadTreatment,
         );
       }
       _drawRoadCasing(
         canvas,
         path,
         width: style.casingWidth,
-        includeGlow: budget.enableRoadMicroDetails,
+        includeGlow: useDetailedRoadTreatment,
       );
       canvas.drawPath(
         path,
         _roadSurfacePaint(feature, path.getBounds(), style),
       );
-      if (budget.enableRoadMicroDetails) {
+      if (useDetailedRoadTreatment) {
         _drawRoadSurfaceGrain(canvas, path, style);
-      }
-      _drawRoadEdgeRim(canvas, path, style);
-      if (style.hasPedestrianHighlight) {
-        _drawPedestrianRoadHighlight(canvas, path, style);
-      } else {
-        _drawRoadCenterHighlight(canvas, path, style);
-      }
-      if (style.hasVehicleLaneMarkings) {
-        _drawRoadLaneMarkings(canvas, path, style);
+        _drawRoadEdgeRim(canvas, path, style);
+        if (style.hasPedestrianHighlight) {
+          _drawPedestrianRoadHighlight(canvas, path, style);
+        } else {
+          _drawRoadCenterHighlight(canvas, path, style);
+        }
+        if (style.hasVehicleLaneMarkings) {
+          _drawRoadLaneMarkings(canvas, path, style);
+        }
       }
     }
   }
@@ -3959,7 +4071,9 @@ class GameMapPainter extends CustomPainter {
   }
 
   String? _labelForFeature(TerrainVectorFeature feature) {
-    if (feature.name.isEmpty) return null;
+    if (feature.name.isEmpty || feature.name.trimLeft().startsWith('簡化')) {
+      return null;
+    }
     return switch (feature.kind) {
       TerrainKind.road => null,
       TerrainKind.pier => _shortLabel(feature.name),
@@ -4179,8 +4293,16 @@ class GameMapPainter extends CustomPainter {
     return Paint()
       ..shader = ui.ImageShader(
         image,
-        repeat || worldAnchored ? ui.TileMode.repeated : ui.TileMode.clamp,
-        repeat || worldAnchored ? ui.TileMode.repeated : ui.TileMode.clamp,
+        terrainTextureTileMode(
+          kind: kind,
+          repeat: repeat,
+          worldAnchored: worldAnchored,
+        ),
+        terrainTextureTileMode(
+          kind: kind,
+          repeat: repeat,
+          worldAnchored: worldAnchored,
+        ),
         matrix,
       )
       ..style = PaintingStyle.fill;

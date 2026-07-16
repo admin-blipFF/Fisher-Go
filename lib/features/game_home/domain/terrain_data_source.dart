@@ -265,9 +265,11 @@ class GeoTerrainDataSource implements TerrainDataSource {
         },
         _coastlineFeatures = [
           for (final feature in dataset.features)
-            if (feature.kind == TerrainKind.shore &&
-                feature.isOsmDerived &&
-                feature.geometry?.isLineString == true)
+            if (feature.isOsmDerived &&
+                ((feature.kind == TerrainKind.shore &&
+                        feature.geometry?.isLineString == true) ||
+                    (feature.kind == TerrainKind.land &&
+                        feature.geometry?.isPolygon == true)))
               _GeoIndexedFeature(feature),
         ];
 
@@ -381,6 +383,22 @@ class GeoTerrainDataSource implements TerrainDataSource {
     final road = _firstContaining(point, TerrainKind.road);
     if (road != null) return TerrainKind.road;
 
+    final osmWater = _firstContaining(
+      point,
+      TerrainKind.water,
+      where: (feature) =>
+          feature.isOsmDerived && feature.geometry?.isPolygon == true,
+    );
+    if (osmWater != null) return TerrainKind.water;
+
+    final osmLand = _firstContaining(
+      point,
+      TerrainKind.land,
+      where: (feature) =>
+          feature.isOsmDerived && feature.geometry?.isPolygon == true,
+    );
+    if (osmLand != null) return TerrainKind.land;
+
     final land = _firstContaining(point, TerrainKind.land);
     final water = _firstContaining(point, TerrainKind.water);
     if (water?.geometry != null) return TerrainKind.water;
@@ -474,11 +492,16 @@ class GeoTerrainDataSource implements TerrainDataSource {
     );
   }
 
-  GeoTerrainFeature? _firstContaining(LatLng point, TerrainKind kind) {
+  GeoTerrainFeature? _firstContaining(
+    LatLng point,
+    TerrainKind kind, {
+    bool Function(GeoTerrainFeature feature)? where,
+  }) {
     GeoTerrainFeature? best;
     double bestRatio = double.infinity;
     for (final indexed in _candidateFeatures(point, kind)) {
       final feature = indexed.feature;
+      if (where != null && !where(feature)) continue;
       final distance = _featureDistanceMeters(point, feature);
       final radius = _effectiveRadiusMeters(feature);
       if (distance <= radius || _containsGeometry(point, feature)) {

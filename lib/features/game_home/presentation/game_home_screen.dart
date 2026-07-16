@@ -3327,38 +3327,9 @@ class _RadarGridPainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1
       ..color = Colors.cyanAccent.withValues(alpha: 0.15);
-    final bp = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1
-      ..color = Colors.lightGreenAccent.withValues(alpha: 0.10);
     for (var i = 1; i <= 4; i++) {
       canvas.drawCircle(c, maxR * i / 4, rp);
     }
-    for (var a = 0; a < 360; a += 45) {
-      final r = a * 0.0174533;
-      canvas.drawLine(
-          c, Offset(c.dx + maxR * _cos(r), c.dy + maxR * _sin(r)), bp);
-    }
-  }
-
-  double _cos(double x) {
-    x = x % 6.28318;
-    double r = 1, t = 1;
-    for (int n = 1; n <= 10; n++) {
-      t *= -x * x / ((2 * n - 1) * (2 * n));
-      r += t;
-    }
-    return r;
-  }
-
-  double _sin(double x) {
-    x = x % 6.28318;
-    double r = x, t = x;
-    for (int n = 1; n <= 10; n++) {
-      t *= -x * x / ((2 * n) * (2 * n + 1));
-      r += t;
-    }
-    return r;
   }
 
   @override
@@ -3489,30 +3460,35 @@ class _GameWorldMapShell extends StatelessWidget {
     final spotsById = {
       for (final spot in spots) '${spot.name}:${spot.lat}:${spot.lng}': spot,
     };
-    final orderedSpots = [...projectedSpots]..sort(_compareProjectedSpotDepth);
+    final clusters = clusterProjectedFishingSpots(
+      spots: projectedSpots,
+      viewportSize: camera.viewportSize,
+    );
     return [
-      for (final projectedSpot in orderedSpots)
-        if (spotsById[projectedSpot.id] case final spot?)
-          Positioned(
-            left: projectedSpot.screenPosition.dx - 59,
-            top: projectedSpot.screenPosition.dy -
-                84 -
-                _projectedSpotLiftPixels(spot),
-            width: 118,
-            height: 124,
-            child: GestureDetector(
-              behavior: HitTestBehavior.translucent,
-              onTap: () => onSpotSelected(spot),
-              child: Transform.scale(
-                scale: _projectedSpotScale(camera, projectedSpot),
-                alignment: Alignment.bottomCenter,
-                child: _SpotMarker(
-                  spot: spot,
-                  compact: _isProjectedSpotCompact(camera, projectedSpot),
+      for (final cluster in clusters)
+        if (cluster.representative case final projectedSpot)
+          if (spotsById[projectedSpot.id] case final spot?)
+            Positioned(
+              left: cluster.displayPosition.dx - 59,
+              top: cluster.displayPosition.dy -
+                  84 -
+                  _projectedSpotLiftPixels(spot),
+              width: 118,
+              height: 124,
+              child: GestureDetector(
+                behavior: HitTestBehavior.translucent,
+                onTap: () => onSpotSelected(spot),
+                child: Transform.scale(
+                  scale: _projectedSpotScale(camera, projectedSpot),
+                  alignment: Alignment.bottomCenter,
+                  child: _SpotMarker(
+                    spot: spot,
+                    compact: _isProjectedSpotCompact(camera, projectedSpot),
+                    clusterCount: cluster.count,
+                  ),
                 ),
               ),
             ),
-          ),
     ];
   }
 
@@ -3521,12 +3497,6 @@ class _GameWorldMapShell extends StatelessWidget {
     ProjectedFishingSpot projectedSpot,
   ) =>
       camera.depthScaleFor(projectedSpot.position).clamp(0.7, 1.16);
-
-  int _compareProjectedSpotDepth(
-    ProjectedFishingSpot left,
-    ProjectedFishingSpot right,
-  ) =>
-      left.screenPosition.dy.compareTo(right.screenPosition.dy);
 
   bool _isProjectedSpotCompact(
     GameMapCamera camera,
@@ -4380,10 +4350,15 @@ class _MapAvatarSnapshot {
 }
 
 class _SpotMarker extends StatelessWidget {
-  const _SpotMarker({required this.spot, this.compact = false});
+  const _SpotMarker({
+    required this.spot,
+    this.compact = false,
+    this.clusterCount = 1,
+  });
 
   final _SpotDemo spot;
   final bool compact;
+  final int clusterCount;
 
   @override
   Widget build(BuildContext context) => GameFishingSpotMarker(
@@ -4392,6 +4367,7 @@ class _SpotMarker extends StatelessWidget {
         isNew: spot.isNew,
         biome: spot.biome,
         compact: compact,
+        clusterCount: clusterCount,
       );
 }
 

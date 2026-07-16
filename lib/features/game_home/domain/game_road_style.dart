@@ -2,6 +2,12 @@ import 'terrain_data_source.dart';
 
 enum GameRoadLaneMarking { none, dashed, pedestrianHighlight }
 
+bool shouldUseDetailedRoadTreatment({
+  required bool budgetAllowsDetails,
+  required int visibleRoadCount,
+}) =>
+    budgetAllowsDetails && visibleRoadCount <= 36;
+
 class GameRoadStyle {
   const GameRoadStyle({
     required this.casingWidth,

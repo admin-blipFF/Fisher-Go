@@ -60,6 +60,24 @@ void main() {
     expect(csvIsland.containsKey('provenance'), isFalse);
   });
 
+  test('preserves stitched coastline provenance and hydro attribution', () {
+    final asset = buildTerrainAsset(
+      sourceCsv: 'name,type,lat,lon\n',
+      osmHydroCacheJson: '''{"features":[{
+        "osmId":-9000001,"sourceOsmIds":[101,102,103],
+        "provenance":"openStreetMap","kind":"land","name":"",
+        "radiusMeters":1,"geometry":{"type":"polygon","coordinates":[
+          [22.30,114.00],[22.30,114.01],[22.31,114.01],[22.30,114.00]
+        ]}}]}''',
+    );
+    final land = (asset['features'] as List<Map<String, Object>>)
+        .singleWhere((feature) => feature['osmId'] == -9000001);
+
+    expect(land['sourceOsmIds'], [101, 102, 103]);
+    expect(asset['attribution'], '© OpenStreetMap contributors');
+    expect(asset['license'], 'ODbL-1.0');
+  });
+
   test('omits malformed OSM building polygons', () {
     final asset = buildTerrainAsset(
       sourceCsv: 'name,type,lat,lon\n',

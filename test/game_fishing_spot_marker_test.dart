@@ -10,6 +10,7 @@ void main() {
     required int rarity,
     bool isNew = false,
     bool compact = false,
+    int clusterCount = 1,
   }) {
     return MaterialApp(
       home: Scaffold(
@@ -19,6 +20,7 @@ void main() {
             rarity: rarity,
             isNew: isNew,
             compact: compact,
+            clusterCount: clusterCount,
           ),
         ),
       ),
@@ -82,6 +84,17 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('clustered marker shows the number of additional fishing spots',
+      (tester) async {
+    await tester.pumpWidget(
+      buildMarker(name: '中環十號碼頭', rarity: 3, clusterCount: 3),
+    );
+
+    expect(find.text('+2'), findsOneWidget);
+    expect(find.text('中環十號碼頭'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   test('proximity ring uses a dedicated non-filled painter without spread', () {
     final source = File(
       'lib/features/game_home/presentation/game_fishing_spot_marker.dart',
@@ -104,7 +117,8 @@ void main() {
       contains('..._buildProjectedSpotButtons(camera, fishingSpots),'),
     );
     expect(source, contains('=> GameFishingSpotMarker('));
-    expect(source, contains('..sort(_compareProjectedSpotDepth)'));
+    expect(source, contains('clusterProjectedFishingSpots('));
+    expect(source, contains('clusterCount: cluster.count'));
     expect(source, contains('compact: _isProjectedSpotCompact('));
   });
 }

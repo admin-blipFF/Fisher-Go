@@ -110,4 +110,28 @@ void main() {
     expect(far.drawsBridgeDeck, isTrue);
     expect(far.drawPriority, original.drawPriority);
   });
+
+  test('dense road scenes switch to the clean corridor treatment', () {
+    expect(
+      shouldUseDetailedRoadTreatment(
+        budgetAllowsDetails: true,
+        visibleRoadCount: 12,
+      ),
+      isTrue,
+    );
+    expect(
+      shouldUseDetailedRoadTreatment(
+        budgetAllowsDetails: true,
+        visibleRoadCount: 204,
+      ),
+      isFalse,
+    );
+    expect(
+      shouldUseDetailedRoadTreatment(
+        budgetAllowsDetails: false,
+        visibleRoadCount: 4,
+      ),
+      isFalse,
+    );
+  });
 }

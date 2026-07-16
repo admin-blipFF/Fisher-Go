@@ -1,5 +1,5 @@
 import 'dart:io';
-import 'dart:ui' show Size;
+import 'dart:ui' show Offset, Size;
 
 import 'package:fishergo/features/game_home/domain/game_map_camera.dart';
 import 'package:fishergo/features/game_home/domain/game_map_feature_store.dart';
@@ -57,6 +57,60 @@ void main() {
       expect(markers.single.position, spot.position);
       expect(markers.single.screenPosition.dx, closeTo(195, 0.01));
       expect(markers.single.screenPosition.dy, closeTo(422, 0.01));
+    });
+
+    test('clusters dense projected spots inside the gameplay HUD safe area',
+        () {
+      const spots = [
+        ProjectedFishingSpot(
+          id: 'central-9',
+          name: 'Central Pier 9',
+          position: LatLng(22.2860, 114.1626),
+          screenPosition: Offset(337, 625),
+        ),
+        ProjectedFishingSpot(
+          id: 'central-10',
+          name: 'Central Pier 10',
+          position: LatLng(22.2854, 114.1629),
+          screenPosition: Offset(372, 680),
+        ),
+      ];
+
+      final clusters = clusterProjectedFishingSpots(
+        spots: spots,
+        viewportSize: const Size(390, 844),
+      );
+
+      expect(clusters, hasLength(1));
+      expect(clusters.single.representative.id, 'central-10');
+      expect(clusters.single.count, 2);
+      expect(clusters.single.displayPosition.dx, lessThanOrEqualTo(267));
+      expect(clusters.single.displayPosition.dy, lessThanOrEqualTo(714));
+    });
+
+    test('keeps separated projected spots as independent map markers', () {
+      const spots = [
+        ProjectedFishingSpot(
+          id: 'west',
+          name: 'West',
+          position: LatLng(22.2860, 114.1600),
+          screenPosition: Offset(100, 300),
+        ),
+        ProjectedFishingSpot(
+          id: 'east',
+          name: 'East',
+          position: LatLng(22.2860, 114.1650),
+          screenPosition: Offset(280, 500),
+        ),
+      ];
+
+      final clusters = clusterProjectedFishingSpots(
+        spots: spots,
+        viewportSize: const Size(390, 844),
+      );
+
+      expect(clusters, hasLength(2));
+      expect(clusters.every((cluster) => cluster.count == 1), isTrue);
     });
 
     test('rotates projected fishing spots with camera bearing', () {

@@ -145,6 +145,67 @@ void main() {
       expect(landCount, greaterThan(waterCount));
     });
 
+    test('bundled OSM coastlines provide fillable land at key HK anchors', () {
+      final dataset = GeoTerrainDataset.fromJson(
+        File('assets/maps/hk_terrain_mvp.json').readAsStringSync(),
+      );
+      final osmLandPolygons = dataset.features.where(
+        (feature) =>
+            feature.kind == TerrainKind.land &&
+            feature.isOsmDerived &&
+            feature.geometry?.isPolygon == true,
+      );
+      const anchors = <String, LatLng>{
+        'Ma Wan': LatLng(22.3496, 114.0590),
+        'Tsing Yi': LatLng(22.3520, 114.1016),
+        'Hong Kong Island': LatLng(22.2810, 114.1600),
+      };
+
+      expect(osmLandPolygons.length, greaterThan(900));
+      for (final anchor in anchors.entries) {
+        expect(
+          osmLandPolygons.any(
+            (feature) => terrainPolygonContains(
+              anchor.value,
+              feature.geometry!.coordinates,
+            ),
+          ),
+          isTrue,
+          reason: '${anchor.key} should be inside real OSM coastline land',
+        );
+      }
+    });
+
+    test('OSM coastline land overrides overlapping simplified water masks', () {
+      final source = GeoTerrainDataSource(
+        GeoTerrainDataset.fromJson(
+          File('assets/maps/hk_terrain_mvp.json').readAsStringSync(),
+        ),
+      );
+      const landAnchors = <String, LatLng>{
+        'Ma Wan': LatLng(22.3496, 114.0590),
+        'Tsing Yi': LatLng(22.3520, 114.1016),
+        'Hong Kong Island': LatLng(22.2810, 114.1600),
+      };
+
+      for (final anchor in landAnchors.entries) {
+        final centerTile = source
+            .buildTiles(
+              playerLatLng: anchor.value,
+              rows: 1,
+              cols: 1,
+            )
+            .single;
+        expect(
+          centerTile.kind,
+          anchor.key == 'Hong Kong Island'
+              ? isIn([TerrainKind.land, TerrainKind.road, TerrainKind.pier])
+              : TerrainKind.land,
+          reason: '${anchor.key} should use authoritative OSM coastline land',
+        );
+      }
+    });
+
     test('classifies Tsing Ma area from real terrain features', () {
       final json = File('assets/maps/hk_terrain_mvp.json').readAsStringSync();
       final source = GeoTerrainDataSource(GeoTerrainDataset.fromJson(json));
@@ -166,7 +227,7 @@ void main() {
       final source = GeoTerrainDataSource(GeoTerrainDataset.fromJson(json));
 
       for (final seaPoint in const [
-        LatLng(22.3332, 114.1112), // Rambler Channel.
+        LatLng(22.3332, 114.1200), // Rambler Channel east of Tsing Yi.
         LatLng(22.4489, 114.2261), // Tolo Harbour.
       ]) {
         final tiles = source.buildTiles(
@@ -181,6 +242,7 @@ void main() {
         expect(
           centerTile.kind,
           isIn([TerrainKind.water, TerrainKind.shore]),
+          reason: '$seaPoint should remain classified as sea',
         );
       }
     });

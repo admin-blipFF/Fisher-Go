@@ -48,7 +48,9 @@ Map<String, Object> buildTerrainAsset({
       if (osmRoadCacheJson != null) _osmRoadCachePath,
       if (osmHydroCacheJson != null) _osmHydroCachePath,
     ],
-    if (osmVectorCacheJson != null || osmRoadCacheJson != null) ...{
+    if (osmVectorCacheJson != null ||
+        osmRoadCacheJson != null ||
+        osmHydroCacheJson != null) ...{
       'attribution': '© OpenStreetMap contributors',
       'license': 'ODbL-1.0',
       'licenseUrl': 'https://www.openstreetmap.org/copyright',
@@ -126,6 +128,9 @@ Map<String, Object>? _featureFromOsmCache(Map<String, dynamic> raw) {
     osmVersion: (raw['osmVersion'] as num?)?.toInt(),
     osmTimestamp: raw['osmTimestamp'] as String?,
     osmNodeIds: (raw['osmNodeIds'] as List<dynamic>?)
+        ?.map((id) => (id as num).toInt())
+        .toList(growable: false),
+    sourceOsmIds: (raw['sourceOsmIds'] as List<dynamic>?)
         ?.map((id) => (id as num).toInt())
         .toList(growable: false),
     region: raw['region'] as String?,
@@ -486,6 +491,7 @@ Map<String, Object> _feature({
   int? osmVersion,
   String? osmTimestamp,
   List<int>? osmNodeIds,
+  List<int>? sourceOsmIds,
   String? region,
   double? heightMeters,
   String? roadClass,
@@ -504,6 +510,7 @@ Map<String, Object> _feature({
       if (osmVersion != null) 'osmVersion': osmVersion,
       if (osmTimestamp != null) 'osmTimestamp': osmTimestamp,
       if (osmNodeIds != null) 'osmNodeIds': osmNodeIds,
+      if (sourceOsmIds != null) 'sourceOsmIds': sourceOsmIds,
       if (region != null) 'region': region,
       if (heightMeters != null) 'heightMeters': _round(heightMeters),
       if (roadClass != null) 'roadClass': roadClass,

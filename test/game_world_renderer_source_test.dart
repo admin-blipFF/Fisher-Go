@@ -103,7 +103,8 @@ void main() {
     expect(seaLayerSource, isNot(contains('_drawVectorLandColorGrade')));
     expect(landLayerSource, contains('_drawVectorLandColorGrade'));
     expect(rendererSource, contains('GameMapTexturePack'));
-    expect(rendererSource, contains('assets/maps/textures/water_tile.jpg'));
+    expect(rendererSource, contains('assets/maps/textures/water_tile_v2.jpg'));
+    expect(rendererSource, contains('shouldUseDetailedRoadTreatment('));
     expect(rendererSource, contains('assets/maps/textures/land_tile.jpg'));
     expect(
         rendererSource, contains('assets/maps/textures/grass_micro_tile.jpg'));
@@ -214,7 +215,7 @@ void main() {
     );
     expect(
       rendererSource,
-      contains('enableMicroDetails: budget.enableRoadMicroDetails'),
+      contains('enableMicroDetails: useDetailedRoadTreatment'),
     );
     expect(rendererSource, contains('required bool enableMicroDetails'));
     expect(rendererSource, contains('if (!enableMicroDetails) return;'));
@@ -270,5 +271,30 @@ void main() {
       paint.indexOf('_drawRoadLayer'),
       lessThan(paint.indexOf('_drawFishingSpotLayer')),
     );
+  });
+
+  test('radar overlay keeps rings without full-screen grid spokes', () {
+    final source = File(
+      'lib/features/game_home/presentation/game_home_screen.dart',
+    ).readAsStringSync();
+    final radarPainter = source.substring(
+      source.indexOf('class _RadarGridPainter'),
+      source.indexOf('class _GameWorldMapShell'),
+    );
+
+    expect(radarPainter, contains('canvas.drawCircle'));
+    expect(radarPainter, isNot(contains('canvas.drawLine')));
+  });
+
+  test('map textures load in parallel for a responsive first frame', () {
+    final source = File(
+      'lib/features/game_home/presentation/game_map_renderer.dart',
+    ).readAsStringSync();
+    final loader = source.substring(
+      source.indexOf('Future<void> _loadTextures()'),
+      source.indexOf('Future<ui.Image> _loadTexture'),
+    );
+
+    expect(loader, contains('await Future.wait<ui.Image>('));
   });
 }

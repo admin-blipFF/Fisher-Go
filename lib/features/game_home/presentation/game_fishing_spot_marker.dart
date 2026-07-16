@@ -11,6 +11,7 @@ class GameFishingSpotMarker extends StatelessWidget {
     required this.isNew,
     this.biome = FishingSpotBiome.pier,
     this.compact = false,
+    this.clusterCount = 1,
   });
 
   static const _beaconAsset =
@@ -21,6 +22,7 @@ class GameFishingSpotMarker extends StatelessWidget {
   final bool isNew;
   final FishingSpotBiome biome;
   final bool compact;
+  final int clusterCount;
 
   Color get _rarityColor {
     switch (rarity) {
@@ -87,7 +89,7 @@ class GameFishingSpotMarker extends StatelessWidget {
         : ', ${FishingBiomeRules.labelFor(biome)}';
     return Semantics(
       label:
-          'Fishing spot: $name$biomeLabel, $_rarityLabel rarity${isNew ? ', new' : ''}',
+          'Fishing spot: $name$biomeLabel, $_rarityLabel rarity${isNew ? ', new' : ''}${clusterCount > 1 ? ', $clusterCount spots' : ''}',
       child: ExcludeSemantics(
         child: SizedBox(
           width: 118,
@@ -157,7 +159,7 @@ class GameFishingSpotMarker extends StatelessWidget {
                   ),
                 ),
               ),
-              if (!compact)
+              if (!compact && clusterCount == 1)
                 Positioned(
                   left: 14,
                   top: 28,
@@ -176,6 +178,36 @@ class GameFishingSpotMarker extends StatelessWidget {
                       ],
                     ),
                     child: Icon(_biomeIcon, color: biomeColor, size: 15),
+                  ),
+                ),
+              if (clusterCount > 1)
+                Positioned(
+                  left: 10,
+                  top: 29,
+                  child: Container(
+                    constraints: const BoxConstraints(minWidth: 30),
+                    height: 24,
+                    padding: const EdgeInsets.symmetric(horizontal: 6),
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: const Color(0xF2072730),
+                      borderRadius: BorderRadius.circular(7),
+                      border: Border.all(color: biomeColor, width: 1.6),
+                      boxShadow: [
+                        BoxShadow(
+                          color: biomeColor.withValues(alpha: 0.38),
+                          blurRadius: 7,
+                        ),
+                      ],
+                    ),
+                    child: Text(
+                      '+${clusterCount - 1}',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
                   ),
                 ),
               if (!compact)

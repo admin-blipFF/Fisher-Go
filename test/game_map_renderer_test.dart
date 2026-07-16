@@ -220,9 +220,20 @@ void main() {
     );
   });
 
-  test(
-      'terrain gradient bounds use the viewport for water and the cell otherwise',
-      () {
+  test('OSM land suppresses legacy simplified transition outlines', () {
+    final simplified = _waterFeature(name: '簡化維港水域');
+
+    expect(isRenderableTerrainTransitionFeature(simplified), isTrue);
+    expect(
+      isRenderableTerrainTransitionFeature(
+        simplified,
+        hasOsmLandSurface: true,
+      ),
+      isFalse,
+    );
+  });
+
+  test('terrain gradient bounds keep continuous surfaces world-lit', () {
     const cellBounds = Rect.fromLTWH(20, 40, 60, 80);
     const viewportBounds = Rect.fromLTWH(0, 0, 390, 780);
 
@@ -240,7 +251,58 @@ void main() {
         cellBounds: cellBounds,
         viewportBounds: viewportBounds,
       ),
+      viewportBounds,
+    );
+    expect(
+      terrainGradientBoundsFor(
+        kind: TerrainKind.road,
+        cellBounds: cellBounds,
+        viewportBounds: viewportBounds,
+      ),
       cellBounds,
+    );
+  });
+
+  test('continuous terrain surfaces cover antialias seams', () {
+    expect(terrainCellSeamStrokeWidthFor(TerrainKind.land), greaterThan(0));
+    expect(terrainCellSeamStrokeWidthFor(TerrainKind.water), greaterThan(0));
+    expect(terrainCellSeamStrokeWidthFor(TerrainKind.shore), 0);
+    expect(terrainCellSeamStrokeWidthFor(TerrainKind.road), 0);
+    expect(terrainCellSeamStrokeWidthFor(TerrainKind.pier), 0);
+  });
+
+  test('prepared world textures repeat without a visible mirror axis', () {
+    expect(
+      terrainTextureTileMode(
+        kind: TerrainKind.water,
+        repeat: true,
+        worldAnchored: true,
+      ),
+      TileMode.repeated,
+    );
+    expect(
+      terrainTextureTileMode(
+        kind: TerrainKind.land,
+        repeat: true,
+        worldAnchored: true,
+      ),
+      TileMode.repeated,
+    );
+    expect(
+      terrainTextureTileMode(
+        kind: TerrainKind.shore,
+        repeat: true,
+        worldAnchored: true,
+      ),
+      TileMode.mirror,
+    );
+    expect(
+      terrainTextureTileMode(
+        kind: TerrainKind.water,
+        repeat: false,
+        worldAnchored: false,
+      ),
+      TileMode.clamp,
     );
   });
 
@@ -345,10 +407,84 @@ void main() {
     );
   });
 
+  test('OSM land polygons use ocean base and suppress simplified water masks',
+      () {
+    final osmLand = TerrainVectorFeature(
+      kind: TerrainKind.land,
+      name: '',
+      points: const [
+        LatLng(22.34, 114.05),
+        LatLng(22.36, 114.05),
+        LatLng(22.36, 114.07),
+        LatLng(22.34, 114.05),
+      ],
+      isClosed: true,
+      provenance: TerrainFeatureProvenance.openStreetMap,
+      osmId: 9560174,
+    );
+    final simplifiedWater = TerrainVectorFeature(
+      kind: TerrainKind.water,
+      name: '簡化汲水門水域',
+      points: const [
+        LatLng(22.34, 114.05),
+        LatLng(22.36, 114.05),
+        LatLng(22.36, 114.07),
+        LatLng(22.34, 114.05),
+      ],
+      isClosed: true,
+    );
+
+    expect(hasOsmLandSurface([osmLand]), isTrue);
+    expect(
+      shouldRenderTerrainWaterFeature(
+        simplifiedWater,
+        hasOsmLandSurface: true,
+      ),
+      isFalse,
+    );
+    expect(
+      shouldRenderTerrainWaterFeature(
+        simplifiedWater,
+        hasOsmLandSurface: false,
+      ),
+      isTrue,
+    );
+  });
+
   test('sampled coastline blend scales and clamps the boundary width', () {
     expect(terrainBoundaryBlendWidth(50), 39);
     expect(terrainBoundaryBlendWidth(12), 18);
     expect(terrainBoundaryBlendWidth(100), 42);
+  });
+
+  test('continuous terrain surfaces share viewport lighting across cells', () {
+    const cell = Rect.fromLTWH(40, 80, 60, 50);
+    const viewport = Rect.fromLTWH(0, 0, 390, 844);
+
+    expect(
+      terrainGradientBoundsFor(
+        kind: TerrainKind.land,
+        cellBounds: cell,
+        viewportBounds: viewport,
+      ),
+      viewport,
+    );
+    expect(
+      terrainGradientBoundsFor(
+        kind: TerrainKind.shore,
+        cellBounds: cell,
+        viewportBounds: viewport,
+      ),
+      viewport,
+    );
+    expect(
+      terrainGradientBoundsFor(
+        kind: TerrainKind.road,
+        cellBounds: cell,
+        viewportBounds: viewport,
+      ),
+      cell,
+    );
   });
 
   test(
@@ -611,10 +747,11 @@ TerrainVectorFeature _roadFeature() {
 TerrainVectorFeature _waterFeature({
   int? osmId,
   TerrainFeatureProvenance? provenance,
+  String name = 'water',
 }) {
   return TerrainVectorFeature(
     kind: TerrainKind.water,
-    name: 'water',
+    name: name,
     points: const [
       LatLng(22.3308, 114.1028),
       LatLng(22.3312, 114.1032),

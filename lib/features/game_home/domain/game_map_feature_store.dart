@@ -32,6 +32,94 @@ class ProjectedFishingSpot {
   final Offset screenPosition;
 }
 
+class ProjectedFishingSpotCluster {
+  const ProjectedFishingSpotCluster({
+    required this.representative,
+    required this.members,
+    required this.displayPosition,
+  });
+
+  final ProjectedFishingSpot representative;
+  final List<ProjectedFishingSpot> members;
+  final Offset displayPosition;
+
+  int get count => members.length;
+}
+
+List<ProjectedFishingSpotCluster> clusterProjectedFishingSpots({
+  required List<ProjectedFishingSpot> spots,
+  required Size viewportSize,
+  double mergeDistance = 112,
+}) {
+  if (spots.isEmpty || viewportSize.isEmpty) return const [];
+
+  final minX = viewportSize.width < 118 ? viewportSize.width / 2 : 59.0;
+  final maxX = viewportSize.width < 182
+      ? viewportSize.width / 2
+      : viewportSize.width - 123;
+  final minY = viewportSize.height < 274 ? viewportSize.height / 2 : 145.0;
+  final maxY = viewportSize.height < 260
+      ? viewportSize.height / 2
+      : viewportSize.height - 130;
+  final visibleSpots = spots.where((spot) {
+    final position = spot.screenPosition;
+    return position.dx >= -60 &&
+        position.dx <= viewportSize.width + 60 &&
+        position.dy >= 72 &&
+        position.dy <= viewportSize.height - 90;
+  }).toList()
+    ..sort((left, right) =>
+        right.screenPosition.dy.compareTo(left.screenPosition.dy));
+
+  final clusters = <_MutableProjectedFishingSpotCluster>[];
+  for (final spot in visibleSpots) {
+    final displayPosition = Offset(
+      spot.screenPosition.dx.clamp(minX, maxX),
+      spot.screenPosition.dy.clamp(minY, maxY),
+    );
+    final matchingCluster =
+        clusters.cast<_MutableProjectedFishingSpotCluster?>().firstWhere(
+              (cluster) =>
+                  (cluster!.displayPosition - displayPosition).distance <
+                  mergeDistance,
+              orElse: () => null,
+            );
+    if (matchingCluster == null) {
+      clusters.add(
+        _MutableProjectedFishingSpotCluster(
+          representative: spot,
+          displayPosition: displayPosition,
+        ),
+      );
+    } else {
+      matchingCluster.members.add(spot);
+    }
+  }
+
+  final result = [
+    for (final cluster in clusters)
+      ProjectedFishingSpotCluster(
+        representative: cluster.representative,
+        members: List.unmodifiable(cluster.members),
+        displayPosition: cluster.displayPosition,
+      ),
+  ];
+  result.sort((left, right) =>
+      left.displayPosition.dy.compareTo(right.displayPosition.dy));
+  return result;
+}
+
+class _MutableProjectedFishingSpotCluster {
+  _MutableProjectedFishingSpotCluster({
+    required this.representative,
+    required this.displayPosition,
+  }) : members = [representative];
+
+  final ProjectedFishingSpot representative;
+  final List<ProjectedFishingSpot> members;
+  final Offset displayPosition;
+}
+
 class GameMapFeatureStore {
   GameMapFeatureStore({required this.dataset})
       : _indexedFeatures = _indexCache[dataset] ??= [

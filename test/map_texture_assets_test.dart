@@ -5,14 +5,37 @@ import 'dart:ui' as ui;
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  test('water map texture is a square tile asset', () async {
-    final bytes = File('assets/maps/textures/water_tile.jpg').readAsBytesSync();
+  test('water v2 texture is square with soft matching edges', () async {
+    final bytes =
+        File('assets/maps/textures/water_tile_v2.jpg').readAsBytesSync();
     final codec = await ui.instantiateImageCodec(bytes);
     final frame = await codec.getNextFrame();
     final image = frame.image;
 
     expect(image.width, 1024);
     expect(image.height, 1024);
+    final data = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
+    final pixels = data!.buffer.asUint8List();
+    expect(
+      _averageEdgeDelta(
+        pixels,
+        width: image.width,
+        height: image.height,
+        firstEdge: _Edge.left,
+        secondEdge: _Edge.right,
+      ),
+      lessThan(24),
+    );
+    expect(
+      _averageEdgeDelta(
+        pixels,
+        width: image.width,
+        height: image.height,
+        firstEdge: _Edge.top,
+        secondEdge: _Edge.bottom,
+      ),
+      lessThan(24),
+    );
   });
 
   test('grass micro map texture is a square tile asset', () async {

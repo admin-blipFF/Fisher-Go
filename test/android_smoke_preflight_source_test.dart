@@ -59,6 +59,21 @@ void main() {
     );
   });
 
+  test('spot selection smoke requires an explicit verified-spot GPS override',
+      () {
+    final source =
+        File('tool/run_android_integration_smoke.ps1').readAsStringSync();
+
+    expect(
+      source,
+      contains(
+        "map_spot_selection_flow_test.dart requires a verified-spot GPS override",
+      ),
+    );
+    expect(source, contains('-GeoLongitude 114.109537072'));
+    expect(source, contains('-GeoLatitude 22.354208013'));
+  });
+
   test('Android smoke runner fails fast and prints timeout diagnostics', () {
     final source =
         File('tool/run_android_integration_smoke.ps1').readAsStringSync();

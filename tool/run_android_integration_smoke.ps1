@@ -26,6 +26,14 @@ param(
 
 $ErrorActionPreference = 'Stop'
 
+# The map spot flow is tied to the verified Tsing Yi registry point. The
+# runner's Sha Tin default is intentionally reserved for map/road smoke.
+if ($TestFile -eq 'map_spot_selection_flow_test.dart' -and
+    $GeoLongitude -eq 114.1874 -and
+    $GeoLatitude -eq 22.3819) {
+  throw 'map_spot_selection_flow_test.dart requires a verified-spot GPS override; use -GeoLongitude 114.109537072 -GeoLatitude 22.354208013.'
+}
+
 if ($ToggleNetwork -and $TestFile -ne 'offline_network_toggle_flow_test.dart') {
   throw '-ToggleNetwork is only valid with offline_network_toggle_flow_test.dart.'
 }

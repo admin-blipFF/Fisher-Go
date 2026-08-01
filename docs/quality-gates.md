@@ -197,6 +197,19 @@ Last updated: 2026-08-01
   `tmp/android-native-map-fill-aa-control-binary.png`, and
   `tmp/android-native-map-fill-aa-disabled-binary.png`.
 
+- A static 36 m building-height diagnostic was also rejected on API 35
+  `emulator-5554` with the Intel UHD 630 host renderer. The first dynamic
+  control measured gfx p95/p99 `32/44 ms` and `30.4%` jank; the static-height
+  candidate and repeat measured `30/32 ms` with `20.3%` and `18.81%` jank,
+  while the matched dynamic control repeat measured `30/32 ms` with `17.06%`
+  jank and fewer slow draw commands (`79` versus `98`). It therefore did not
+  produce a stable motion win, and the source was restored without changing
+  the production 3D style. Evidence:
+  `tmp/android-map-benchmark-masterplan-baseline-api35-20260801.json`,
+  `tmp/android-map-benchmark-masterplan-static-height36-api35-20260801.json`,
+  `tmp/android-map-benchmark-masterplan-static-height36-api35-repeat-20260801.json`,
+  and `tmp/android-map-benchmark-masterplan-control-repeat-api35-20260801.json`.
+
 - The restored production source was rebuilt for both release targets after
   the rejection: Web package `89.6 MiB` and arm64 AAB `75.7 MiB`. The client
   secret scan and asset-budget check passed for the current outputs;

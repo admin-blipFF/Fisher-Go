@@ -4,12 +4,21 @@ Last updated: 2026-08-01
 
 ## Current verification snapshot (2026-08-01)
 
+- The current production deployment is the clean `bf7aded` commit with
+  release ID `0.1.1+2-bf7aded90931`. Vercel deployment
+  `https://fishergo-nxpr8akrl-klyeung-s-projects.vercel.app` is `READY` and
+  owns both `fisher-go.app` and `www.fisher-go.app`. The approved deployed-web
+  verifier passed both roots, both `/release-manifest.json` responses, both
+  `/assets/.env` rejection checks, and the effective cache policy on
+  2026-08-01.
+
 - The Windows-native production release path is available at
   `scripts/deploy.ps1` and fails closed before reading credentials unless
   `-PromoteProduction` is supplied. On this host, Windows Application Control
   blocked the local Flutter `impellerc.exe` invocation, so the same release
-  inputs were sent through the verified remote Vercel build path. The latest
-  production deployment is
+  inputs were sent through the verified remote Vercel build path. The earlier
+  dirty-release evidence is retained here for diagnosis; the current clean
+  production deployment is recorded above at
   `https://fishergo-pvlnkixhi-klyeung-s-projects.vercel.app` with release ID
   `0.1.1+2-8eabcee9251e-dirty-20260801175814`; both canonical aliases were
   promoted and the public manifest/bootstrap/secret-asset verifier passed.
@@ -47,8 +56,8 @@ Last updated: 2026-08-01
   headers on both canonical aliases for the root page, Flutter bootstrap,
   versioned `main.dart.js`, and release manifest. The successful fake-alias
   path and stale-header rejection are covered by
-  `test/deployed_web_verifier_test.dart`; production must be rerun after the
-  next promotion because the current public deployment predates this check.
+  `test/deployed_web_verifier_test.dart`; the current production deployment
+  was rerun through this verifier on 2026-08-01.
 
 - A preview-only Vercel deployment of the current source reached `READY` at
   `https://fishergo-64djpm3eo-klyeung-s-projects.vercel.app`
@@ -203,6 +212,15 @@ Last updated: 2026-08-01
   missing map geometry. Evidence:
   `tmp/web-map-benchmark-final-current-20260801.json` and
   `test/goldens/game_map/manifest.json`.
+
+- A Web all-fill-outline diagnostic was measured against the current source.
+  The 390x844 and 1440x900 visual goldens stayed populated, but the matched
+  desktop run remained at `66.6 ms` p95 (`40.48 FPS`, `18.81%` jank) versus
+  the current control's `66.6 ms` p95 (`40.68 FPS`, `20.69%` jank). It did not
+  close the p95 gate and is not promoted; the query-gated diagnostic was
+  removed after the comparison. Evidence:
+  `tmp/web-map-benchmark-masterplan-baseline-current-20260801.json` and
+  `tmp/web-map-benchmark-masterplan-no-fill-outlines-20260801.json`.
 
 - The API 35 CI smoke workflow now uses `set -euo pipefail` and has a source
   contract covering all 12 integration flows, the fixed API 35 emulator,

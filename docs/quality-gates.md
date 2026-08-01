@@ -4,13 +4,21 @@ Last updated: 2026-08-01
 
 ## Current verification snapshot (2026-08-01)
 
-- The current production deployment is the clean `bf7aded` commit with
-  release ID `0.1.1+2-bf7aded90931`. Vercel deployment
-  `https://fishergo-nxpr8akrl-klyeung-s-projects.vercel.app` is `READY` and
+- The production deployment captured by this quality snapshot is the clean
+  `a11b22a` commit with
+  release ID `0.1.1+2-a11b22a422a9`. Vercel deployment
+  `https://fishergo-gdnj5rzy3-klyeung-s-projects.vercel.app` is `READY` and
   owns both `fisher-go.app` and `www.fisher-go.app`. The approved deployed-web
   verifier passed both roots, both `/release-manifest.json` responses, both
   `/assets/.env` rejection checks, and the effective cache policy on
   2026-08-01.
+
+- The post-push production browser smoke reached both viewports with
+  populated OpenFreeMap tiles and passing visual goldens. The exploratory
+  motion readings were `53.95 FPS` / `33.4 ms` p95 / `5.58%` jank at 390x844
+  and `41.07 FPS` / `66.6 ms` p95 / `18.54%` jank at 1440x900, so the
+  desktop gate and the narrowly missed mobile gate remain open. Evidence:
+  `tmp/web-map-benchmark-production-a11b22a-20260801.json`.
 
 - The Windows-native production release path is available at
   `scripts/deploy.ps1` and fails closed before reading credentials unless

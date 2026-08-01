@@ -1,0 +1,133 @@
+{
+  "version": 8,
+  "name": "FisherGO Game 3D Map",
+  "sources": {
+    "openmaptiles": {
+      "type": "vector",
+      "url": "https://tiles.openfreemap.org/planet"
+    }
+  },
+  "layers": [
+    {
+      "id": "land",
+      "type": "background",
+      "paint": {"background-color": "#dce8c9"}
+    },
+    {
+      "id": "grass",
+      "type": "fill",
+      "source": "openmaptiles",
+      "source-layer": "landcover",
+      "filter": ["in", "class", "farmland", "grass", "meadow"],
+      "paint": {"fill-color": "#b8dca0", "fill-opacity": 0.86}
+    },
+    {
+      "id": "wood",
+      "type": "fill",
+      "source": "openmaptiles",
+      "source-layer": "landcover",
+      "filter": ["in", "class", "wood", "forest"],
+      "paint": {"fill-color": "#91c683", "fill-opacity": 0.88}
+    },
+    {
+      "id": "park",
+      "type": "fill",
+      "source": "openmaptiles",
+      "source-layer": "park",
+      "paint": {"fill-color": "#a7d991", "fill-opacity": 0.82}
+    },
+    {
+      "id": "water",
+      "type": "fill",
+      "source": "openmaptiles",
+      "source-layer": "water",
+      "filter": ["in", "class", "ocean", "sea", "bay", "strait", "lake", "river", "dock", "pond"],
+      "paint": {
+        "fill-color": [
+          "match", ["get", "class"],
+          "ocean", "#55bfe4",
+          "sea", "#55bfe4",
+          "bay", "#5bc7e8",
+          "strait", "#52b7dc",
+          "lake", "#63bddf",
+          "river", "#65c8e4",
+          "dock", "#4caed1",
+          "pond", "#6bcbe3",
+          "#63bddd"
+        ],
+        "fill-opacity": 0.94,
+        "fill-outline-color": "#4aa5cd"
+      }
+    },
+    {
+      "id": "waterway",
+      "type": "line",
+      "source": "openmaptiles",
+      "source-layer": "waterway",
+      "paint": {
+        "line-color": "#62b4df",
+        "line-opacity": 0.94,
+        "line-width": ["interpolate", ["linear"], ["zoom"], 11, 0.7, 16, 3.5, 20, 10]
+      }
+    },
+    {
+      "id": "building-3d",
+      "type": "fill-extrusion",
+      "source": "openmaptiles",
+      "source-layer": "building",
+      "minzoom": 15,
+      "paint": {
+        "fill-extrusion-color": "#d8d2c6",
+        "fill-extrusion-height": [
+          "min", ["coalesce", ["get", "render_height"], ["get", "height"], 6], 36
+        ],
+        "fill-extrusion-base": ["coalesce", ["get", "render_min_height"], 0],
+        "fill-extrusion-vertical-gradient": false,
+        "fill-extrusion-opacity": 0.66
+      }
+    },
+    {
+      "id": "road-main",
+      "type": "line",
+      "source": "openmaptiles",
+      "source-layer": "transportation",
+      "minzoom": 10,
+      "filter": ["in", "class", "motorway", "trunk", "primary", "secondary", "tertiary"],
+      "layout": {"line-cap": "round", "line-join": "round"},
+      "paint": {
+        "line-color": [
+          "match", ["get", "class"],
+          "motorway", "#f1bf8c",
+          "trunk", "#f1bf8c",
+          "primary", "#f1bf8c",
+          "secondary", "#f7ddb0",
+          "tertiary", "#f7ddb0",
+          "minor", "#fff9e8",
+          "service", "#fff9e8",
+          "#fff9e8"
+        ],
+        "line-opacity": 0.96,
+        "line-width": [
+          "interpolate", ["linear"], ["zoom"],
+          10, ["match", ["get", "class"], "motorway", 1, "trunk", 1, "primary", 1, "secondary", 0.7, "tertiary", 0.7, "minor", 0, "service", 0, 0],
+          13.5, ["match", ["get", "class"], "motorway", 4.5, "trunk", 4.5, "primary", 4.5, "secondary", 3.6, "tertiary", 3.6, "minor", 1, "service", 1, 0],
+          16, ["match", ["get", "class"], "motorway", 7, "trunk", 7, "primary", 7, "secondary", 5.5, "tertiary", 5.5, "minor", 3.6, "service", 3.6, 0],
+          20, ["match", ["get", "class"], "motorway", 19, "trunk", 19, "primary", 19, "secondary", 15, "tertiary", 15, "minor", 12, "service", 12, 0]
+        ]
+      }
+    },
+    {
+      "id": "pier",
+      "type": "line",
+      "source": "openmaptiles",
+      "source-layer": "transportation",
+      "minzoom": 13,
+      "filter": ["==", "class", "pier"],
+      "layout": {"line-cap": "round", "line-join": "round"},
+      "paint": {
+        "line-color": "#e8ddcc",
+        "line-width": ["interpolate", ["linear"], ["zoom"], 13, 1, 20, 9]
+      }
+    }
+  ]
+}

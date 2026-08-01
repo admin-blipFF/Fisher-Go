@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../../fish/data/sample_fish_species_data_source.dart';
+import '../../fish/domain/fish_collection_copy.dart';
 import '../../fish/domain/fish_collection_service.dart';
 import '../../fish/domain/fish_collection_status.dart';
+import '../data/public_leaderboard_service.dart';
 
 class LeaderboardScreen extends StatefulWidget {
   const LeaderboardScreen({super.key});
@@ -53,9 +55,26 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
         .where((entry) => entry.status == FishDiscoveryStatus.gameCaught)
         .length;
 
+    final localRows = rows;
+    final remote = await PublicLeaderboardService.load();
+    final verifiedRows = remote.remoteAvailable
+        ? [
+            for (final entry in remote.entries)
+              _VerifiedCatchRow(
+                fishId: entry.speciesId ?? entry.speciesName,
+                fishName: entry.speciesName,
+                rarityRank: entry.speciesId == null
+                    ? 1
+                    : speciesById[entry.speciesId]?.rarityRank ?? 1,
+                bestLengthCm: entry.lengthCm,
+                verifiedAt: entry.verifiedAt,
+              ),
+          ]
+        : localRows;
+
     return _CompetitionSnapshot(
       totalSpecies: species.length,
-      verifiedRows: rows,
+      verifiedRows: verifiedRows,
       gameCaughtCount: gameCaughtCount,
     );
   }
@@ -170,10 +189,12 @@ class _RulesCard extends StatelessWidget {
           children: [
             Text('活動規則', style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: 10),
+            _RuleLine(
+                icon: Icons.camera_alt,
+                text: FishDiscoveryCopy.competitionRule()),
             const _RuleLine(
-                icon: Icons.camera_alt, text: '必須上載真實魚獲相片，才有彩色徽章及比賽資格。'),
-            const _RuleLine(
-                icon: Icons.catching_pokemon, text: '釣點刷魚只解鎖灰章和基本資料，可用來探索魚種。'),
+                icon: Icons.catching_pokemon,
+                text: '小遊戲釣獲會解鎖全彩圖示和基本資料，可用來探索魚種。'),
             const _RuleLine(
                 icon: Icons.straighten, text: '排行榜 MVP 先按長度排序；未填長度則按稀有度排序。'),
             const _RuleLine(
@@ -181,7 +202,7 @@ class _RulesCard extends StatelessWidget {
             if (snapshot.verifiedRows.isEmpty) ...[
               const SizedBox(height: 12),
               Text(
-                '未有合資格魚獲：到「魚獲」頁新增記錄並附相片，即可開彩章及入榜。',
+                '未有合資格魚獲：到「魚獲」頁新增記錄並附相片，即可獲得魚鈎認證及入榜。',
                 style: Theme.of(context)
                     .textTheme
                     .bodyMedium

@@ -1,26 +1,49 @@
 import 'dart:io';
+import 'dart:ui' as ui;
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:image/image.dart' as image;
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   test('mobile fish assets replace the oversized generated bundle', () {
     final pubspec = File('pubspec.yaml').readAsStringSync();
-    expect(pubspec, contains('assets/fish/mobile/'));
+    expect(pubspec, contains('assets/fish/mobile_webp/'));
+    expect(pubspec, contains('assets/fish/icons/locked_silhouette.png'));
+    expect(pubspec, contains('assets/fish/icons/silhouettes/'));
+    expect(pubspec, isNot(contains('    - assets/fish/icons/\n')));
     expect(pubspec, isNot(contains('- assets/fish/icons/generated/')));
 
-    final files = Directory('assets/fish/mobile')
+    final files = Directory('assets/fish/mobile_webp')
         .listSync()
         .whereType<File>()
-        .where((file) => file.path.endsWith('.png'))
+        .where((file) => file.path.endsWith('.webp'))
         .toList(growable: false);
     expect(files.length, greaterThanOrEqualTo(300));
 
+    expect(files, hasLength(340));
+  });
+
+  test('Vercel input excludes fish rollback and generated source assets', () {
+    final vercelIgnore = File('.vercelignore').readAsStringSync();
+    expect(vercelIgnore, contains('assets/fish/icons/generated/'));
+    expect(vercelIgnore, contains('assets/fish/icons/backup_*/'));
+  });
+
+  test('Flutter engine decodes the compressed fish assets', () async {
+    final files = Directory('assets/fish/mobile_webp')
+        .listSync()
+        .whereType<File>()
+        .where((file) => file.path.endsWith('.webp'))
+        .toList(growable: false);
+
     for (final file in files) {
-      final decoded = image.decodePng(file.readAsBytesSync());
-      expect(decoded, isNotNull, reason: file.path);
-      expect(decoded!.width, lessThanOrEqualTo(384), reason: file.path);
-      expect(decoded.height, lessThanOrEqualTo(384), reason: file.path);
+      final codec = await ui.instantiateImageCodec(file.readAsBytesSync());
+      final frame = await codec.getNextFrame();
+      expect(frame.image.width, lessThanOrEqualTo(384), reason: file.path);
+      expect(frame.image.height, lessThanOrEqualTo(384), reason: file.path);
+      frame.image.dispose();
+      codec.dispose();
     }
   });
 }

@@ -1,0 +1,44 @@
+name: Supabase quality
+
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - 'supabase/**'
+      - '.github/workflows/supabase-quality.yml'
+  pull_request:
+    paths:
+      - 'supabase/**'
+      - '.github/workflows/supabase-quality.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  database:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Start local Supabase
+        run: supabase start
+
+      - name: Apply migrations
+        run: supabase db reset --local
+
+      - name: Run pgTAP tests
+        run: supabase test db
+
+      - name: Lint migrations
+        run: supabase db lint --local --schema public --fail-on error
+
+      - name: Stop local Supabase
+        if: always()
+        run: supabase stop --no-backup

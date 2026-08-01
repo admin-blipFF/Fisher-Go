@@ -1,29 +1,38 @@
 import 'dart:async';
-import 'dart:typed_data' show Uint8List;
 import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:hive/hive.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 
 import '../../../core/config/supabase_config.dart';
+import '../../../core/location/location_access_service.dart';
 import '../../../core/permissions/android_permission_gate.dart';
+import '../../../core/telemetry/app_telemetry.dart';
 import '../../fish/data/sample_fish_species_data_source.dart';
+import '../../fish/domain/fish_collection_copy.dart';
 import '../../fish/domain/fish_collection_service.dart';
+import '../../fish/domain/fish_collection_status.dart';
 import '../../fish/domain/fish_species.dart';
 import '../../profile/data/profile_wallet_service.dart';
 import '../../profile/domain/game_shop_item.dart';
 import '../../profile/presentation/profile_screen.dart';
 import '../data/catch_log_local_data_source.dart';
+import '../data/catch_history_service.dart';
+import '../data/catch_photo_url_resolver.dart';
 import '../data/fish_recognition_service.dart';
 import '../data/real_catch_claim_service.dart';
 import '../data/catch_sync_service.dart';
+import '../data/offline_sync_coordinator.dart';
 import '../data/hk_fishing_spots_geocoded_seed.dart';
+import '../data/virtual_fishing_session_service.dart';
 import '../domain/catch_log_entry.dart';
 
 class CatchLogScreen extends StatefulWidget {
@@ -31,6 +40,7 @@ class CatchLogScreen extends StatefulWidget {
     super.key,
     this.localDataSource,
     this.syncService,
+    this.connectivityChanges,
     this.mapOnly = false,
     this.gameHome = false,
     this.onOpenScreen,
@@ -38,6 +48,7 @@ class CatchLogScreen extends StatefulWidget {
 
   final CatchLogLocalDataSource? localDataSource;
   final CatchSyncService? syncService;
+  final Stream<List<ConnectivityResult>>? connectivityChanges;
   final bool mapOnly;
   final bool gameHome;
   final ValueChanged<int>? onOpenScreen;
@@ -64,9 +75,13 @@ class _CatchLogScreenState extends State<CatchLogScreen> {
 
   late final CatchLogLocalDataSource _localDataSource;
   late final CatchSyncService _syncService;
+  late final CatchHistoryService _historyService;
+  late final OfflineSyncCoordinator _offlineSyncCoordinator;
   late final List<FishSpecies> _species;
   late final _SpotCommunityService _spotCommunityService;
   List<CatchLogEntry> _pending = const [];
+  List<CatchHistoryItem> _remoteHistory = const [];
+  bool? _isOnline;
 
   String? _selectedSpeciesId;
   DateTime _caughtAt = DateTime.now();
@@ -74,6 +89,7 @@ class _CatchLogScreenState extends State<CatchLogScreen> {
   Uint8List? _photoBytes; // Preloaded bytes for display
   double? _latitude;
   double? _longitude;
+  double? _locationAccuracyMeters;
   final List<CatchCheckpoint> _checkpoints = [];
   final Set<String> _autoCheckedSpotIds = <String>{};
   final Map<String, List<String>> _otherSpeciesCache = <String, List<String>>{};
@@ -103,6 +119,20 @@ class _CatchLogScreenState extends State<CatchLogScreen> {
               ? const _UnavailableCatchRemoteDataSource()
               : SupabaseCatchRemoteDataSource(supabaseClient),
         );
+    _historyService = CatchHistoryService(
+      dataSource: supabaseClient == null
+          ? const _UnavailableCatchHistoryDataSource()
+          : SupabaseCatchHistoryDataSource(supabaseClient),
+      photoUrlResolver: supabaseClient == null
+          ? null
+          : SupabaseCatchPhotoUrlResolver(supabaseClient),
+    );
+    _offlineSyncCoordinator = OfflineSyncCoordinator(
+      connectivityChanges:
+          widget.connectivityChanges ?? Connectivity().onConnectivityChanged,
+      onOnlineChanged: _handleConnectivityStatus,
+      syncPending: _syncPending,
+    )..start();
     _species = const SampleFishSpeciesDataSource().loadSpecies();
     _spotCommunityService = _SpotCommunityService(
       client: supabaseClient,
@@ -114,9 +144,9 @@ class _CatchLogScreenState extends State<CatchLogScreen> {
       _selectedSpeciesId = _species.first.id;
     }
     _loadPending();
+    _loadRemoteHistory();
     _loadConsumables();
     _loadGeofenceSetting();
-    _startLocationTracking();
     _recognitionService = FishRecognitionService();
   }
 
@@ -126,6 +156,26 @@ class _CatchLogScreenState extends State<CatchLogScreen> {
         .catchError((_) => <CatchLogEntry>[]);
     if (!mounted) return;
     setState(() => _pending = entries);
+  }
+
+  void _handleConnectivityStatus(bool isOnline) {
+    if (!mounted || _isOnline == isOnline) return;
+    setState(() => _isOnline = isOnline);
+  }
+
+  Future<void> _loadRemoteHistory() async {
+    if (!SupabaseConfig.isConfigured) return;
+    final client = Supabase.instance.client;
+    final userId = client.auth.currentUser?.id;
+    if (userId == null) return;
+
+    try {
+      final history = await _historyService.load(userId: userId);
+      if (!mounted) return;
+      setState(() => _remoteHistory = history);
+    } catch (_) {
+      // Offline/cloud read failures leave the local catch queue usable.
+    }
   }
 
   Future<void> _loadConsumables() async {
@@ -160,6 +210,7 @@ class _CatchLogScreenState extends State<CatchLogScreen> {
 
   @override
   void dispose() {
+    unawaited(_offlineSyncCoordinator.dispose());
     _positionSubscription?.cancel();
     _lengthController.dispose();
     _weightController.dispose();
@@ -188,6 +239,7 @@ class _CatchLogScreenState extends State<CatchLogScreen> {
                 _buildCheckpointSection(),
                 const SizedBox(height: 16),
                 _buildPendingList(),
+                _buildRemoteHistory(),
               ]
             : [
                 _buildInfoBanner(),
@@ -195,18 +247,43 @@ class _CatchLogScreenState extends State<CatchLogScreen> {
                 _buildForm(context),
                 const SizedBox(height: 16),
                 _buildPendingList(),
+                _buildRemoteHistory(),
               ],
       ),
     );
   }
 
   Widget _buildInfoBanner() {
+    final connectivityLabel = _isOnline == null
+        ? '連線檢查中'
+        : _isOnline!
+            ? '已連線'
+            : '離線';
+    final connectivityIcon = _isOnline == false
+        ? Icons.cloud_off_outlined
+        : Icons.cloud_done_outlined;
+    final connectivityColor = _isOnline == false ? Colors.orange : Colors.teal;
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Row(
+              children: [
+                Icon(connectivityIcon, size: 18, color: connectivityColor),
+                const SizedBox(width: 6),
+                Text(
+                  connectivityLabel,
+                  style: TextStyle(
+                    color: connectivityColor,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
             Text(
               '可先匿名試玩：魚獲會先儲存在本機。建立 FisherGO 帳戶後，可備份魚獲、換機保留紀錄及參加排行榜。\n待備份：${_pending.length} 筆',
             ),
@@ -406,6 +483,71 @@ class _CatchLogScreenState extends State<CatchLogScreen> {
                 ),
               )
               .toList(growable: false),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRemoteHistory() {
+    if (!SupabaseConfig.isConfigured || _remoteHistory.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(8, 12, 8, 8),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 8),
+              child: Text(
+                '雲端魚獲',
+                style: TextStyle(fontWeight: FontWeight.w700),
+              ),
+            ),
+            ..._remoteHistory.map(
+              (item) => ListTile(
+                contentPadding: const EdgeInsets.symmetric(horizontal: 8),
+                leading: _buildRemoteCatchThumbnail(item),
+                title: Text(item.record.speciesName),
+                subtitle: Text(_formatDateTime(item.record.caughtAt)),
+                trailing: item.record.isRealCatchProof
+                    ? const Icon(
+                        Icons.verified,
+                        color: Colors.teal,
+                        semanticLabel: '真實釣獲相片已驗證',
+                      )
+                    : null,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRemoteCatchThumbnail(CatchHistoryItem item) {
+    final url = item.photoUrl;
+    if (url == null) {
+      return const CircleAvatar(
+        child: Icon(Icons.set_meal),
+      );
+    }
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(8),
+      child: Image.network(
+        url,
+        width: 48,
+        height: 48,
+        fit: BoxFit.cover,
+        errorBuilder: (_, __, ___) => const SizedBox(
+          width: 48,
+          height: 48,
+          child: ColoredBox(
+            color: Color(0xFFE0F2F1),
+            child: Icon(Icons.broken_image_outlined),
+          ),
         ),
       ),
     );
@@ -882,20 +1024,8 @@ class _CatchLogScreenState extends State<CatchLogScreen> {
   }
 
   Future<void> _startLocationTracking() async {
-    final serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) return;
-
-    final permission = await AndroidPermissionGate.run(() async {
-      var current = await Geolocator.checkPermission();
-      if (current == LocationPermission.denied) {
-        current = await Geolocator.requestPermission();
-      }
-      return current;
-    });
-    if (permission == LocationPermission.denied ||
-        permission == LocationPermission.deniedForever) {
-      return;
-    }
+    final access = await _ensureLocationAccess();
+    if (access != LocationAccessState.ready) return;
 
     await _positionSubscription?.cancel();
     _positionSubscription = Geolocator.getPositionStream(
@@ -908,9 +1038,25 @@ class _CatchLogScreenState extends State<CatchLogScreen> {
       setState(() {
         _latitude = position.latitude;
         _longitude = position.longitude;
+        _locationAccuracyMeters = _normaliseAccuracy(position.accuracy);
       });
       unawaited(_autoCheckpointByGeofence());
     });
+  }
+
+  Future<LocationAccessState> _ensureLocationAccess() {
+    return AndroidPermissionGate.run(
+      () => const LocationAccessService().ensureReady(),
+    );
+  }
+
+  String _locationAccessMessage(LocationAccessState access) {
+    return switch (access) {
+      LocationAccessState.serviceDisabled => '請先開啟手機定位服務。',
+      LocationAccessState.permissionDenied => '未授權位置權限。',
+      LocationAccessState.permissionDeniedForever => '定位權限已永久拒絕，請到系統設定重新開啟。',
+      LocationAccessState.ready => '',
+    };
   }
 
   Future<void> _pickDateTime() async {
@@ -957,16 +1103,9 @@ class _CatchLogScreenState extends State<CatchLogScreen> {
 
   Future<void> _pickLocation() async {
     try {
-      final permission = await AndroidPermissionGate.run(() async {
-        var current = await Geolocator.checkPermission();
-        if (current == LocationPermission.denied) {
-          current = await Geolocator.requestPermission();
-        }
-        return current;
-      });
-      if (permission == LocationPermission.denied ||
-          permission == LocationPermission.deniedForever) {
-        _showSnack('未授權位置權限。');
+      final access = await _ensureLocationAccess();
+      if (access != LocationAccessState.ready) {
+        _showSnack(_locationAccessMessage(access));
         return;
       }
 
@@ -975,11 +1114,48 @@ class _CatchLogScreenState extends State<CatchLogScreen> {
       setState(() {
         _latitude = position.latitude;
         _longitude = position.longitude;
+        _locationAccuracyMeters = _normaliseAccuracy(position.accuracy);
       });
+      await _startLocationTracking();
       unawaited(_autoCheckpointByGeofence());
     } catch (_) {
       _showSnack('未能取得定位，請稍後再試。');
     }
+  }
+
+  Future<bool> _refreshLocationForFishing() async {
+    if (!SupabaseConfig.isConfigured) return true;
+
+    final access = await _ensureLocationAccess();
+    if (access != LocationAccessState.ready) {
+      if (mounted) _showSnack(_locationAccessMessage(access));
+      return false;
+    }
+
+    try {
+      final position = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+          timeLimit: Duration(seconds: 8),
+        ),
+      );
+      if (!mounted) return false;
+      setState(() {
+        _latitude = position.latitude;
+        _longitude = position.longitude;
+        _locationAccuracyMeters = _normaliseAccuracy(position.accuracy);
+      });
+      await _startLocationTracking();
+      return _locationAccuracyMeters != null;
+    } catch (_) {
+      if (mounted) _showSnack('未能取得有效 GPS，釣魚挑戰需要在釣點附近進行。');
+      return false;
+    }
+  }
+
+  double? _normaliseAccuracy(double accuracy) {
+    if (!accuracy.isFinite || accuracy < 0 || accuracy > 250) return null;
+    return accuracy;
   }
 
   Future<void> _recognizeFish() async {
@@ -1043,7 +1219,13 @@ class _CatchLogScreenState extends State<CatchLogScreen> {
 
     final reward = triggerType == 'geofence' ? 2 : 5;
     final reason = triggerType == 'geofence' ? 'Geofence 自動打卡' : '手動地圖打卡';
-    await ProfileWalletService.addCoins(reward, reason: reason);
+    await ProfileWalletService.addCoins(
+      reward,
+      reason: reason,
+      rewardKind: 'checkpoint',
+      claimKey:
+          'checkpoint:$triggerType:${DateTime.now().toUtc().microsecondsSinceEpoch}',
+    );
   }
 
   Future<void> _autoCheckpointByGeofence() async {
@@ -1277,20 +1459,78 @@ class _CatchLogScreenState extends State<CatchLogScreen> {
       _showSnack('魚餌不足。請到商城購買魚餌或誘餌。');
       return;
     }
+    if (!await _refreshLocationForFishing()) return;
 
     final fish = _rollFishForSpot(spot, lureId);
-    final success = await showDialog<bool>(
-          context: context,
-          barrierDismissible: false,
-          builder: (context) => _FishingMinigameDialog(
-            spotName: spot.name,
-            fishName: fish.displayLocalName,
-            lureName: gameShopItemById[lureId]?.name ?? lureId,
-            bonus: _FishingEquipmentBonus.fromEquipped(_equippedItems),
-          ),
-        ) ??
-        false;
+    VirtualFishingSession? serverSession;
+    try {
+      serverSession = await VirtualFishingSessionService.start(
+        spotId: spot.id,
+        lureId: lureId,
+        fishId: fish.id,
+        latitude: _latitude,
+        longitude: _longitude,
+        accuracyMeters: _locationAccuracyMeters,
+      );
+    } catch (_) {
+      if (!mounted) return;
+      _showSnack('伺服器未能建立釣魚挑戰，請稍後再試。');
+      return;
+    }
+    if (SupabaseConfig.isConfigured && serverSession == null) {
+      _showSnack('釣魚挑戰需要最新版本及位置驗證，暫未發放獎勵。');
+      return;
+    }
     if (!mounted) return;
+    unawaited(
+      AppTelemetry.instance.record(
+        TelemetryEventName.minigameStarted,
+        fields: {'source': 'catch_log'},
+      ),
+    );
+    final result = await showDialog<_FishingMinigameResult>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => _FishingMinigameDialog(
+        spotName: spot.name,
+        fishName: fish.displayLocalName,
+        fishImageAsset: fishGameArtworkAssetPath(fish.imageUrl),
+        lureName: gameShopItemById[lureId]?.name ?? lureId,
+        bonus: _FishingEquipmentBonus.fromEquipped(_equippedItems),
+        serverSession: serverSession,
+      ),
+    );
+    if (!mounted) return;
+    if (result == null) return;
+    var success = result.localSuccess;
+    if (serverSession != null) {
+      VirtualFishingResolution? resolution;
+      try {
+        resolution = await VirtualFishingSessionService.resolve(
+          sessionId: serverSession.sessionId,
+          pullElapsedMs: result.pullElapsedMs,
+        );
+      } catch (_) {
+        if (!mounted) return;
+        _showSnack('釣魚挑戰未能由伺服器確認，未發放獎勵。');
+        return;
+      }
+      if (!mounted) return;
+      if (resolution == null) {
+        _showSnack('釣魚挑戰未能由伺服器確認，未發放獎勵。');
+        return;
+      }
+      success = resolution.success;
+    }
+    unawaited(
+      AppTelemetry.instance.record(
+        TelemetryEventName.minigameCompleted,
+        fields: {
+          'source': 'catch_log',
+          'outcome': success ? 'success' : 'failure',
+        },
+      ),
+    );
 
     final consumed = await ProfileWalletService.consumeConsumable(
       lureId,
@@ -1307,11 +1547,23 @@ class _CatchLogScreenState extends State<CatchLogScreen> {
       return;
     }
 
-    await FishCollectionService.markGameCaught(fish.id);
     final bonus = _FishingEquipmentBonus.fromEquipped(_equippedItems);
     final reward = 8 + bonus.rewardBonus;
-    await ProfileWalletService.addCoins(reward,
-        reason: '虛擬釣獲：${fish.displayLocalName}（裝備+$bonus.rewardBonus）');
+    final updatedCoins = await ProfileWalletService.addCoins(
+      reward,
+      reason: '虛擬釣獲：${fish.displayLocalName}（裝備+$bonus.rewardBonus）',
+      rewardKind: 'virtual_catch',
+      claimKey: serverSession == null
+          ? 'virtual-catch:${fish.id}:${DateTime.now().toUtc().microsecondsSinceEpoch}'
+          : 'virtual-catch-session:${serverSession.sessionId}',
+      fishId: fish.id,
+      gameplaySessionId: serverSession?.sessionId,
+    );
+    if (updatedCoins < 0) {
+      _showSnack('釣魚獎勵未能確認，圖鑑不會解鎖。');
+      return;
+    }
+    await FishCollectionService.markGameCaught(fish.id);
 
     if (!mounted) return;
     showDialog<void>(
@@ -1324,11 +1576,28 @@ class _CatchLogScreenState extends State<CatchLogScreen> {
           children: [
             ClipRRect(
               borderRadius: BorderRadius.circular(18),
-              child: Image.asset(
-                'assets/minigame/scene_catch_success.webp',
+              child: SizedBox(
                 height: 180,
                 width: double.infinity,
-                fit: BoxFit.cover,
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    Image.asset(
+                      'assets/minigame/scene_bobber_enhanced.webp',
+                      fit: BoxFit.cover,
+                    ),
+                    if (fishGameArtworkAssetPath(fish.imageUrl) != null)
+                      Center(
+                        child: Image.asset(
+                          fishGameArtworkAssetPath(fish.imageUrl)!,
+                          width: 150,
+                          height: 150,
+                          fit: BoxFit.contain,
+                          errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                        ),
+                      ),
+                  ],
+                ),
               ),
             ),
             const SizedBox(height: 12),
@@ -1338,7 +1607,7 @@ class _CatchLogScreenState extends State<CatchLogScreen> {
             Text('釣點：${spot.name}'),
             Text('使用：${gameShopItemById[lureId]?.name ?? lureId}'),
             const SizedBox(height: 8),
-            const Text('已解鎖圖鑑灰章。要開彩色徽章及比賽資格，需要真實拍照捕獲。'),
+            Text(FishDiscoveryCopy.detailHint(FishDiscoveryStatus.gameCaught)),
           ],
         ),
         actions: [
@@ -1389,7 +1658,7 @@ class _CatchLogScreenState extends State<CatchLogScreen> {
   }
 
   Future<void> _syncPending() async {
-    if (_pending.isEmpty) return;
+    if (!mounted || _pending.isEmpty) return;
 
     setState(() => _saving = true);
     try {
@@ -1425,7 +1694,12 @@ class _CatchLogScreenState extends State<CatchLogScreen> {
 
       await _localDataSource.savePending(failedEntries);
       await _loadPending();
+      await _loadRemoteHistory();
       _showSnack('同步完成：成功 ${summary.synced}，失敗 ${summary.failed}');
+    } catch (_) {
+      // Connectivity can return before the authenticated API is usable.
+      // Keep the local queue and let the next reconnect/manual retry try again.
+      _showSnack('同步暫時失敗，魚獲會保留在本機。');
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -1491,8 +1765,22 @@ class _CatchLogScreenState extends State<CatchLogScreen> {
           await _localDataSource.savePending(remaining);
           await _loadPending();
         }
+        await _loadRemoteHistory();
       }
-      await ProfileWalletService.addCoins(20, reason: '新增魚獲記錄');
+      final rewardBalance = await ProfileWalletService.addCoins(
+        20,
+        reason: '新增魚獲記錄',
+        rewardKind: 'real_catch',
+        claimKey:
+            'real-catch:${fish.id}:${_caughtAt.toUtc().microsecondsSinceEpoch}',
+        fishId: fish.id,
+      );
+      late final String rewardMessage;
+      if (rewardBalance >= 0) {
+        rewardMessage = '已加入待同步，圖鑑已標記為真實釣獲（+20 金幣）';
+      } else {
+        rewardMessage = '已加入待同步，圖鑑已標記為真實釣獲；獎勵待伺服器確認。';
+      }
 
       _lengthController.clear();
       _weightController.clear();
@@ -1507,7 +1795,7 @@ class _CatchLogScreenState extends State<CatchLogScreen> {
         });
       }
 
-      _showSnack('已加入待同步，圖鑑已標記為真實釣獲（+20 金幣）');
+      _showSnack(rewardMessage);
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -1556,6 +1844,17 @@ class _UnavailableCatchRemoteDataSource implements CatchRemoteDataSource {
     required CatchLogEntry entry,
   }) async {
     throw StateError('Supabase is not configured');
+  }
+}
+
+class _UnavailableCatchHistoryDataSource implements CatchHistoryDataSource {
+  const _UnavailableCatchHistoryDataSource();
+
+  @override
+  Future<List<RemoteCatchRecord>> fetchOwnCatches({
+    required String userId,
+  }) async {
+    return const [];
   }
 }
 
@@ -1610,18 +1909,32 @@ class _FishingEquipmentBonus {
   }
 }
 
+class _FishingMinigameResult {
+  const _FishingMinigameResult({
+    required this.localSuccess,
+    required this.pullElapsedMs,
+  });
+
+  final bool localSuccess;
+  final int pullElapsedMs;
+}
+
 class _FishingMinigameDialog extends StatefulWidget {
   const _FishingMinigameDialog({
     required this.spotName,
     required this.fishName,
+    required this.fishImageAsset,
     required this.lureName,
     required this.bonus,
+    this.serverSession,
   });
 
   final String spotName;
   final String fishName;
+  final String? fishImageAsset;
   final String lureName;
   final _FishingEquipmentBonus bonus;
+  final VirtualFishingSession? serverSession;
 
   @override
   State<_FishingMinigameDialog> createState() => _FishingMinigameDialogState();
@@ -1630,8 +1943,14 @@ class _FishingMinigameDialog extends StatefulWidget {
 class _FishingMinigameDialogState extends State<_FishingMinigameDialog>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
+  Timer? _biteTimer;
+  Timer? _biteHapticTimer;
+  final _pullClock = Stopwatch();
   bool _resolved = false;
   bool? _success;
+  bool _biteReady = false;
+  int _pullElapsedMs = 0;
+  String _resultMessage = '';
 
   @override
   void initState() {
@@ -1641,33 +1960,85 @@ class _FishingMinigameDialogState extends State<_FishingMinigameDialog>
       duration:
           Duration(milliseconds: (1350 / widget.bonus.speedMultiplier).round()),
     )..repeat(reverse: true);
+    _pullClock.start();
+    _biteTimer = Timer(
+      Duration(milliseconds: widget.serverSession?.biteDelayMs ?? 1600),
+      _startBite,
+    );
+  }
+
+  void _startBite() {
+    if (!mounted || _resolved) return;
+    _controller
+      ..stop()
+      ..value = 0
+      ..repeat(reverse: true);
+    setState(() => _biteReady = true);
+    HapticFeedback.mediumImpact();
+    _biteHapticTimer = Timer.periodic(const Duration(milliseconds: 180), (_) {
+      if (mounted && !_resolved && _biteReady) {
+        HapticFeedback.selectionClick();
+      }
+    });
   }
 
   @override
   void dispose() {
+    _biteTimer?.cancel();
+    _biteHapticTimer?.cancel();
     _controller.dispose();
     super.dispose();
   }
 
   void _pullRod() {
     if (_resolved) return;
+    _pullElapsedMs = _pullClock.elapsedMilliseconds;
+    if (!_biteReady) {
+      _controller.stop();
+      _biteTimer?.cancel();
+      setState(() {
+        _resolved = true;
+        _success = false;
+        _resultMessage = '太早抽竿，魚仲未食餌！';
+      });
+      HapticFeedback.lightImpact();
+      return;
+    }
     final value = _controller.value;
     final success =
         value >= widget.bonus.successStart && value <= widget.bonus.successEnd;
     _controller.stop();
+    _biteHapticTimer?.cancel();
     setState(() {
       _resolved = true;
       _success = success;
+      _resultMessage = success ? '時機完美！成功上鉤。' : '慢了一步，魚跑掉了。';
     });
+    HapticFeedback.heavyImpact();
   }
 
   void _finish() {
-    Navigator.of(context).pop(_success ?? false);
+    Navigator.of(context).pop(
+      _FishingMinigameResult(
+        localSuccess: _success ?? false,
+        pullElapsedMs: _pullElapsedMs,
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final statusMessage = _resolved
+        ? _resultMessage
+        : _biteReady
+            ? '浮標急震，立即按「抽竿」！'
+            : '等待魚食餌，浮標郁動後才可以抽竿。';
+    final actionLabel = _resolved
+        ? '完成'
+        : _biteReady
+            ? '抽竿，浮標急震，立即抽竿'
+            : '抽竿，等待魚食餌';
     return AlertDialog(
       title: const Text('釣魚挑戰'),
       content: Column(
@@ -1685,16 +2056,27 @@ class _FishingMinigameDialogState extends State<_FishingMinigameDialog>
                   fit: StackFit.expand,
                   children: [
                     Image.asset(
-                      _resolved && _success == true
-                          ? 'assets/minigame/scene_catch_success.webp'
-                          : 'assets/minigame/scene_bobber.webp',
+                      'assets/minigame/scene_bobber_enhanced.webp',
                       fit: BoxFit.cover,
                     ),
+                    if (_resolved &&
+                        _success == true &&
+                        widget.fishImageAsset != null)
+                      Center(
+                        child: Image.asset(
+                          widget.fishImageAsset!,
+                          width: 150,
+                          height: 150,
+                          fit: BoxFit.contain,
+                          errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                        ),
+                      ),
                     CustomPaint(
                       painter: _FishingScenePainter(
                         pointerValue: _controller.value,
                         resolved: _resolved,
                         success: _success,
+                        biteReady: _biteReady,
                       ),
                     ),
                   ],
@@ -1708,44 +2090,54 @@ class _FishingMinigameDialogState extends State<_FishingMinigameDialog>
           Text('使用：${widget.lureName}'),
           Text('裝備加成：${widget.bonus.summary}'),
           const SizedBox(height: 16),
-          Text(
-            _resolved
-                ? (_success == true ? '時機完美！成功上鉤。' : '慢了一步，魚跑掉了。')
-                : '指針進入綠色區域時按「拉竿」。',
-            style: theme.textTheme.bodyMedium?.copyWith(
-              fontWeight: FontWeight.w700,
-              color: _resolved
-                  ? (_success == true
-                      ? Colors.green.shade700
-                      : Colors.red.shade700)
-                  : null,
+          Semantics(
+            liveRegion: true,
+            label: statusMessage,
+            child: Text(
+              statusMessage,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                fontWeight: FontWeight.w700,
+                color: _resolved
+                    ? (_success == true
+                        ? Colors.green.shade700
+                        : Colors.red.shade700)
+                    : null,
+              ),
             ),
           ),
           const SizedBox(height: 14),
-          AnimatedBuilder(
-            animation: _controller,
-            builder: (context, _) {
-              return SizedBox(
-                height: 52,
-                child: CustomPaint(
-                  painter: _FishingTimingPainter(
-                    pointerValue: _controller.value,
-                    resolved: _resolved,
-                    success: _success,
-                    successStart: widget.bonus.successStart,
-                    successEnd: widget.bonus.successEnd,
+          if (!_biteReady && !_resolved)
+            const SizedBox(
+              height: 52,
+              child: Center(child: Text('等待魚食餌…')),
+            )
+          else
+            AnimatedBuilder(
+              animation: _controller,
+              builder: (context, _) {
+                return SizedBox(
+                  height: 52,
+                  child: CustomPaint(
+                    painter: _FishingTimingPainter(
+                      pointerValue: _controller.value,
+                      resolved: _resolved,
+                      success: _success,
+                      successStart: widget.bonus.successStart,
+                      successEnd: widget.bonus.successEnd,
+                    ),
+                    child: const SizedBox.expand(),
                   ),
-                  child: const SizedBox.expand(),
-                ),
-              );
-            },
-          ),
+                );
+              },
+            ),
           const SizedBox(height: 8),
           Row(
             children: const [
               Icon(Icons.info_outline, size: 16),
               SizedBox(width: 6),
-              Expanded(child: Text('成功會解鎖灰章；彩章仍需真實拍照驗證。')),
+              Expanded(
+                child: Text('成功會解鎖全彩圖示；真實相片確認後會加上魚鈎認證。'),
+              ),
             ],
           ),
         ],
@@ -1753,15 +2145,20 @@ class _FishingMinigameDialogState extends State<_FishingMinigameDialog>
       actions: [
         if (!_resolved)
           TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
+            onPressed: () => Navigator.of(context).pop(),
             child: const Text('取消'),
           ),
-        FilledButton.icon(
-          onPressed: _resolved ? _finish : _pullRod,
-          icon: Icon(_resolved
-              ? (_success == true ? Icons.check_circle : Icons.close)
-              : Icons.sports_martial_arts),
-          label: Text(_resolved ? '完成' : '拉竿'),
+        Semantics(
+          excludeSemantics: true,
+          button: true,
+          label: actionLabel,
+          child: FilledButton.icon(
+            onPressed: _resolved ? _finish : _pullRod,
+            icon: Icon(_resolved
+                ? (_success == true ? Icons.check_circle : Icons.close)
+                : Icons.sports_martial_arts),
+            label: Text(_resolved ? '完成' : '抽竿'),
+          ),
         ),
       ],
     );
@@ -1773,17 +2170,23 @@ class _FishingScenePainter extends CustomPainter {
     required this.pointerValue,
     required this.resolved,
     required this.success,
+    required this.biteReady,
   });
 
   final double pointerValue;
   final bool resolved;
   final bool? success;
+  final bool biteReady;
 
   @override
   void paint(Canvas canvas, Size size) {
     final waterTop = size.height * 0.48;
-    final bobberX = size.width * (0.18 + pointerValue * 0.64);
-    final bobberY = waterTop + 22 + math.sin(pointerValue * math.pi * 4) * 5;
+    final bobberX = size.width * 0.32;
+    final bobberY = waterTop +
+        22 +
+        (biteReady
+            ? math.sin(pointerValue * math.pi * 10) * 16
+            : math.sin(pointerValue * math.pi * 2) * 3);
 
     final ripplePaint = Paint()
       ..style = PaintingStyle.stroke
@@ -1839,7 +2242,8 @@ class _FishingScenePainter extends CustomPainter {
   bool shouldRepaint(covariant _FishingScenePainter oldDelegate) {
     return oldDelegate.pointerValue != pointerValue ||
         oldDelegate.resolved != resolved ||
-        oldDelegate.success != success;
+        oldDelegate.success != success ||
+        oldDelegate.biteReady != biteReady;
   }
 }
 

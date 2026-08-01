@@ -8,21 +8,60 @@ if [ ! -x "$FLUTTER_HOME/bin/flutter" ]; then
   git clone https://github.com/flutter/flutter.git --branch stable --depth 1 "$FLUTTER_HOME"
 fi
 
-cat > .env <<ENV
-SUPABASE_URL=${SUPABASE_URL:-}
-SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY:-}
-VECTOR_ENGINE_API_KEY=${VECTOR_ENGINE_API_KEY:-}
-ENV
+# Production must use the verified remote registry and server boundaries. Keep
+# preview/local builds usable without Supabase for map and UI diagnostics.
+if [ "${VERCEL_ENV:-preview}" = "production" ] ||
+  [ "${FISHERGO_REQUIRE_SUPABASE:-false}" = "true" ]; then
+  : "${SUPABASE_URL:?SUPABASE_URL is required for production Vercel builds}"
+  : "${SUPABASE_ANON_KEY:?SUPABASE_ANON_KEY is required for production Vercel builds}"
+fi
 
-BUILD_ID="$(TZ='Asia/Hong_Kong' date '+%Y%m%d%H%M%S')"
 BUILD_TIME="$(TZ='Asia/Hong_Kong' date '+%Y-%m-%d %H:%M HKT')"
+BUILD_ID="$(TZ='Asia/Hong_Kong' date '+%Y%m%d%H%M%S')"
+GIT_SHA="${FISHERGO_GIT_SHA:-${VERCEL_GIT_COMMIT_SHA:-${GITHUB_SHA:-unknown}}}"
+APP_VERSION="$(sed -n 's/^version:[[:space:]]*\([^[:space:]#]*\).*/\1/p' pubspec.yaml | head -n 1)"
+DEPLOY_RELEASE_ID=""
+if [ -f .fishergo-deploy-release-id ]; then
+  DEPLOY_RELEASE_ID="$(tr -d '\r\n' < .fishergo-deploy-release-id)"
+fi
+if [ -n "$DEPLOY_RELEASE_ID" ]; then
+  RELEASE_ID="$DEPLOY_RELEASE_ID"
+elif [ -n "${FISHERGO_DEPLOY_RELEASE_ID:-}" ]; then
+  # The deploy command passes this uniquely named value so a stale project-level
+  # FISHERGO_RELEASE_ID cannot silently replace the release being promoted.
+  RELEASE_ID="$FISHERGO_DEPLOY_RELEASE_ID"
+elif [ -z "${FISHERGO_RELEASE_ID:-}" ]; then
+  if [ "$GIT_SHA" = "unknown" ]; then
+    RELEASE_ID="${APP_VERSION:-unknown}-${BUILD_ID}"
+  else
+    RELEASE_ID="${APP_VERSION:-unknown}-${GIT_SHA:0:12}"
+  fi
+else
+  RELEASE_ID="$FISHERGO_RELEASE_ID"
+fi
 
 flutter config --enable-web
 flutter pub get
 flutter build web --release \
   --dart-define=SUPABASE_URL="${SUPABASE_URL:-}" \
   --dart-define=SUPABASE_ANON_KEY="${SUPABASE_ANON_KEY:-}" \
+  --dart-define=FISHERGO_PRIVACY_URL="${FISHERGO_PRIVACY_URL:-}" \
+  --dart-define=FISHERGO_SUPPORT_EMAIL="${FISHERGO_SUPPORT_EMAIL:-}" \
+  --dart-define=FISHERGO_ANALYTICS_ENABLED="${FISHERGO_ANALYTICS_ENABLED:-false}" \
+  --dart-define=FISHERGO_MAPLIBRE=true \
+  --dart-define=FISHERGO_RELEASE_ID="$RELEASE_ID" \
   --dart-define=BUILD_TIME="$BUILD_TIME"
+
+printf '{"build_id":"%s","build_time":"%s"}\n' \
+  "$BUILD_ID" "$BUILD_TIME" > build/web/version.json
+
+FISHERGO_BUILD_ID="$BUILD_ID" \
+FISHERGO_BUILD_TIME="$BUILD_TIME" \
+FISHERGO_GIT_SHA="$GIT_SHA" \
+FISHERGO_RELEASE_ID="$RELEASE_ID" \
+dart run tool/write_release_manifest.dart build/web/release-manifest.json
+
+dart run tool/check_client_artifacts_for_secrets.dart build/web
 
 BUILD_ID="$BUILD_ID" node <<'JS'
 const fs = require('fs');

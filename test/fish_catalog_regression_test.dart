@@ -29,7 +29,8 @@ class _MemoryLocal extends LocalFishSpeciesDataSource {
 }
 
 void main() {
-  test('remote generated fish paths resolve to the mobile asset bundle', () {
+  test('remote generated fish paths resolve to the compressed mobile bundle',
+      () {
     final fish = FishSpecies.fromMap({
       'id': 'fish-001',
       'common_name_zh': '黃腳鱲',
@@ -39,7 +40,26 @@ void main() {
 
     expect(
       fish.imageUrl,
-      'assets/fish/mobile/001_hk-yellowfin-seabream-badge.png',
+      'assets/fish/mobile_webp/001_hk-yellowfin-seabream-badge.webp',
+    );
+  });
+
+  test('game artwork resolves badge paths to transparent mobile art', () {
+    expect(
+      fishGameArtworkAssetPath(
+        'assets/fish/icons/generated/003_hk-goldlined-seabream-badge.png',
+      ),
+      'assets/fish/mobile_webp/003_hk-goldlined-seabream.webp',
+    );
+  });
+
+  test('game artwork resolves local badge paths to numbered transparent art',
+      () {
+    expect(
+      fishGameArtworkAssetPath(
+        'assets/fish/icons/generated/059_hk-goatfish-local-badge.png',
+      ),
+      'assets/fish/mobile_webp/059.webp',
     );
   });
 

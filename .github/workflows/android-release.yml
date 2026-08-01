@@ -1,0 +1,179 @@
+name: Android release
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  signed-release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    environment: fishergo-android-release
+    env:
+      FISHERGO_PRIVACY_URL: ${{ secrets.FISHERGO_PRIVACY_URL }}
+      FISHERGO_SUPPORT_EMAIL: ${{ secrets.FISHERGO_SUPPORT_EMAIL }}
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+      FISHERGO_ANALYTICS_ENABLED: 'true'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Resolve release id
+        shell: bash
+        run: |
+          set -euo pipefail
+          app_version="$(sed -n 's/^version:[[:space:]]*\([^[:space:]#]*\).*/\1/p' pubspec.yaml | head -n 1)"
+          test -n "$app_version"
+          echo "FISHERGO_RELEASE_ID=${app_version}-${GITHUB_SHA:0:12}" >> "$GITHUB_ENV"
+
+      - name: Write release manifest
+        env:
+          FISHERGO_BUILD_ID: android-${{ github.run_number }}
+          FISHERGO_GIT_SHA: ${{ github.sha }}
+        run: dart run tool/write_release_manifest.dart build/release/release-manifest.json
+
+      - name: Decode protected upload keystore
+        env:
+          FISHERGO_ANDROID_KEYSTORE_BASE64: ${{ secrets.FISHERGO_ANDROID_KEYSTORE_BASE64 }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$FISHERGO_ANDROID_KEYSTORE_BASE64"
+          printf '%s' "$FISHERGO_ANDROID_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/fishergo-upload.jks"
+          test -s "$RUNNER_TEMP/fishergo-upload.jks"
+
+      - name: Validate protected upload keystore
+        env:
+          FISHERGO_ANDROID_KEYSTORE_PASSWORD: ${{ secrets.FISHERGO_ANDROID_KEYSTORE_PASSWORD }}
+          FISHERGO_ANDROID_KEY_PASSWORD: ${{ secrets.FISHERGO_ANDROID_KEY_PASSWORD }}
+          FISHERGO_ANDROID_KEY_ALIAS: ${{ secrets.FISHERGO_ANDROID_KEY_ALIAS }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$FISHERGO_ANDROID_KEYSTORE_PASSWORD"
+          test -n "$FISHERGO_ANDROID_KEY_PASSWORD"
+          test -n "$FISHERGO_ANDROID_KEY_ALIAS"
+          keytool -list \
+            -keystore "$RUNNER_TEMP/fishergo-upload.jks" \
+            -storepass "$FISHERGO_ANDROID_KEYSTORE_PASSWORD" \
+            -alias "$FISHERGO_ANDROID_KEY_ALIAS" \
+            >/dev/null
+
+      - name: Build signed Android arm64 bundle
+        env:
+          FISHERGO_REQUIRE_RELEASE_SIGNING: 'true'
+          FISHERGO_ANDROID_KEYSTORE_PATH: ${{ runner.temp }}/fishergo-upload.jks
+          FISHERGO_ANDROID_KEYSTORE_PASSWORD: ${{ secrets.FISHERGO_ANDROID_KEYSTORE_PASSWORD }}
+          FISHERGO_ANDROID_KEY_ALIAS: ${{ secrets.FISHERGO_ANDROID_KEY_ALIAS }}
+          FISHERGO_ANDROID_KEY_PASSWORD: ${{ secrets.FISHERGO_ANDROID_KEY_PASSWORD }}
+        run: >-
+          flutter build appbundle --release --no-pub
+          --dart-define=SUPABASE_URL="$SUPABASE_URL"
+          --dart-define=SUPABASE_ANON_KEY="$SUPABASE_ANON_KEY"
+          --dart-define=FISHERGO_ANALYTICS_ENABLED="$FISHERGO_ANALYTICS_ENABLED"
+          --dart-define=FISHERGO_MAPLIBRE=true
+          --dart-define=FISHERGO_RELEASE_ID="$FISHERGO_RELEASE_ID"
+          --dart-define=FISHERGO_PRIVACY_URL="$FISHERGO_PRIVACY_URL"
+          --dart-define=FISHERGO_SUPPORT_EMAIL="$FISHERGO_SUPPORT_EMAIL"
+          --split-debug-info=build/app/symbols/aab
+          --target-platform android-arm64
+
+      - name: Build signed Android arm64 APK
+        env:
+          FISHERGO_REQUIRE_RELEASE_SIGNING: 'true'
+          FISHERGO_ANDROID_KEYSTORE_PATH: ${{ runner.temp }}/fishergo-upload.jks
+          FISHERGO_ANDROID_KEYSTORE_PASSWORD: ${{ secrets.FISHERGO_ANDROID_KEYSTORE_PASSWORD }}
+          FISHERGO_ANDROID_KEY_ALIAS: ${{ secrets.FISHERGO_ANDROID_KEY_ALIAS }}
+          FISHERGO_ANDROID_KEY_PASSWORD: ${{ secrets.FISHERGO_ANDROID_KEY_PASSWORD }}
+        run: >-
+          flutter build apk --release --no-pub
+          --dart-define=SUPABASE_URL="$SUPABASE_URL"
+          --dart-define=SUPABASE_ANON_KEY="$SUPABASE_ANON_KEY"
+          --dart-define=FISHERGO_ANALYTICS_ENABLED="$FISHERGO_ANALYTICS_ENABLED"
+          --dart-define=FISHERGO_MAPLIBRE=true
+          --dart-define=FISHERGO_RELEASE_ID="$FISHERGO_RELEASE_ID"
+          --dart-define=FISHERGO_PRIVACY_URL="$FISHERGO_PRIVACY_URL"
+          --dart-define=FISHERGO_SUPPORT_EMAIL="$FISHERGO_SUPPORT_EMAIL"
+          --split-debug-info=build/app/symbols/apk
+          --target-platform android-arm64
+
+      - name: Verify Android signature
+        shell: bash
+        run: |
+          set -euo pipefail
+          aab=build/app/outputs/bundle/release/app-release.aab
+          apk=build/app/outputs/flutter-apk/app-release.apk
+          test -s "$aab"
+          test -s "$apk"
+          jarsigner -verify "$aab" > "$RUNNER_TEMP/jarsigner.txt" 2>&1
+          grep -q 'jar verified.' "$RUNNER_TEMP/jarsigner.txt"
+          jarsigner -verify "$apk" > "$RUNNER_TEMP/jarsigner-apk.txt" 2>&1
+          grep -q 'jar verified.' "$RUNNER_TEMP/jarsigner-apk.txt"
+
+      - name: Verify Dart symbol files
+        shell: bash
+        run: |
+          set -euo pipefail
+          symbol_count="$(find build/app/symbols -type f -name '*.symbols' | wc -l)"
+          test "$symbol_count" -ge 2
+          find build/app/symbols -type f -name '*.symbols' -print
+
+      - name: Build Web release companion
+        run: >-
+          flutter build web --release --no-pub
+          --dart-define=SUPABASE_URL="$SUPABASE_URL"
+          --dart-define=SUPABASE_ANON_KEY="$SUPABASE_ANON_KEY"
+          --dart-define=FISHERGO_ANALYTICS_ENABLED="$FISHERGO_ANALYTICS_ENABLED"
+          --dart-define=FISHERGO_MAPLIBRE=true
+          --dart-define=FISHERGO_RELEASE_ID="$FISHERGO_RELEASE_ID"
+          --dart-define=FISHERGO_PRIVACY_URL="$FISHERGO_PRIVACY_URL"
+          --dart-define=FISHERGO_SUPPORT_EMAIL="$FISHERGO_SUPPORT_EMAIL"
+
+      - name: Write Web release manifest
+        env:
+          FISHERGO_BUILD_ID: web-${{ github.run_number }}
+          FISHERGO_GIT_SHA: ${{ github.sha }}
+        run: dart run tool/write_release_manifest.dart build/web/release-manifest.json
+
+      - name: Verify cross-platform release identity
+        run: >-
+          dart run tool/verify_release_manifests.dart
+          build/release/release-manifest.json
+          build/web/release-manifest.json
+
+      - name: Scan release artifacts
+        run: >-
+          dart run tool/check_client_artifacts_for_secrets.dart
+          build/web build/app/outputs
+
+      - name: Check release asset budgets
+        run: >-
+          dart run tool/check_asset_budget.dart
+          --web-root=build/web
+          --android-output-root=build/app/outputs
+          --packaged-asset-root=build/web/assets
+
+      - name: Upload signed Android artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: fishergo-android-release
+          path: |
+            build/app/outputs/bundle/release/app-release.aab
+            build/app/outputs/flutter-apk/app-release.apk
+            build/app/symbols/
+            build/release/release-manifest.json
+            build/web/release-manifest.json
+          if-no-files-found: error
+          retention-days: 14

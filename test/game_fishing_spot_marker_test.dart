@@ -112,10 +112,8 @@ void main() {
     ).readAsStringSync();
 
     expect(source, contains('fishingSpots: const <ProjectedFishingSpot>[],'));
-    expect(
-      source,
-      contains('..._buildProjectedSpotButtons(camera, fishingSpots),'),
-    );
+    expect(source,
+        contains('_buildProjectedSpotButtons(renderCamera, fishingSpots)'));
     expect(source, contains('=> GameFishingSpotMarker('));
     expect(source, contains('clusterProjectedFishingSpots('));
     expect(source, contains('clusterCount: cluster.count'));

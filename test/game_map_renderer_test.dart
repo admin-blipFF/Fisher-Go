@@ -16,6 +16,7 @@ void main() {
     double bearing = 0,
     double perspectiveStrength = 0,
     double viewportAnchorY = 0.5,
+    bool motionOptimized = false,
     List<TerrainTile>? tiles,
     List<TerrainVectorFeature>? features,
     List<ProjectedFishingSpot>? spots,
@@ -33,6 +34,7 @@ void main() {
       terrainTiles: tiles ?? [_waterTile()],
       terrainFeatures: features ?? [_roadFeature()],
       fishingSpots: spots ?? [_projectedSpot(camera)],
+      motionOptimized: motionOptimized,
     );
   }
 
@@ -87,6 +89,13 @@ void main() {
     );
   });
 
+  test('repaints when motion render detail changes', () {
+    expect(
+      painter(motionOptimized: true).shouldRepaint(painter()),
+      isTrue,
+    );
+  });
+
   test('repaints when building height or OSM provenance changes', () {
     expect(
       painter(
@@ -128,6 +137,19 @@ void main() {
     expect(budget.maxLabels, lessThan(7));
     expect(budget.maxBuildings, lessThan(80));
     expect(budget.enableBuildingRoofDetail, isFalse);
+  });
+
+  test('precomputes terrain grid dimensions without rescanning per tile', () {
+    final dimensions = terrainGridDimensions([
+      _waterTile(row: 0, col: 0),
+      _waterTile(row: 2, col: 4),
+      _waterTile(row: 1, col: 3),
+    ]);
+
+    expect(dimensions.rowCount, 3);
+    expect(dimensions.columnCount, 5);
+    expect(terrainGridDimensions(const []).rowCount, 0);
+    expect(terrainGridDimensions(const []).columnCount, 0);
   });
 
   test('keeps full visual detail for compact map scenes', () {
@@ -714,11 +736,11 @@ TerrainVectorFeature _buildingFeature({
   );
 }
 
-TerrainTile _waterTile() {
-  return const TerrainTile(
+TerrainTile _waterTile({int row = 0, int col = 0}) {
+  return TerrainTile(
     kind: TerrainKind.water,
-    row: 0,
-    col: 0,
+    row: row,
+    col: col,
     centerLatLng: center,
   );
 }

@@ -1,11 +1,12 @@
 import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart' show compute;
+import 'package:flutter/foundation.dart'
+    show compute, immutable, ValueListenable;
 import 'package:flutter/services.dart';
-import 'package:flutter_map/flutter_map.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:hive/hive.dart';
+import 'package:maplibre/maplibre.dart' as maplibre;
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:latlong2/latlong.dart' hide Path;
 import 'package:url_launcher/url_launcher.dart';
@@ -14,29 +15,46 @@ import '../../../core/admin/admin_ops_service.dart';
 import '../../../core/permissions/android_permission_gate.dart';
 import '../../../core/shop/boat_vendor_service.dart';
 import '../../../core/config/supabase_config.dart';
+import '../../../core/config/public_app_config.dart';
+import '../../../core/config/auth_redirect_config.dart';
+import '../../../core/auth/local_account_service.dart';
+import '../../../core/location/location_access_service.dart';
 import '../../../core/tutorial/tutorial_service.dart';
+import '../../../core/telemetry/app_telemetry.dart';
 import '../../../domain/boat_vendor.dart';
 import '../../tutorial/presentation/tutorial_overlay.dart';
 import '../../announcement/presentation/announcement_modal.dart';
-import '../../catches/data/hk_fishing_spots_geocoded_seed.dart';
 import '../../fish/domain/fish_collection_service.dart';
 import '../../fish/domain/fish_collection_status.dart';
+import '../../fishing_spots/data/fishing_spot_registry.dart';
+import '../../fishing_spots/data/fishing_spot_repository.dart';
+import '../../fishing_spots/domain/fishing_spot.dart';
 import '../domain/fishing_biome_rules.dart';
 import '../domain/fishing_event_rules.dart';
 import '../domain/fishing_spawn_rules.dart';
+import '../domain/fishing_bite_controller.dart';
 import '../domain/fishing_strike_rules.dart';
 import '../domain/game_map_camera.dart';
 import '../domain/game_map_feature_store.dart';
 import '../domain/terrain_data_source.dart';
 import '../../navigation/game_screen.dart';
+import '../../auth/application/startup_flow_controller.dart';
+import '../../auth/domain/player_identity_state.dart';
 import '../../profile/data/player_progress_service.dart';
 import '../../profile/data/profile_wallet_service.dart';
 import '../../profile/presentation/profile_screen.dart';
+import '../../map/domain/map_bearing.dart';
+import '../../map/domain/game_map_spot.dart';
+import '../../map/presentation/game_map_libre.dart';
+import '../../map/presentation/vector_map_fallback.dart';
 import '../widgets/player_avatar_marker.dart';
 import 'game_fishing_spot_marker.dart';
 import 'game_map_renderer.dart';
 
 const double gameMapPlayerAnchorY = 0.68;
+// Keep the first view focused on the roughly 500 m gameplay radius while
+// leaving enough surrounding context to find nearby fishing spots.
+const double gameMapInitialZoom = 16.0;
 
 /// 地圖首頁
 class GameHomeScreen extends StatefulWidget {
@@ -51,11 +69,10 @@ class GameHomeScreen extends StatefulWidget {
   State<GameHomeScreen> createState() => _GameHomeScreenState();
 }
 
-class _GameHomeScreenState extends State<GameHomeScreen>
-    with TickerProviderStateMixin {
-  // 無 GPS 權限時用青馬附近做可視 fallback，保留有道路、水域的首屏。
-  static const _hkTerritoryCenter = LatLng(22.3517, 114.0743);
-  static const bool _debugDisableTutorial = true;
+class _GameHomeScreenState extends State<GameHomeScreen> {
+  // 無 GPS 權限時停在青馬附近的 Tsing Yi 陸地錨點，避免角色落在海面。
+  static const _hkTerritoryCenter = LatLng(22.3520, 114.1016);
+  static const _startupFlow = StartupFlowController();
 
   bool _autoMode = false;
   LatLng _playerLatLng = _hkTerritoryCenter;
@@ -66,7 +83,11 @@ class _GameHomeScreenState extends State<GameHomeScreen>
   _SpotDemo? _selectedSpot;
   bool _showMinigame = false;
   bool _showAnnouncementRedDot = false;
-  bool _isStartupGateOpen = false;
+  bool _startupGateInFlight = false;
+  bool _identityDialogOpen = false;
+  bool _identityDialogResultSent = false;
+  bool _identityDialogActionInFlight = false;
+  bool _tutorialDialogOpen = false;
   bool _isAdmin = false;
   TerrainDataSource _terrainDataSource = const LocalTerrainDataSource();
   bool _isTutorialFishing = false;
@@ -74,16 +95,28 @@ class _GameHomeScreenState extends State<GameHomeScreen>
   bool _isAtBoatSpot = false;
   BoatVendor? _activeBoatVendor;
   List<LatLng> _cachedBoatSpots = [];
+  bool _isFishingSpotRegistryLoading = true;
   double _mapBearingDegrees = 0;
+  double _mapGestureStartBearingDegrees = 0;
+  maplibre.MapController? _mapLibreController;
+  final ValueNotifier<int> _mapRotationRevision = ValueNotifier<int>(0);
+  late final ValueNotifier<_GameMapSurfaceData> _mapSurfaceState;
+  late final Widget _mapSurfaceWidget;
+  bool _isMapInteracting = false;
+  bool _useVectorFallbackForMap = false;
   _MapAvatarSnapshot _avatarSnapshot = _MapAvatarSnapshot.initial();
   // 船家自動前進佇列
   List<_SpotDemo> _boatSpotQueue = [];
   int _boatSpotQueueIndex = -1;
   Map<int, String> _boatSpotResults = {}; // index -> 'success'/'fail'
+  StreamSubscription<AuthState>? _authSubscription;
   static String? _lastMinigameResult; // tree-shaker resistant static write
   static const double _spotDisplayRadiusMeters = 500;
   static const double _pierUnlockRadiusMeters = 80;
   static const double _islandSeaFishingRadiusMeters = 500;
+
+  bool get _isMapLibreMapActive =>
+      PublicAppConfig.mapLibreEnabled && !_useVectorFallbackForMap;
 
   List<_SpotDemo> get _visibleSpots {
     return _nearbySpots
@@ -98,6 +131,78 @@ class _GameHomeScreenState extends State<GameHomeScreen>
         a.latitude, a.longitude, b.latitude, b.longitude);
   }
 
+  String _mapSpotId(_SpotDemo spot) => '${spot.name}:${spot.lat}:${spot.lng}';
+
+  _GameMapSurfaceData _buildMapSurfaceData() {
+    final visibleSpots = _visibleSpots;
+    return _GameMapSurfaceData(
+      playerLatLng: _playerLatLng,
+      hasLiveLocation: _hasLiveLocation,
+      avatarSnapshot: _avatarSnapshot,
+      mapSpots: [
+        for (final spot in visibleSpots)
+          GameMapSpot(
+            id: _mapSpotId(spot),
+            name: spot.name,
+            latitude: spot.lat,
+            longitude: spot.lng,
+            markerColor: _rarityColor(spot.rarity),
+            locked: !_canOpenSpot(spot),
+          ),
+      ],
+      fallbackSpots: visibleSpots,
+      selectedSpotId: _selectedSpot == null ? null : _mapSpotId(_selectedSpot!),
+      terrainDataSource: _terrainDataSource,
+      mapBearingDegrees: _mapBearingDegrees,
+      motionBaseBearingDegrees: _mapGestureStartBearingDegrees,
+      isMapInteracting: _isMapInteracting,
+      useVectorFallback: _useVectorFallbackForMap,
+    );
+  }
+
+  void _syncMapSurfaceState() {
+    if (!mounted) return;
+    _mapSurfaceState.value = _buildMapSurfaceData();
+  }
+
+  void _onMapCreated(maplibre.MapController controller) {
+    if (!mounted) return;
+    setState(() => _mapLibreController = controller);
+  }
+
+  void _onMapLibreLoadTimeout() {
+    if (!mounted || _useVectorFallbackForMap) return;
+    debugPrint('FisherGO switching to local geometry map fallback.');
+    setState(() {
+      _useVectorFallbackForMap = true;
+      _mapLibreController = null;
+    });
+    _syncMapSurfaceState();
+    unawaited(_loadTerrainDataset());
+  }
+
+  void _onFallbackMapSpotSelected(_SpotDemo spot) {
+    setState(() => _selectedSpot = spot);
+    _syncMapSurfaceState();
+  }
+
+  void _onFallbackDragStart() {
+    _mapGestureStartBearingDegrees = _mapBearingDegrees;
+    _setMapInteracting(true);
+  }
+
+  void _onFallbackDragEnd() => _setMapInteracting(false);
+
+  void _onMapLibreSpotSelected(GameMapSpot mapSpot) {
+    for (final spot in _nearbySpots) {
+      if (_mapSpotId(spot) == mapSpot.id) {
+        setState(() => _selectedSpot = spot);
+        _syncMapSurfaceState();
+        return;
+      }
+    }
+  }
+
   bool _canOpenSpot(_SpotDemo spot) {
     if (_hasLiveLocation &&
         _distanceMeters(_playerLatLng, LatLng(spot.lat, spot.lng)) <=
@@ -110,36 +215,36 @@ class _GameHomeScreenState extends State<GameHomeScreen>
   double _unlockRadiusMeters(_SpotDemo spot) =>
       spot.isNew ? _islandSeaFishingRadiusMeters : _pierUnlockRadiusMeters;
 
-  late AnimationController _fishingController;
-  late AnimationController _radarController;
-  // 魚影視覺效果用 controller（同步但獨立 phase）
-  late AnimationController _fishEffectController;
-  // 隨機速度因子
-  double _speedMultiplier = 1.0;
-
-  // Public-pier coordinates are trusted for the live map. Island/rock/reef
-  // points are only reintroduced through this hand-verified allowlist; the
-  // remaining broad geocode seed stays hidden because many 洲/排/石 entries are
-  // visually wrong.
-  final List<_SpotDemo> _nearbySpots = [
-    ...hkFishingSpotsGeocodedSeed.where((spot) => spot.type == 'pier').map(
-          (spot) => _SpotDemo(
-            spot.latitude,
-            spot.longitude,
-            spot.displayName,
-            2,
-            false,
-          ),
-        ),
-    ..._developerTestSpots,
-    ..._verifiedIslandRockSpots,
-  ];
+  // Public-pier coordinates are trusted for the live map. The broad geocode
+  // seed stays hidden because many 洲/排/石 entries are visually wrong.
+  // A configured Supabase registry is authoritative. Do not briefly render
+  // bundled points while the remote verification result is still loading.
+  List<_SpotDemo> _nearbySpots = SupabaseConfig.isConfigured
+      ? const []
+      : [...loadBundledFishingSpotRegistry().map(_SpotDemo.fromFishingSpot)];
+  late final FishingSpotRepository _fishingSpotRepository;
 
   Map<String, String> get _equipped => _avatarSnapshot.equipped;
 
   @override
   void initState() {
     super.initState();
+    _mapSurfaceState = ValueNotifier(_buildMapSurfaceData());
+    _mapSurfaceWidget = _GameHomeMapSurface(
+      mapState: _mapSurfaceState,
+      onMapSpotSelected: _onMapLibreSpotSelected,
+      onFallbackSpotSelected: _onFallbackMapSpotSelected,
+      onMapCreated: _onMapCreated,
+      onMapBearingChanged: _onMapLibreBearingChanged,
+      onMapLibreLoadTimeout: _onMapLibreLoadTimeout,
+      onFallbackDragStart: _onFallbackDragStart,
+      onFallbackDragUpdate: _rotateMapByDrag,
+      onFallbackDragEnd: _onFallbackDragEnd,
+    );
+    _fishingSpotRepository = FishingSpotRepository(
+      client: SupabaseConfig.isConfigured ? Supabase.instance.client : null,
+    );
+    unawaited(_loadFishingSpotRegistry());
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _runStartupGate();
       _checkAnnouncementBadge();
@@ -148,20 +253,13 @@ class _GameHomeScreenState extends State<GameHomeScreen>
       _loadAvatarSnapshot();
     });
     _claimAdminCoinGrants();
-    _radarController =
-        AnimationController(duration: const Duration(seconds: 3), vsync: this)
-          ..repeat();
-    _fishingController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 900),
-    )..repeat(reverse: true);
-    _fishEffectController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 2400),
-    )..repeat();
-    _fishingController.addListener(_onFishingTick);
-    unawaited(_loadTerrainDataset());
-    unawaited(_loadPlayerLocation());
+    if (SupabaseConfig.isConfigured) {
+      _authSubscription = Supabase.instance.client.auth.onAuthStateChange
+          .listen((_) => unawaited(_handleAuthStateChange()));
+    }
+    if (!PublicAppConfig.mapLibreEnabled) {
+      unawaited(_loadTerrainDataset());
+    }
   }
 
   Future<void> _loadAvatarSnapshot() async {
@@ -170,6 +268,7 @@ class _GameHomeScreenState extends State<GameHomeScreen>
     final snapshot = _MapAvatarSnapshot.fromRaw(raw);
     if (!mounted) return;
     setState(() => _avatarSnapshot = snapshot);
+    _syncMapSurfaceState();
   }
 
   Future<void> _loadTerrainDataset() async {
@@ -179,10 +278,24 @@ class _GameHomeScreenState extends State<GameHomeScreen>
       final dataset = await compute(GeoTerrainDataset.fromJson, source);
       if (!mounted) return;
       setState(() => _terrainDataSource = GeoTerrainDataSource(dataset));
+      _syncMapSurfaceState();
     } catch (_) {
       if (!mounted) return;
       setState(() => _terrainDataSource = const LocalTerrainDataSource());
+      _syncMapSurfaceState();
     }
+  }
+
+  Future<void> _loadFishingSpotRegistry() async {
+    final spots = await _fishingSpotRepository.getActiveVerifiedSpots();
+    if (!mounted) return;
+    setState(() {
+      _nearbySpots = [
+        ...spots.map(_SpotDemo.fromFishingSpot),
+      ];
+      _isFishingSpotRegistryLoading = false;
+    });
+    _syncMapSurfaceState();
   }
 
   @override
@@ -194,31 +307,53 @@ class _GameHomeScreenState extends State<GameHomeScreen>
   }
 
   Future<void> _runStartupGate() async {
-    if (!mounted || _isStartupGateOpen) return;
-    final shouldAskIdentity = await _shouldAskIdentityChoice();
-    if (!mounted) return;
-    if (shouldAskIdentity) {
-      setState(() => _isStartupGateOpen = true);
-      await _showIdentityChoiceDialog();
+    if (!mounted || _startupGateInFlight) return;
+    _startupGateInFlight = true;
+    try {
+      var state = await _resolveStartupState();
       if (!mounted) return;
-      setState(() => _isStartupGateOpen = false);
+      if (state == PlayerIdentityState.signedOut) {
+        final continueToGame = await _showIdentityChoiceDialog();
+        if (!mounted) return;
+        if (!continueToGame) return;
+        state = await _resolveStartupState();
+      }
+      if (state == PlayerIdentityState.tutorialPending) {
+        await _showTutorialOverlay();
+        return;
+      }
+      // The map must follow the player's real position after identity/tutorial
+      // gates, while keeping the permission prompt out of the signed-out flow.
+      unawaited(_loadPlayerLocation());
+    } finally {
+      _startupGateInFlight = false;
     }
-    await _checkAndShowTutorial();
   }
 
-  Future<bool> _shouldAskIdentityChoice() async {
+  Future<PlayerIdentityState> _resolveStartupState() async {
+    await LocalAccountService.restoreSession();
+    Session? session;
     if (SupabaseConfig.isConfigured) {
-      // Supabase web restores the session from localStorage during startup.
-      // Give it a short window before deciding the user is signed out.
       for (var i = 0; i < 10; i++) {
-        if (Supabase.instance.client.auth.currentSession != null) {
-          return false;
-        }
+        session = Supabase.instance.client.auth.currentSession;
+        if (session != null) break;
         await Future<void>.delayed(const Duration(milliseconds: 100));
       }
     }
     final box = await Hive.openBox('startup_gate');
-    return box.get('guest_mode_selected') != true;
+    final guestModeSelected = box.get('guest_mode_selected') == true;
+    final identityKey = session?.user.id ?? 'local-guest';
+    final tutorialCompleted = await TutorialService.isCompleted(
+      identityKey: identityKey,
+    );
+    return _startupFlow.nextStep(
+      StartupFlowSnapshot(
+        hasSession: session != null,
+        sessionIsAnonymous: session?.user.isAnonymous ?? false,
+        guestModeSelected: guestModeSelected,
+        tutorialCompleted: tutorialCompleted,
+      ),
+    );
   }
 
   Future<void> _setGuestModeSelected() async {
@@ -226,77 +361,160 @@ class _GameHomeScreenState extends State<GameHomeScreen>
     await box.put('guest_mode_selected', true);
   }
 
-  Future<void> _showIdentityChoiceDialog() async {
-    await showDialog<void>(
-      context: context,
-      barrierDismissible: false,
-      builder: (dialogContext) {
-        var loading = false;
-        return StatefulBuilder(
-          builder: (context, setDialogState) => AlertDialog(
-            title: const Text('開始 FisherGO'),
-            content: const Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('登入可雲端保存魚獲、金幣及裝備。'),
-                SizedBox(height: 8),
-                Text('訪客遊玩只會保存在此裝置，之後仍可再登入。'),
-              ],
-            ),
-            actions: [
-              TextButton(
-                onPressed: loading
-                    ? null
-                    : () {
-                        Navigator.of(dialogContext).pop();
-                        widget.onOpenScreen(GameScreen.profile);
-                      },
-                child: const Text('Email 登入/註冊'),
+  Future<bool> _showIdentityChoiceDialog() async {
+    _identityDialogOpen = true;
+    _identityDialogResultSent = false;
+    final result = await showDialog<bool>(
+          context: context,
+          barrierDismissible: false,
+          builder: (dialogContext) {
+            var loading = false;
+            return StatefulBuilder(
+              builder: (context, setDialogState) => AlertDialog(
+                title: const Text('開始 FisherGO'),
+                content: const Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('登入可雲端保存魚獲、金幣及裝備。'),
+                    SizedBox(height: 8),
+                    Text('訪客遊玩只會保存在此裝置，之後仍可再登入。'),
+                  ],
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: loading
+                        ? null
+                        : () {
+                            _identityDialogResultSent = true;
+                            Navigator.of(dialogContext).pop(false);
+                            widget.onOpenScreen(GameScreen.profile);
+                          },
+                    child: const Text('Email 登入/註冊'),
+                  ),
+                  TextButton(
+                    onPressed: loading
+                        ? null
+                        : () async {
+                            setDialogState(() => loading = true);
+                            _identityDialogActionInFlight = true;
+                            try {
+                              await _selectGuestIdentity();
+                              if (dialogContext.mounted) {
+                                _identityDialogResultSent = true;
+                                Navigator.of(dialogContext).pop(true);
+                              }
+                            } finally {
+                              _identityDialogActionInFlight = false;
+                            }
+                          },
+                    child: const Text('訪客遊玩'),
+                  ),
+                  FilledButton.icon(
+                    onPressed: loading || !SupabaseConfig.isConfigured
+                        ? null
+                        : () async {
+                            setDialogState(() => loading = true);
+                            _identityDialogActionInFlight = true;
+                            try {
+                              await Supabase.instance.client.auth
+                                  .signInWithOAuth(
+                                OAuthProvider.google,
+                                redirectTo: AuthRedirectConfig.oauthRedirect,
+                              );
+                              if (dialogContext.mounted &&
+                                  Supabase.instance.client.auth.currentUser !=
+                                      null) {
+                                _identityDialogResultSent = true;
+                                Navigator.of(dialogContext).pop(true);
+                              }
+                            } catch (e) {
+                              if (!context.mounted) return;
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('Google 登入失敗：$e')),
+                              );
+                              setDialogState(() => loading = false);
+                            } finally {
+                              _identityDialogActionInFlight = false;
+                            }
+                          },
+                    icon: loading
+                        ? const SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.g_mobiledata, size: 28),
+                    label: Text(loading ? '登入中...' : 'Google 登入'),
+                  ),
+                ],
               ),
-              TextButton(
-                onPressed: loading
-                    ? null
-                    : () async {
-                        await _setGuestModeSelected();
-                        if (dialogContext.mounted) {
-                          Navigator.of(dialogContext).pop();
-                        }
-                      },
-                child: const Text('訪客遊玩'),
-              ),
-              FilledButton.icon(
-                onPressed: loading || !SupabaseConfig.isConfigured
-                    ? null
-                    : () async {
-                        setDialogState(() => loading = true);
-                        try {
-                          await Supabase.instance.client.auth.signInWithOAuth(
-                            OAuthProvider.google,
-                            redirectTo: 'https://fisher-go.app',
-                          );
-                        } catch (e) {
-                          if (!context.mounted) return;
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Google 登入失敗：$e')),
-                          );
-                          setDialogState(() => loading = false);
-                        }
-                      },
-                icon: loading
-                    ? const SizedBox(
-                        width: 18,
-                        height: 18,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Icon(Icons.g_mobiledata, size: 28),
-                label: Text(loading ? '登入中...' : 'Google 登入'),
-              ),
-            ],
-          ),
-        );
-      },
+            );
+          },
+        ) ??
+        false;
+    _identityDialogOpen = false;
+    return result;
+  }
+
+  Future<void> _selectGuestIdentity() async {
+    if (SupabaseConfig.isConfigured &&
+        Supabase.instance.client.auth.currentSession == null) {
+      try {
+        await Supabase.instance.client.auth.signInAnonymously();
+        await LocalAccountService.restoreSession();
+      } catch (_) {
+        // Anonymous auth may be disabled; keep a clearly local guest instead
+        // of blocking first launch behind a cloud configuration issue.
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('訪客模式已啟用，進度會保存在此裝置。')),
+          );
+        }
+      }
+    }
+    await _setGuestModeSelected();
+    unawaited(
+      AppTelemetry.instance.record(
+        TelemetryEventName.authIdentitySelected,
+        fields: {
+          'mode': SupabaseConfig.isConfigured &&
+                  Supabase.instance.client.auth.currentUser?.isAnonymous == true
+              ? 'anonymous_cloud'
+              : 'guest_local',
+        },
+      ),
     );
+  }
+
+  Future<void> _handleAuthStateChange() async {
+    await LocalAccountService.restoreSession();
+    unawaited(
+      AppTelemetry.instance.record(
+        TelemetryEventName.authIdentitySelected,
+        fields: {
+          'mode': Supabase.instance.client.auth.currentUser?.isAnonymous == true
+              ? 'anonymous_cloud'
+              : 'authenticated',
+        },
+      ),
+    );
+    if (!mounted) return;
+    await _loadAvatarSnapshot();
+    if (!mounted) return;
+    if (_identityDialogOpen) {
+      if (!_identityDialogActionInFlight &&
+          !_identityDialogResultSent &&
+          Supabase.instance.client.auth.currentUser != null) {
+        _identityDialogResultSent = true;
+        Navigator.of(context).pop(true);
+      }
+      // The identity dialog owns this auth transition. Its caller will
+      // resolve the tutorial gate after the dialog route has closed.
+      return;
+    }
+    if (_tutorialDialogOpen) return;
+    unawaited(_runStartupGate());
   }
 
   Future<void> _loadAdminStateAndBoosts() async {
@@ -315,14 +533,6 @@ class _GameHomeScreenState extends State<GameHomeScreen>
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('已領取 Admin 派發金幣 +$amount')),
     );
-  }
-
-  Future<void> _checkAndShowTutorial() async {
-    if (_debugDisableTutorial) return;
-    final done = await TutorialService.isCompleted();
-    if (!done && mounted) {
-      _showTutorialOverlay();
-    }
   }
 
   Future<void> _checkAnnouncementBadge() async {
@@ -372,30 +582,37 @@ class _GameHomeScreenState extends State<GameHomeScreen>
       _playerLatLng = LatLng(firstSpot.lat, firstSpot.lng);
       _hasLiveLocation = true;
     });
+    _syncMapSurfaceState();
     _openMinigame();
   }
 
-  void _showTutorialOverlay() {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (_) => TutorialOverlay(
-        onStartFishing: _startTutorialFishing,
-        onComplete: () {
-          Navigator.of(context).pop();
-        },
-      ),
-    );
+  Future<void> _showTutorialOverlay() async {
+    if (!mounted || _tutorialDialogOpen) return;
+    _tutorialDialogOpen = true;
+    try {
+      await showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => TutorialOverlay(
+          onStartFishing: _startTutorialFishing,
+          identityKey: _tutorialIdentityKey,
+          onComplete: () {
+            Navigator.of(context).pop();
+            unawaited(_loadPlayerLocation());
+          },
+        ),
+      );
+    } finally {
+      _tutorialDialogOpen = false;
+    }
   }
 
-  void _onFishingTick() {
-    final tick = (_fishingController.value * 10).round();
-    if (tick % 3 == 0) {
-      final rng = math.Random();
-      _speedMultiplier = 0.7 + rng.nextDouble() * 0.6;
-      final duration = (900 / _speedMultiplier).round();
-      _fishingController.duration = Duration(milliseconds: duration);
+  String get _tutorialIdentityKey {
+    if (SupabaseConfig.isConfigured) {
+      final user = Supabase.instance.client.auth.currentUser;
+      if (user != null) return user.id;
     }
+    return 'local-guest';
   }
 
   void _startTutorialFishing() {
@@ -413,15 +630,15 @@ class _GameHomeScreenState extends State<GameHomeScreen>
       _hasLiveLocation = true;
       _isTutorialFishing = true;
     });
+    _syncMapSurfaceState();
     _openMinigame();
   }
 
   @override
   void dispose() {
-    _fishingController.removeListener(_onFishingTick);
-    _radarController.dispose();
-    _fishingController.dispose();
-    _fishEffectController.dispose();
+    _mapRotationRevision.dispose();
+    _mapSurfaceState.dispose();
+    _authSubscription?.cancel();
     super.dispose();
   }
 
@@ -436,11 +653,6 @@ class _GameHomeScreenState extends State<GameHomeScreen>
       return;
     }
     unawaited(_grantFirstFishingAtSpotBonus());
-    _speedMultiplier = 1.0;
-    _fishingController.duration = const Duration(milliseconds: 900);
-    if (!_fishingController.isAnimating) {
-      _fishingController.repeat(reverse: true);
-    }
     setState(() {
       _showMinigame = true;
     });
@@ -472,6 +684,9 @@ class _GameHomeScreenState extends State<GameHomeScreen>
     final updatedCoins = await ProfileWalletService.addCoins(
       10,
       reason: '釣點作釣獎勵：${spot.name}',
+      rewardKind: 'spot_bonus',
+      claimKey:
+          'spot-bonus:$key:${now.toUtc().toIso8601String().substring(0, 13)}',
     );
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
@@ -483,7 +698,6 @@ class _GameHomeScreenState extends State<GameHomeScreen>
   }
 
   void _closeMinigame() {
-    _fishingController.stop();
     setState(() {
       _showMinigame = false;
 
@@ -553,6 +767,7 @@ class _GameHomeScreenState extends State<GameHomeScreen>
       _playerLatLng = LatLng(nextSpot.lat, nextSpot.lng);
       _hasLiveLocation = true;
     });
+    _syncMapSurfaceState();
     _openMinigame();
   }
 
@@ -590,15 +805,22 @@ class _GameHomeScreenState extends State<GameHomeScreen>
       setState(() => _isLocating = true);
     }
     try {
-      final permission = await AndroidPermissionGate.run(() async {
-        var current = await Geolocator.checkPermission();
-        if (current == LocationPermission.denied) {
-          current = await Geolocator.requestPermission();
-        }
-        return current;
+      final access = await AndroidPermissionGate.run(() {
+        return const LocationAccessService().ensureReady();
       });
-      if (permission == LocationPermission.denied ||
-          permission == LocationPermission.deniedForever) {
+      if (access != LocationAccessState.ready) {
+        if (mounted) {
+          final message = switch (access) {
+            LocationAccessState.serviceDisabled => '請先開啟手機定位服務。',
+            LocationAccessState.permissionDenied => '定位權限被拒絕，仍可使用地圖。',
+            LocationAccessState.permissionDeniedForever =>
+              '定位權限已永久拒絕，請到系統設定重新開啟。',
+            LocationAccessState.ready => '',
+          };
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(message)),
+          );
+        }
         return;
       }
 
@@ -617,6 +839,7 @@ class _GameHomeScreenState extends State<GameHomeScreen>
             ? position.accuracy.clamp(15, 2500).toDouble()
             : null;
       });
+      _syncMapSurfaceState();
       await _refreshBoatSpotState();
     } catch (_) {
       // 測試環境、拒絕定位、瀏覽器未支援時保留香港中心 fallback。
@@ -670,36 +893,81 @@ class _GameHomeScreenState extends State<GameHomeScreen>
         spots: _nearbySpots,
         playerLatLng: _playerLatLng,
         hasLiveLocation: _hasLiveLocation,
-        playerAccuracyMeters: _playerAccuracyMeters,
-        equipped: _equipped,
         avatarSnapshot: _avatarSnapshot,
-        spotDisplayRadiusMeters: _spotDisplayRadiusMeters,
         rarityColor: _rarityColor,
         onSpotSelected: (spot) {
           Navigator.of(sheetContext).pop();
           if (!mounted) return;
           setState(() => _selectedSpot = spot);
+          _syncMapSurfaceState();
         },
       ),
     );
   }
 
   void _rotateMapClockwise() {
-    setState(() {
-      _mapBearingDegrees = (_mapBearingDegrees + 45) % 360;
-    });
+    _mapBearingDegrees = (_mapBearingDegrees + 45) % 360;
+    _mapRotationRevision.value++;
+    _syncMapSurfaceState();
+  }
+
+  void _rotateMapLibreClockwise() {
+    final controller = _mapLibreController;
+    if (controller == null) return;
+
+    final camera = controller.getCamera();
+    final nextBearing = (camera.bearing + 45) % 360;
+    _mapBearingDegrees = nextBearing;
+    _mapRotationRevision.value++;
+    unawaited(_animateMapLibreBearing(controller, nextBearing, camera.pitch));
+  }
+
+  void _onMapLibreBearingChanged(double bearing) {
+    final normalized = normalizeMapBearing(bearing);
+    final delta = (normalized - _mapBearingDegrees).abs();
+    final shortestDelta = delta > 180 ? 360 - delta : delta;
+    if (shortestDelta < 0.25) return;
+
+    // Keep the HUD in sync with native/Web camera gestures without rebuilding
+    // the map surface for every camera frame.
+    _mapBearingDegrees = normalized;
+    _mapRotationRevision.value++;
+  }
+
+  Future<void> _animateMapLibreBearing(
+    maplibre.MapController controller,
+    double bearing,
+    double pitch,
+  ) async {
+    try {
+      await controller.animateCamera(
+        bearing: bearing,
+        pitch: pitch,
+        nativeDuration: const Duration(milliseconds: 220),
+        webSpeed: 2.4,
+      );
+    } catch (_) {
+      // A rapid second tap intentionally cancels the previous Web animation.
+    }
   }
 
   void _rotateMapByDrag(DragUpdateDetails details) {
-    setState(() {
-      _mapBearingDegrees = (_mapBearingDegrees + details.delta.dx * 0.45) % 360;
-      if (_mapBearingDegrees < 0) _mapBearingDegrees += 360;
-    });
+    _mapBearingDegrees = (_mapBearingDegrees + details.delta.dx * 0.45) % 360;
+    if (_mapBearingDegrees < 0) _mapBearingDegrees += 360;
+    _mapRotationRevision.value++;
+    _syncMapSurfaceState();
+  }
+
+  void _setMapInteracting(bool value) {
+    if (_isMapInteracting == value) return;
+    setState(() => _isMapInteracting = value);
+    _syncMapSurfaceState();
   }
 
   @override
   Widget build(BuildContext context) {
-    // 建立地圖 marker
+    // HUD state is intentionally kept out of the stable map widget. The map
+    // listens to _mapSurfaceState and only rebuilds for geographic changes.
     final visibleSpots = _visibleSpots;
     final selectedSpot = _selectedSpot;
     final selectedCanOpen = selectedSpot != null && _canOpenSpot(selectedSpot);
@@ -712,229 +980,286 @@ class _GameHomeScreenState extends State<GameHomeScreen>
                 ? a
                 : b);
 
-    final mapWorld = _GameWorldMapShell(
-      spotCount: visibleSpots.length,
-      hasLiveLocation: _hasLiveLocation,
-      playerLatLng: _playerLatLng,
-      spots: visibleSpots,
-      terrainDataSource: _terrainDataSource,
-      mapBearingDegrees: _mapBearingDegrees,
-      onSpotSelected: (spot) => setState(() => _selectedSpot = spot),
-    );
-
     return Scaffold(
       body: Stack(children: [
-        GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onHorizontalDragUpdate: _rotateMapByDrag,
-          child: mapWorld,
-        ),
-        Align(
-          alignment: const Alignment(0, gameMapPlayerAnchorY * 2 - 1),
-          child: IgnorePointer(
-            child: PlayerAvatarMarker(
-              avatarState: _avatarSnapshot.toAvatarProfileViewState(),
-              isLiveLocation: _hasLiveLocation,
-            ),
-          ),
-        ),
-        // 雷達格柵疊加（遊戲感）
-        IgnorePointer(
-          child: CustomPaint(
-            size: Size.infinite,
-            painter: const _RadarGridPainter(anchorY: gameMapPlayerAnchorY),
-          ),
-        ),
-        Positioned(
-          top: MediaQuery.of(context).padding.top + 8,
-          left: 12,
-          right: 12,
-          child: _TopStatusBar(
-            spotCount: visibleSpots.length,
-            autoEnabled: _autoMode,
-            onToggleAuto: () => setState(() => _autoMode = !_autoMode),
-            leadingLabel: 'Fisher Lv. 1',
-            subtitleLabel: '探索水域',
-          ),
-        ),
-        Positioned(
-          left: 12,
-          top: MediaQuery.of(context).padding.top + 66,
-          child: _PanoramaMapButton(onTap: _openPanoramaMap),
-        ),
-        Positioned(
-          left: 12,
-          top: MediaQuery.of(context).padding.top + 118,
-          child: _RotateMapButton(
-            bearingDegrees: _mapBearingDegrees,
-            onTap: _rotateMapClockwise,
-          ),
-        ),
-        Positioned(
-          right: 12,
-          top: MediaQuery.of(context).size.height * 0.30,
-          child: _SideButtons(
-            onOpenScreen: widget.onOpenScreen,
-            isAdmin: _isAdmin,
-          ),
-        ),
-        Positioned(
-          right: 12,
-          bottom: MediaQuery.of(context).padding.bottom + 110,
-          child: _LocateButton(
-            isLocating: _isLocating,
-            hasLiveLocation: _hasLiveLocation,
-            accuracyMeters: _playerAccuracyMeters,
-            onTap: _loadPlayerLocation,
-          ),
-        ),
-        Positioned(
-          left: 12,
-          bottom: MediaQuery.of(context).padding.bottom + 96,
-          child: Semantics(
-            button: true,
-            label: 'OpenStreetMap 資料來源及授權',
-            child: TextButton(
-              onPressed: () => unawaited(
-                launchUrl(
-                  Uri.parse('https://www.openstreetmap.org/copyright'),
-                  mode: LaunchMode.externalApplication,
-                ),
-              ),
-              style: TextButton.styleFrom(
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 3),
-                minimumSize: Size.zero,
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                textStyle: const TextStyle(fontSize: 9),
-              ),
-              child: const Text(
-                '© OpenStreetMap contributors',
-                style: TextStyle(
-                  shadows: [
-                    Shadow(
-                      color: Colors.black87,
-                      blurRadius: 3,
-                      offset: Offset(0, 1),
+        _mapSurfaceWidget,
+        Offstage(
+          offstage: PublicAppConfig.mapHudCompositionDiagnosticEnabled,
+          child: Stack(
+            children: [
+              if (!_isMapLibreMapActive)
+                Align(
+                  alignment: const Alignment(0, gameMapPlayerAnchorY * 2 - 1),
+                  child: IgnorePointer(
+                    child: PlayerAvatarMarker(
+                      avatarState: _avatarSnapshot.toAvatarProfileViewState(),
+                      isLiveLocation: _hasLiveLocation,
                     ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ),
-        // Announcement bell — placed below the top status bar so it does not
-        // cover radar/status information.
-        Positioned(
-          top: MediaQuery.of(context).padding.top + 62,
-          right: 12,
-          child: GestureDetector(
-            onTap: () {
-              AnnouncementModal.show(context);
-              setState(() => _showAnnouncementRedDot = false);
-            },
-            child: Stack(
-              clipBehavior: Clip.none,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(30),
-                    boxShadow: [
-                      BoxShadow(color: Colors.black26, blurRadius: 6)
-                    ],
                   ),
-                  child: const Icon(Icons.notifications,
-                      color: Colors.black54, size: 24),
                 ),
-                if (_showAnnouncementRedDot)
+              // 雷達格柵疊加（遊戲感）
+              if (!_isMapLibreMapActive)
+                IgnorePointer(
+                  child: CustomPaint(
+                    size: Size.infinite,
+                    painter:
+                        const _RadarGridPainter(anchorY: gameMapPlayerAnchorY),
+                  ),
+                ),
+              if (!PublicAppConfig.mapHudNavigationHidden) ...[
+                if (!PublicAppConfig.mapHudWidgetHidden('top-status'))
                   Positioned(
-                    right: -2,
-                    top: -2,
-                    child: Container(
-                      width: 14,
-                      height: 14,
-                      decoration: BoxDecoration(
-                        color: Colors.red,
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white, width: 1.5),
+                    top: MediaQuery.of(context).padding.top + 8,
+                    left: 12,
+                    right: 12,
+                    child: _TopStatusBar(
+                      spotCount: visibleSpots.length,
+                      autoEnabled: _autoMode,
+                      onToggleAuto: () =>
+                          setState(() => _autoMode = !_autoMode),
+                      leadingLabel: 'Fisher Lv. 1',
+                      subtitleLabel: '探索水域',
+                    ),
+                  ),
+                if (!PublicAppConfig.mapHudWidgetHidden('panorama'))
+                  Positioned(
+                    left: 12,
+                    top: MediaQuery.of(context).padding.top + 66,
+                    child: _PanoramaMapButton(onTap: _openPanoramaMap),
+                  ),
+                if (!_isFishingSpotRegistryLoading &&
+                    visibleSpots.isEmpty &&
+                    !PublicAppConfig.mapHudWidgetHidden('no-nearby'))
+                  Positioned(
+                    top: MediaQuery.of(context).padding.top + 128,
+                    left: 28,
+                    right: 28,
+                    child: _NoNearbySpotsNotice(
+                      hasLiveLocation: _hasLiveLocation,
+                      onOpenPanorama: _openPanoramaMap,
+                    ),
+                  ),
+                if (!_isMapLibreMapActive &&
+                    !PublicAppConfig.mapHudWidgetHidden('rotate'))
+                  Positioned(
+                    left: 12,
+                    top: MediaQuery.of(context).padding.top + 118,
+                    child: ValueListenableBuilder<int>(
+                      valueListenable: _mapRotationRevision,
+                      builder: (context, _, __) => _RotateMapButton(
+                        bearingDegrees: _mapBearingDegrees,
+                        onTap: _rotateMapClockwise,
+                      ),
+                    ),
+                  ),
+                if (_isMapLibreMapActive &&
+                    !PublicAppConfig.mapHudWidgetHidden('rotate'))
+                  Positioned(
+                    left: 12,
+                    top: MediaQuery.of(context).padding.top + 178,
+                    child: ValueListenableBuilder<int>(
+                      valueListenable: _mapRotationRevision,
+                      builder: (context, _, __) => _RotateMapButton(
+                        bearingDegrees: _mapBearingDegrees,
+                        onTap: _rotateMapLibreClockwise,
                       ),
                     ),
                   ),
               ],
-            ),
+              if (!PublicAppConfig.mapHudUtilityHidden &&
+                  !PublicAppConfig.mapHudWidgetHidden('side'))
+                Positioned(
+                  right: 12,
+                  top: MediaQuery.of(context).size.height * 0.30,
+                  child: _SideButtons(
+                    onOpenScreen: widget.onOpenScreen,
+                    isAdmin: _isAdmin,
+                  ),
+                ),
+              if (!PublicAppConfig.mapHudUtilityHidden &&
+                  !PublicAppConfig.mapHudWidgetHidden('locate'))
+                Positioned(
+                  right: 12,
+                  bottom: MediaQuery.of(context).padding.bottom + 110,
+                  child: _LocateButton(
+                    isLocating: _isLocating,
+                    hasLiveLocation: _hasLiveLocation,
+                    accuracyMeters: _playerAccuracyMeters,
+                    onTap: _loadPlayerLocation,
+                  ),
+                ),
+              if (!_isMapLibreMapActive &&
+                  !PublicAppConfig.mapHudUtilityHidden &&
+                  !PublicAppConfig.mapHudWidgetHidden('attribution'))
+                Positioned(
+                  left: 12,
+                  bottom: MediaQuery.of(context).padding.bottom + 96,
+                  child: Semantics(
+                    button: true,
+                    label: 'OpenStreetMap 資料來源及授權',
+                    child: TextButton(
+                      onPressed: () => unawaited(
+                        launchUrl(
+                          Uri.parse('https://www.openstreetmap.org/copyright'),
+                          mode: LaunchMode.externalApplication,
+                        ),
+                      ),
+                      style: TextButton.styleFrom(
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 4, vertical: 3),
+                        minimumSize: Size.zero,
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        textStyle: const TextStyle(fontSize: 9),
+                      ),
+                      child: const Text(
+                        '© OpenStreetMap contributors',
+                        style: TextStyle(
+                          shadows: [
+                            Shadow(
+                              color: Colors.black87,
+                              blurRadius: 3,
+                              offset: Offset(0, 1),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              // Announcement bell — placed below the top status bar so it does not
+              // cover radar/status information.
+              if (!PublicAppConfig.mapHudUtilityHidden &&
+                  !PublicAppConfig.mapHudWidgetHidden('announcement'))
+                Positioned(
+                  top: MediaQuery.of(context).padding.top + 62,
+                  right: 12,
+                  child: GestureDetector(
+                    onTap: () {
+                      AnnouncementModal.show(context);
+                      setState(() => _showAnnouncementRedDot = false);
+                    },
+                    child: Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(30),
+                            boxShadow: [
+                              BoxShadow(color: Colors.black26, blurRadius: 6)
+                            ],
+                          ),
+                          child: const Icon(Icons.notifications,
+                              color: Colors.black54, size: 24),
+                        ),
+                        if (_showAnnouncementRedDot)
+                          Positioned(
+                            right: -2,
+                            top: -2,
+                            child: Container(
+                              width: 14,
+                              height: 14,
+                              decoration: BoxDecoration(
+                                color: Colors.red,
+                                shape: BoxShape.circle,
+                                border:
+                                    Border.all(color: Colors.white, width: 1.5),
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
+              if (!PublicAppConfig.mapHudBottomHidden) ...[
+                if (!PublicAppConfig.mapHudWidgetHidden('bottom-bar'))
+                  Positioned(
+                    bottom: MediaQuery.of(context).padding.bottom + 16,
+                    left: 16,
+                    right: 16,
+                    child: _BottomBar(
+                      hasCurrent: false,
+                      pendingCount: 0,
+                      baitSummary: '紅蟲 x$_baitCount',
+                      canFish: hasBait,
+                      onAddCheckpoint: () =>
+                          widget.onOpenScreen(GameScreen.profile),
+                      onFishNearby: hasBait &&
+                              (_activeBoatVendor != null ||
+                                  _isAtBoatSpot ||
+                                  (nearestSpot != null &&
+                                      _canOpenSpot(nearestSpot)))
+                          ? () {
+                              if (_activeBoatVendor != null) {
+                                _showBoatSpotPicker();
+                                return;
+                              }
+                              final spotToUse = (nearestSpot != null &&
+                                      _canOpenSpot(nearestSpot))
+                                  ? nearestSpot
+                                  : (_isAtBoatSpot
+                                      ? _buildBoatSpotDemo()
+                                      : null);
+                              if (spotToUse != null) {
+                                setState(() => _selectedSpot = spotToUse);
+                                _syncMapSurfaceState();
+                                _openMinigame();
+                              }
+                            }
+                          : null,
+                    ),
+                  ),
+                if (_selectedSpot != null &&
+                    !PublicAppConfig.mapHudWidgetHidden('spot-detail'))
+                  Positioned(
+                    bottom: MediaQuery.of(context).padding.bottom + 100,
+                    left: 16,
+                    right: 16,
+                    child: _SpotDetailCard(
+                      spot: _selectedSpot!,
+                      onClose: () {
+                        setState(() => _selectedSpot = null);
+                        _syncMapSurfaceState();
+                      },
+                      distanceMeters: _distanceMeters(
+                        _playerLatLng,
+                        LatLng(_selectedSpot!.lat, _selectedSpot!.lng),
+                      ),
+                      unlockRadiusMeters: _unlockRadiusMeters(_selectedSpot!),
+                      canStartFishing: hasBait &&
+                          (selectedCanOpen || _selectedSpot!.rarity == 3),
+                      onStartFishing: hasBait &&
+                              (selectedCanOpen || _selectedSpot!.rarity == 3)
+                          ? _openMinigame
+                          : null,
+                    ),
+                  ),
+                if (_showMinigame &&
+                    !PublicAppConfig.mapHudWidgetHidden('fishing-overlay'))
+                  _FishingOverlay(
+                    spotName: _selectedSpot?.name ?? '附近釣點',
+                    spotBiome: _selectedSpot?.biome,
+                    tutorialMode: _isTutorialFishing,
+                    identityKey: _tutorialIdentityKey,
+                    fishBoosts: _fishBoosts,
+                    speciesWeights: _selectedSpot?.speciesWeights ?? const {},
+                    onTutorialComplete: () {
+                      setState(() {
+                        _showMinigame = false;
+                        _isTutorialFishing = false;
+                      });
+                    },
+                    onClose: _closeMinigame,
+                    isIslandSpot: _selectedSpot?.isIsland ?? false,
+                    onMinigameResult:
+                        _boatSpotQueueIndex >= 0 ? _onBoatSpotResult : null,
+                  ),
+              ],
+            ],
           ),
         ),
-        Positioned(
-          bottom: MediaQuery.of(context).padding.bottom + 16,
-          left: 16,
-          right: 16,
-          child: _BottomBar(
-            hasCurrent: false,
-            pendingCount: 0,
-            baitSummary: '紅蟲 x$_baitCount',
-            canFish: hasBait,
-            onAddCheckpoint: () => widget.onOpenScreen(GameScreen.profile),
-            onFishNearby: hasBait &&
-                    (_activeBoatVendor != null ||
-                        _isAtBoatSpot ||
-                        (nearestSpot != null && _canOpenSpot(nearestSpot)))
-                ? () {
-                    if (_activeBoatVendor != null) {
-                      _showBoatSpotPicker();
-                      return;
-                    }
-                    final spotToUse =
-                        (nearestSpot != null && _canOpenSpot(nearestSpot))
-                            ? nearestSpot
-                            : (_isAtBoatSpot ? _buildBoatSpotDemo() : null);
-                    if (spotToUse != null) {
-                      setState(() => _selectedSpot = spotToUse);
-                      _openMinigame();
-                    }
-                  }
-                : null,
-          ),
-        ),
-        if (_selectedSpot != null)
-          Positioned(
-            bottom: MediaQuery.of(context).padding.bottom + 100,
-            left: 16,
-            right: 16,
-            child: _SpotDetailCard(
-              spot: _selectedSpot!,
-              onClose: () => setState(() => _selectedSpot = null),
-              distanceMeters: _distanceMeters(
-                _playerLatLng,
-                LatLng(_selectedSpot!.lat, _selectedSpot!.lng),
-              ),
-              unlockRadiusMeters: _unlockRadiusMeters(_selectedSpot!),
-              canStartFishing:
-                  hasBait && (selectedCanOpen || _selectedSpot!.rarity == 3),
-              onStartFishing:
-                  hasBait && (selectedCanOpen || _selectedSpot!.rarity == 3)
-                      ? _openMinigame
-                      : null,
-            ),
-          ),
-        if (_showMinigame)
-          _FishingOverlay(
-            spotName: _selectedSpot?.name ?? '附近釣點',
-            spotBiome: _selectedSpot?.biome,
-            tutorialMode: _isTutorialFishing,
-            fishBoosts: _fishBoosts,
-            onTutorialComplete: () {
-              setState(() {
-                _showMinigame = false;
-                _isTutorialFishing = false;
-              });
-            },
-            onClose: _closeMinigame,
-            isIslandSpot: _selectedSpot?.isIsland ?? false,
-            onMinigameResult:
-                _boatSpotQueueIndex >= 0 ? _onBoatSpotResult : null,
-          ),
       ]),
     );
   }
@@ -954,6 +1279,120 @@ class _GameHomeScreenState extends State<GameHomeScreen>
       default:
         return Colors.grey;
     }
+  }
+}
+
+@immutable
+class _GameMapSurfaceData {
+  const _GameMapSurfaceData({
+    required this.playerLatLng,
+    required this.hasLiveLocation,
+    required this.avatarSnapshot,
+    required this.mapSpots,
+    required this.fallbackSpots,
+    required this.selectedSpotId,
+    required this.terrainDataSource,
+    required this.mapBearingDegrees,
+    required this.motionBaseBearingDegrees,
+    required this.isMapInteracting,
+    required this.useVectorFallback,
+  });
+
+  final LatLng playerLatLng;
+  final bool hasLiveLocation;
+  final _MapAvatarSnapshot avatarSnapshot;
+  final List<GameMapSpot> mapSpots;
+  final List<_SpotDemo> fallbackSpots;
+  final String? selectedSpotId;
+  final TerrainDataSource terrainDataSource;
+  final double mapBearingDegrees;
+  final double motionBaseBearingDegrees;
+  final bool isMapInteracting;
+  final bool useVectorFallback;
+}
+
+/// Stable map host. HUD-only setState calls keep this widget instance intact;
+/// geographic updates arrive through the dedicated map-state notifier.
+class _GameHomeMapSurface extends StatefulWidget {
+  const _GameHomeMapSurface({
+    required this.mapState,
+    required this.onMapSpotSelected,
+    required this.onFallbackSpotSelected,
+    required this.onMapCreated,
+    required this.onMapBearingChanged,
+    required this.onMapLibreLoadTimeout,
+    required this.onFallbackDragStart,
+    required this.onFallbackDragUpdate,
+    required this.onFallbackDragEnd,
+  });
+
+  final ValueListenable<_GameMapSurfaceData> mapState;
+  final ValueChanged<GameMapSpot> onMapSpotSelected;
+  final ValueChanged<_SpotDemo> onFallbackSpotSelected;
+  final ValueChanged<maplibre.MapController> onMapCreated;
+  final ValueChanged<double> onMapBearingChanged;
+  final VoidCallback onMapLibreLoadTimeout;
+  final VoidCallback onFallbackDragStart;
+  final ValueChanged<DragUpdateDetails> onFallbackDragUpdate;
+  final VoidCallback onFallbackDragEnd;
+
+  @override
+  State<_GameHomeMapSurface> createState() => _GameHomeMapSurfaceState();
+}
+
+class _GameHomeMapSurfaceState extends State<_GameHomeMapSurface> {
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<_GameMapSurfaceData>(
+      valueListenable: widget.mapState,
+      builder: (context, data, _) {
+        final useMapLibre =
+            PublicAppConfig.mapLibreEnabled && !data.useVectorFallback;
+        final mapWorld = useMapLibre
+            ? GameMapLibre(
+                playerLocation: maplibre.Geographic(
+                  lon: data.playerLatLng.longitude,
+                  lat: data.playerLatLng.latitude,
+                ),
+                playerMarker: PlayerAvatarMarker(
+                  avatarState: data.avatarSnapshot.toAvatarProfileViewState(),
+                  isLiveLocation: data.hasLiveLocation,
+                ),
+                playerMarkerKey: data.avatarSnapshot.markerKey,
+                spots: data.mapSpots,
+                selectedSpotId: data.selectedSpotId,
+                hasLiveLocation: data.hasLiveLocation,
+                initialZoom: gameMapInitialZoom,
+                onSpotSelected: widget.onMapSpotSelected,
+                onMapCreated: widget.onMapCreated,
+                onBearingChanged: widget.onMapBearingChanged,
+                onLoadTimeout: widget.onMapLibreLoadTimeout,
+              )
+            : _GameWorldMapShell(
+                spotCount: data.fallbackSpots.length,
+                hasLiveLocation: data.hasLiveLocation,
+                playerLatLng: data.playerLatLng,
+                spots: data.fallbackSpots,
+                terrainDataSource: data.terrainDataSource,
+                mapBearingDegrees: data.mapBearingDegrees,
+                motionBaseBearingDegrees: data.motionBaseBearingDegrees,
+                isMapInteracting: data.isMapInteracting,
+                vectorFallbackEnabled: data.useVectorFallback ||
+                    PublicAppConfig.mapVectorFallbackEnabled,
+                onSpotSelected: widget.onFallbackSpotSelected,
+              );
+
+        if (useMapLibre) return mapWorld;
+        return GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onHorizontalDragStart: (_) => widget.onFallbackDragStart(),
+          onHorizontalDragUpdate: widget.onFallbackDragUpdate,
+          onHorizontalDragEnd: (_) => widget.onFallbackDragEnd(),
+          onHorizontalDragCancel: widget.onFallbackDragEnd,
+          child: mapWorld,
+        );
+      },
+    );
   }
 }
 
@@ -1047,8 +1486,11 @@ class _FishEntry {
   String get fishId => _gameNameToFishId[name] ?? 'fish-022';
 
   String get silhouetteAsset => iconAsset
-      .replaceFirst('assets/fish/mobile/', 'assets/fish/icons/silhouettes/')
-      .replaceFirst('.png', '_silhouette.png');
+      .replaceFirst(
+        'assets/fish/mobile_webp/',
+        'assets/fish/icons/silhouettes/',
+      )
+      .replaceFirst('.webp', '_silhouette.png');
 
   String get bodySizeLabel => switch (bodySize) {
         _FishBodySize.small => '小型魚',
@@ -1077,14 +1519,14 @@ class _FishSpot {
 
 // 魚類數據定義
 // 淺水：全小型魚，1% 稀有
-const _fishIconDir = 'assets/fish/mobile';
+const _fishIconDir = 'assets/fish/mobile_webp';
 const _tutorialFish = _FishEntry(
   name: '白䱛',
   rarity: _FishRarity.common,
   bodySize: _FishBodySize.small,
   difficulty: 1,
   reward: 8,
-  iconAsset: '$_fishIconDir/010.png',
+  iconAsset: '$_fishIconDir/010.webp',
 );
 const _shallowFish = [
   _FishEntry(
@@ -1093,35 +1535,35 @@ const _shallowFish = [
       bodySize: _FishBodySize.small,
       difficulty: 1,
       reward: 5,
-      iconAsset: '$_fishIconDir/034_hk-indian-mackerel.png'),
+      iconAsset: '$_fishIconDir/034_hk-indian-mackerel.webp'),
   _FishEntry(
       name: '銀鱸魚',
       rarity: _FishRarity.common,
       bodySize: _FishBodySize.small,
       difficulty: 1,
       reward: 6,
-      iconAsset: '$_fishIconDir/039_hk-silver-pomfret.png'),
+      iconAsset: '$_fishIconDir/039_hk-silver-pomfret.webp'),
   _FishEntry(
       name: '烏頭',
       rarity: _FishRarity.common,
       bodySize: _FishBodySize.small,
       difficulty: 2,
       reward: 8,
-      iconAsset: '$_fishIconDir/013_hk-grey-mullet.png'),
+      iconAsset: '$_fishIconDir/013_hk-grey-mullet.webp'),
   _FishEntry(
       name: '大眼烏頭',
       rarity: _FishRarity.common,
       bodySize: _FishBodySize.small,
       difficulty: 2,
       reward: 10,
-      iconAsset: '$_fishIconDir/014_hk-large-scale-mullet.png'),
+      iconAsset: '$_fishIconDir/014_hk-large-scale-mullet.webp'),
   _FishEntry(
       name: '黃金沙丁',
       rarity: _FishRarity.epic,
       bodySize: _FishBodySize.small,
       difficulty: 3,
       reward: 60,
-      iconAsset: '$_fishIconDir/030_hk-golden-trevally.png'),
+      iconAsset: '$_fishIconDir/030_hk-golden-trevally.webp'),
 ];
 const _shallowWeights = [28, 28, 25, 18, 1]; // 1% 稀有
 
@@ -1133,35 +1575,35 @@ const _midFish = [
       bodySize: _FishBodySize.small,
       difficulty: 2,
       reward: 10,
-      iconAsset: '$_fishIconDir/005_hk-mangrove-red-snapper.png'),
+      iconAsset: '$_fishIconDir/005_hk-mangrove-red-snapper.webp'),
   _FishEntry(
       name: '花鱸',
       rarity: _FishRarity.common,
       bodySize: _FishBodySize.small,
       difficulty: 2,
       reward: 12,
-      iconAsset: '$_fishIconDir/016_hk-barramundi.png'),
+      iconAsset: '$_fishIconDir/016_hk-barramundi.webp'),
   _FishEntry(
       name: '石斑魚',
       rarity: _FishRarity.rare,
       bodySize: _FishBodySize.medium,
       difficulty: 3,
       reward: 25,
-      iconAsset: '$_fishIconDir/007_hk-orange-spotted-grouper.png'),
+      iconAsset: '$_fishIconDir/007_hk-orange-spotted-grouper.webp'),
   _FishEntry(
       name: '海塘蝨',
       rarity: _FishRarity.rare,
       bodySize: _FishBodySize.medium,
       difficulty: 3,
       reward: 22,
-      iconAsset: '$_fishIconDir/069.png'),
+      iconAsset: '$_fishIconDir/069.webp'),
   _FishEntry(
       name: '七星鱸',
       rarity: _FishRarity.rare,
       bodySize: _FishBodySize.medium,
       difficulty: 4,
       reward: 30,
-      iconAsset: '$_fishIconDir/015_hk-japanese-seabass.png'),
+      iconAsset: '$_fishIconDir/015_hk-japanese-seabass.webp'),
 ];
 const _midWeights = [30, 30, 15, 10, 15];
 
@@ -1173,63 +1615,63 @@ const _deepFish = [
       bodySize: _FishBodySize.small,
       difficulty: 3,
       reward: 18,
-      iconAsset: '$_fishIconDir/032_hk-yellowtail-scad.png'),
+      iconAsset: '$_fishIconDir/032_hk-yellowtail-scad.webp'),
   _FishEntry(
       name: '池仔',
       rarity: _FishRarity.common,
       bodySize: _FishBodySize.small,
       difficulty: 3,
       reward: 20,
-      iconAsset: '$_fishIconDir/131_hk-真池魚-badge.png'),
+      iconAsset: '$_fishIconDir/131_hk-真池魚-badge.webp'),
   _FishEntry(
       name: '藍鰭鮪',
       rarity: _FishRarity.rare,
       bodySize: _FishBodySize.medium,
       difficulty: 4,
       reward: 50,
-      iconAsset: '$_fishIconDir/037_hk-longtail-tuna.png'),
+      iconAsset: '$_fishIconDir/037_hk-longtail-tuna.webp'),
   _FishEntry(
       name: '深海鱈',
       rarity: _FishRarity.rare,
       bodySize: _FishBodySize.medium,
       difficulty: 4,
       reward: 45,
-      iconAsset: '$_fishIconDir/018_hk-largehead-hairtail.png'),
+      iconAsset: '$_fishIconDir/018_hk-largehead-hairtail.webp'),
   _FishEntry(
       name: '黃腳鱲',
       rarity: _FishRarity.rare,
       bodySize: _FishBodySize.medium,
       difficulty: 4,
       reward: 48,
-      iconAsset: '$_fishIconDir/107.png'),
+      iconAsset: '$_fishIconDir/107.webp'),
   _FishEntry(
       name: '赤鱲',
       rarity: _FishRarity.rare,
       bodySize: _FishBodySize.medium,
       difficulty: 4,
       reward: 48,
-      iconAsset: '$_fishIconDir/099.png'),
+      iconAsset: '$_fishIconDir/099.webp'),
   _FishEntry(
       name: '黃雞魚',
       rarity: _FishRarity.rare,
       bodySize: _FishBodySize.medium,
       difficulty: 4,
       reward: 52,
-      iconAsset: '$_fishIconDir/095.png'),
+      iconAsset: '$_fishIconDir/095.webp'),
   _FishEntry(
       name: '金龍魚',
       rarity: _FishRarity.epic,
       bodySize: _FishBodySize.large,
       difficulty: 5,
       reward: 100,
-      iconAsset: '$_fishIconDir/024_hk-golden-threadfin-bream.png'),
+      iconAsset: '$_fishIconDir/024_hk-golden-threadfin-bream.webp'),
   _FishEntry(
       name: '終極鯊',
       rarity: _FishRarity.epic,
       bodySize: _FishBodySize.large,
       difficulty: 5,
       reward: 150,
-      iconAsset: '$_fishIconDir/045_hk-white-spotted-bamboo-shark.png'),
+      iconAsset: '$_fishIconDir/045_hk-white-spotted-bamboo-shark.webp'),
 ];
 const _deepWeights = [48, 12, 10, 10, 5, 5, 5, 3, 2]; // 30% 中型、5% 稀有大型
 
@@ -1267,7 +1709,9 @@ class _FishingOverlay extends StatefulWidget {
     required this.onClose,
     this.spotBiome,
     this.tutorialMode = false,
+    this.identityKey = 'local-guest',
     this.fishBoosts = const {},
+    this.speciesWeights = const {},
     this.onTutorialComplete,
     this.isIslandSpot = false,
     this.onMinigameResult,
@@ -1276,7 +1720,9 @@ class _FishingOverlay extends StatefulWidget {
   final FishingSpotBiome? spotBiome;
   final VoidCallback onClose;
   final bool tutorialMode;
+  final String identityKey;
   final Map<String, double> fishBoosts;
+  final Map<String, double> speciesWeights;
   final VoidCallback? onTutorialComplete;
   final bool isIslandSpot;
 
@@ -1319,6 +1765,7 @@ class _FishingOverlayState extends State<_FishingOverlay>
   double _biteWaitSeconds = 0.0;
   double _biteElapsedSeconds = 0.0;
   double _biteWindowSeconds = 1.4;
+  FishingBiteController? _biteController;
   int _lastBiteHapticTick = -1;
   final math.Random _rng = math.Random();
 
@@ -1461,30 +1908,41 @@ class _FishingOverlayState extends State<_FishingOverlay>
   }
 
   void _onBiteTick() {
-    const dt = 0.05;
+    final controller = _biteController;
+    if (controller == null) return;
+    final previousPhase = controller.state.phase;
+    final nextState = controller.advance();
+    final becameReady = previousPhase != FishingBitePhase.ready &&
+        nextState.phase == FishingBitePhase.ready;
+    final missed = nextState.phase == FishingBitePhase.missed;
+
     setState(() {
       _tickCount++;
       _gameSeconds = (_tickCount / 20).floor();
+      _biteElapsedSeconds = nextState.elapsedSeconds;
 
-      if (_phase == _FishingPhase.waitingForBite) {
-        _biteElapsedSeconds += dt;
+      if (nextState.phase == FishingBitePhase.waiting) {
         _hookOffset = math.sin(_tickCount * 0.22) * 0.08;
-        if (_biteElapsedSeconds >= _biteWaitSeconds) {
-          _phase = _FishingPhase.biteReady;
-          _biteElapsedSeconds = 0;
-          _lastBiteHapticTick = -1;
-          HapticFeedback.mediumImpact();
+        return;
+      }
+
+      if (becameReady) {
+        _phase = _FishingPhase.biteReady;
+        _lastBiteHapticTick = -1;
+        HapticFeedback.mediumImpact();
+      }
+
+      if (nextState.phase == FishingBitePhase.ready) {
+        _phase = _FishingPhase.biteReady;
+        _hookOffset = math.sin(_tickCount * 1.65) * 0.9;
+        if (_tickCount - _lastBiteHapticTick >= 5) {
+          _lastBiteHapticTick = _tickCount;
+          HapticFeedback.selectionClick();
         }
         return;
       }
 
-      _biteElapsedSeconds += dt;
-      _hookOffset = math.sin(_tickCount * 1.65) * 0.9;
-      if (_tickCount - _lastBiteHapticTick >= 5) {
-        _lastBiteHapticTick = _tickCount;
-        HapticFeedback.selectionClick();
-      }
-      if (_biteElapsedSeconds > _biteWindowSeconds) {
+      if (missed) {
         _failReason = '太遲抽竿，魚食完餌走咗！';
         _endGame(false);
       }
@@ -1497,6 +1955,16 @@ class _FishingOverlayState extends State<_FishingOverlay>
     _showResultDetails = false;
     _phase = _FishingPhase.result;
     _tickController.stop();
+    unawaited(
+      AppTelemetry.instance.record(
+        TelemetryEventName.minigameCompleted,
+        fields: {
+          'outcome': won ? 'success' : 'failure',
+          'tutorial': widget.tutorialMode,
+          'durationMs': _gameSeconds * 1000,
+        },
+      ),
+    );
 
     // Fire result callback for auto-advance (boat vendor queue)
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -1523,6 +1991,10 @@ class _FishingOverlayState extends State<_FishingOverlay>
           updatedCoins = await ProfileWalletService.addCoins(
             progressResult.coinsGained,
             reason: '釣獲獎勵：${fish.name}',
+            rewardKind: 'virtual_catch',
+            claimKey:
+                'virtual-catch:${fish.fishId}:${DateTime.now().toUtc().microsecondsSinceEpoch}',
+            fishId: fish.fishId,
           );
         }
         if (!mounted) return;
@@ -1534,7 +2006,9 @@ class _FishingOverlayState extends State<_FishingOverlay>
           _showProgressReward(progressResult, updatedCoins);
         }
         if (widget.tutorialMode && fish.fishId == 'fish-010') {
-          await TutorialService.markCompleted();
+          await TutorialService.markCompleted(
+            identityKey: widget.identityKey,
+          );
           if (!mounted) return;
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -1585,7 +2059,9 @@ class _FishingOverlayState extends State<_FishingOverlay>
       };
 
   Future<void> _checkAndLockTutorialFish(_FishEntry fish) async {
-    final tutorialDone = await TutorialService.isCompleted();
+    final tutorialDone = await TutorialService.isCompleted(
+      identityKey: widget.identityKey,
+    );
     if (!tutorialDone && fish.fishId != 'fish-010') {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -1639,32 +2115,43 @@ class _FishingOverlayState extends State<_FishingOverlay>
           widget.tutorialMode ? 0.8 : 1.8 + _rng.nextDouble() * 2.6;
       _biteElapsedSeconds = 0.0;
       _biteWindowSeconds = widget.tutorialMode ? 2.0 : 1.45;
+      _biteController = FishingBiteController(
+        waitSeconds: _biteWaitSeconds,
+        biteWindowSeconds: _biteWindowSeconds,
+      );
       _lastBiteHapticTick = -1;
       _fishingResult = null;
       _showResultDetails = false;
       _failReason = '';
     });
     _tickController.repeat();
+    unawaited(
+      AppTelemetry.instance.record(
+        TelemetryEventName.minigameStarted,
+        fields: {
+          'tutorial': widget.tutorialMode,
+          'island': widget.isIslandSpot,
+        },
+      ),
+    );
   }
 
   void _strikeHook() {
     final fish = _caughtFish;
-    if (fish == null) return;
+    final biteController = _biteController;
+    if (fish == null || biteController == null) return;
 
-    if (_phase == _FishingPhase.waitingForBite) {
+    if (biteController.state.phase == FishingBitePhase.waiting) {
       HapticFeedback.lightImpact();
+      biteController.strike(difficulty: fish.difficulty);
       _failReason = '太早抽竿，魚仲未食餌！';
       _endGame(false);
       return;
     }
 
-    if (_phase != _FishingPhase.biteReady) return;
+    if (biteController.state.phase != FishingBitePhase.ready) return;
 
-    final strike = FishingStrikeRules.evaluate(
-      biteElapsedSeconds: _biteElapsedSeconds,
-      biteWindowSeconds: _biteWindowSeconds,
-      difficulty: fish.difficulty,
-    );
+    final strike = biteController.strike(difficulty: fish.difficulty);
     if (!strike.isSuccess) {
       HapticFeedback.lightImpact();
       _failReason = switch (strike.reason) {
@@ -1686,6 +2173,7 @@ class _FishingOverlayState extends State<_FishingOverlay>
 
     final stats = fish.stats;
     HapticFeedback.heavyImpact();
+    _biteController = null;
     setState(() {
       _phase = _FishingPhase.fishing;
       _tension = 40.0;
@@ -1707,17 +2195,23 @@ class _FishingOverlayState extends State<_FishingOverlay>
   }
 
   void _onPullStart() {
+    if (!mounted) return;
     setState(() => _isPulling = true);
   }
 
   void _onPullEnd() {
-    setState(() => _isPulling = false);
+    if (!mounted) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      setState(() => _isPulling = false);
+    });
   }
 
   void _retry() {
     _resultRevealTimer?.cancel();
     setState(() {
       _phase = _FishingPhase.spotSelect;
+      _biteController = null;
       _caughtFish = null;
       _fishingResult = null;
       _showResultDetails = false;
@@ -1729,7 +2223,16 @@ class _FishingOverlayState extends State<_FishingOverlay>
     final now = DateTime.now();
     final adjustedWeights = List<double>.generate(spot.fish.length, (i) {
       final fish = spot.fish[i];
-      final boost = widget.fishBoosts[fish.name] ?? 1.0;
+      final boost = FishingSpawnRules.configuredSpeciesWeight(
+        weights: widget.fishBoosts,
+        fishName: fish.name,
+        fishId: fish.fishId,
+      );
+      final configuredWeight = FishingSpawnRules.configuredSpeciesWeight(
+        weights: widget.speciesWeights,
+        fishName: fish.name,
+        fishId: fish.fishId,
+      );
       final locationBoost = FishingSpawnRules.locationMultiplier(
         spotName: widget.spotName,
         fishName: fish.name,
@@ -1737,7 +2240,7 @@ class _FishingOverlayState extends State<_FishingOverlay>
         biome: widget.spotBiome,
         now: now,
       );
-      return spot.weights[i] * boost * locationBoost;
+      return spot.weights[i] * configuredWeight * boost * locationBoost;
     });
     final totalWeight = adjustedWeights.reduce((a, b) => a + b);
     var r = _rng.nextDouble() * totalWeight;
@@ -1993,6 +2496,8 @@ class _FishingOverlayState extends State<_FishingOverlay>
 
   Widget _buildBitePhase(BuildContext context) {
     final isBiting = _phase == _FishingPhase.biteReady;
+    final biteStatus =
+        isBiting ? '魚食餌！浮標急震，立即抽竿' : '${widget.spotName}，等待魚食餌，太早抽竿會嚇走條魚';
     final progress = isBiting
         ? (_biteElapsedSeconds / _biteWindowSeconds).clamp(0.0, 1.0)
         : (_biteElapsedSeconds / _biteWaitSeconds).clamp(0.0, 1.0);
@@ -2013,13 +2518,17 @@ class _FishingOverlayState extends State<_FishingOverlay>
           ),
         ),
         const SizedBox(height: 6),
-        Text(
-          isBiting ? '浮標急震，立即抽竿' : '${widget.spotName} · 放低魚餌等咬口',
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            color: isBiting ? Colors.orangeAccent : Colors.white70,
-            fontSize: 14,
-            fontWeight: isBiting ? FontWeight.w700 : FontWeight.normal,
+        Semantics(
+          liveRegion: true,
+          label: biteStatus,
+          child: Text(
+            isBiting ? '浮標急震，立即抽竿' : '${widget.spotName} · 放低魚餌等咬口',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: isBiting ? Colors.orangeAccent : Colors.white70,
+              fontSize: 14,
+              fontWeight: isBiting ? FontWeight.w700 : FontWeight.normal,
+            ),
           ),
         ),
         const SizedBox(height: 14),
@@ -2106,16 +2615,21 @@ class _FishingOverlayState extends State<_FishingOverlay>
           ),
         ),
         const SizedBox(height: 16),
-        ElevatedButton.icon(
-          onPressed: _strikeHook,
-          icon: const Icon(Icons.sports_martial_arts),
-          label: Text(isBiting ? '抽竿！' : '抽竿'),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: isBiting ? Colors.orangeAccent : Colors.white24,
-            foregroundColor: isBiting ? Colors.black : Colors.white,
-            padding: const EdgeInsets.symmetric(vertical: 18),
-            textStyle:
-                const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+        Semantics(
+          excludeSemantics: true,
+          button: true,
+          label: isBiting ? '抽竿，立即抽竿' : '抽竿，等待魚食餌',
+          child: ElevatedButton.icon(
+            onPressed: _strikeHook,
+            icon: const Icon(Icons.sports_martial_arts),
+            label: Text(isBiting ? '抽竿！' : '抽竿'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: isBiting ? Colors.orangeAccent : Colors.white24,
+              foregroundColor: isBiting ? Colors.black : Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 18),
+              textStyle:
+                  const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            ),
           ),
         ),
         const SizedBox(height: 8),
@@ -2561,7 +3075,7 @@ class _FishingOverlayState extends State<_FishingOverlay>
               Positioned.fill(
                 child: Center(
                   child: Image.asset(
-                    _caughtFish!.silhouetteAsset,
+                    _caughtFish!.iconAsset,
                     width: 190,
                     height: 190,
                     fit: BoxFit.contain,
@@ -3114,9 +3628,32 @@ class _SpotDemo {
   final int rarity;
   final bool isNew;
   final bool isIsland;
+  final Map<String, double> speciesWeights;
 
-  const _SpotDemo(this.lat, this.lng, this.name, this.rarity, this.isNew)
-      : isIsland = rarity >= 4;
+  const _SpotDemo(
+    this.lat,
+    this.lng,
+    this.name,
+    this.rarity,
+    this.isNew, {
+    this.speciesWeights = const {},
+  }) : isIsland = rarity >= 4;
+
+  factory _SpotDemo.fromFishingSpot(FishingSpot spot) {
+    if (!spot.isActiveVerified) {
+      throw StateError('Only active verified spots may enter the game map.');
+    }
+    final isIsland = spot.kind == FishingSpotKind.island ||
+        spot.kind == FishingSpotKind.rock;
+    return _SpotDemo(
+      spot.latitude,
+      spot.longitude,
+      spot.displayName,
+      isIsland ? 4 : 2,
+      isIsland,
+      speciesWeights: spot.speciesWeights,
+    );
+  }
 
   FishingSpotBiome get biome => FishingBiomeRules.inferSpotBiome(
         spotName: name,
@@ -3310,10 +3847,6 @@ const List<_SpotDemo> _verifiedIslandRockSpots = [
   _SpotDemo(22.4457681, 114.1785585, '元洲仔', 4, true),
 ];
 
-const List<_SpotDemo> _developerTestSpots = [
-  _SpotDemo(22.3819, 114.1874, '沙田希爾頓中心測試釣點', 1, false),
-];
-
 class _RadarGridPainter extends CustomPainter {
   const _RadarGridPainter({required this.anchorY});
 
@@ -3345,6 +3878,9 @@ class _GameWorldMapShell extends StatelessWidget {
     required this.spots,
     required this.terrainDataSource,
     required this.mapBearingDegrees,
+    required this.motionBaseBearingDegrees,
+    required this.isMapInteracting,
+    required this.vectorFallbackEnabled,
     required this.onSpotSelected,
   });
 
@@ -3354,11 +3890,14 @@ class _GameWorldMapShell extends StatelessWidget {
   final List<_SpotDemo> spots;
   final TerrainDataSource terrainDataSource;
   final double mapBearingDegrees;
+  final double motionBaseBearingDegrees;
+  final bool isMapInteracting;
+  final bool vectorFallbackEnabled;
   final void Function(_SpotDemo spot) onSpotSelected;
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
+    final shell = Stack(
       fit: StackFit.expand,
       children: [
         LayoutBuilder(
@@ -3375,33 +3914,41 @@ class _GameWorldMapShell extends StatelessWidget {
               perspectiveStrength: 0.52,
               viewportAnchorY: gameMapPlayerAnchorY,
             );
+            final renderCamera = isMapInteracting
+                ? camera.copyWith(bearingDegrees: motionBaseBearingDegrees)
+                : camera;
             final featureStore = terrainDataSource is GeoTerrainDataSource
-                ? GameMapFeatureStore(
+                ? GameMapFeatureStore.cached(
                     dataset:
                         (terrainDataSource as GeoTerrainDataSource).dataset,
                   )
                 : null;
             final terrainFeatures =
-                featureStore?.visibleTerrainFeatures(camera) ??
+                featureStore?.visibleTerrainFeatures(renderCamera) ??
                     terrainDataSource.visibleVectorFeatures(
                       playerLatLng: playerLatLng,
                       radiusMeters: 900,
                     );
-            final hasVectorWorldSurface = terrainFeatures.any(
-              (feature) =>
-                  feature.kind == TerrainKind.land &&
-                  feature.isClosed &&
-                  feature.points.length >= 3,
-            );
-            final gridLayout = GameMapGridLayout.forViewport(
-              viewportSize,
-              verticalCellCount: hasVectorWorldSurface ? 10 : 28,
-            );
-            final terrainTiles = terrainDataSource.buildTiles(
-              playerLatLng: playerLatLng,
-              rows: gridLayout.rows,
-              cols: gridLayout.cols,
-            );
+            late final List<TerrainTile> terrainTiles;
+            if (vectorFallbackEnabled) {
+              terrainTiles = const <TerrainTile>[];
+            } else {
+              final hasVectorWorldSurface = terrainFeatures.any(
+                (feature) =>
+                    feature.kind == TerrainKind.land &&
+                    feature.isClosed &&
+                    feature.points.length >= 3,
+              );
+              final gridLayout = GameMapGridLayout.forViewport(
+                viewportSize,
+                verticalCellCount: hasVectorWorldSurface ? 10 : 28,
+              );
+              terrainTiles = terrainDataSource.buildTiles(
+                playerLatLng: playerLatLng,
+                rows: gridLayout.rows,
+                cols: gridLayout.cols,
+              );
+            }
             final fishingSpotInputs = [
               for (final spot in spots)
                 GameMapFishingSpot(
@@ -3411,32 +3958,71 @@ class _GameWorldMapShell extends StatelessWidget {
                 ),
             ];
             final fishingSpots = featureStore?.projectFishingSpots(
-                  camera: camera,
+                  camera: renderCamera,
                   spots: fishingSpotInputs,
                 ) ??
                 [
                   for (final spot in fishingSpotInputs)
-                    if (camera.isVisible(spot.position))
+                    if (renderCamera.isVisible(spot.position))
                       ProjectedFishingSpot(
                         id: spot.id,
                         name: spot.name,
                         position: spot.position,
-                        screenPosition: camera.project(spot.position),
+                        screenPosition: renderCamera.project(spot.position),
                       ),
                 ];
-            return Stack(
+            final mapContent = Stack(
               fit: StackFit.expand,
               children: [
-                IgnorePointer(
-                  child: GameMapRenderer(
-                    camera: camera,
-                    terrainTiles: terrainTiles,
+                if (vectorFallbackEnabled) ...[
+                  VectorFallbackSurface(
+                    camera: renderCamera,
                     terrainFeatures: terrainFeatures,
-                    fishingSpots: const <ProjectedFishingSpot>[],
+                    fishingSpots: fishingSpots,
+                    texturesEnabled: !isMapInteracting,
                   ),
-                ),
-                ..._buildProjectedSpotButtons(camera, fishingSpots),
+                ] else
+                  IgnorePointer(
+                    child: GameMapRenderer(
+                      camera: renderCamera,
+                      terrainTiles: terrainTiles,
+                      terrainFeatures: terrainFeatures,
+                      fishingSpots: const <ProjectedFishingSpot>[],
+                      motionOptimized: isMapInteracting,
+                    ),
+                  ),
+                ...(vectorFallbackEnabled
+                    ? _buildVectorFallbackSpotButtons(
+                        renderCamera, fishingSpots)
+                    : _buildProjectedSpotButtons(renderCamera, fishingSpots)),
               ],
+            );
+            final cachedMapSurface = RepaintBoundary(child: mapContent);
+            final transformedMap = isMapInteracting
+                ? Transform.rotate(
+                    angle: (mapBearingDegrees - motionBaseBearingDegrees) *
+                        math.pi /
+                        180,
+                    alignment: const Alignment(
+                      0,
+                      gameMapPlayerAnchorY * 2 - 1,
+                    ),
+                    child: cachedMapSurface,
+                  )
+                : cachedMapSurface;
+            if (!vectorFallbackEnabled) return transformedMap;
+            return GestureDetector(
+              behavior: HitTestBehavior.translucent,
+              onTapUp: (details) => _onVectorFallbackMapTap(
+                details.localPosition,
+                camera,
+                featureStore?.projectFishingSpots(
+                      camera: camera,
+                      spots: fishingSpotInputs,
+                    ) ??
+                    fishingSpots,
+              ),
+              child: transformedMap,
             );
           },
         ),
@@ -3451,6 +4037,13 @@ class _GameWorldMapShell extends StatelessWidget {
         ),
       ],
     );
+    if (vectorFallbackEnabled) {
+      return VectorFallbackPerformanceProbe(child: shell);
+    }
+    if (PublicAppConfig.mapPerformanceEnabled) {
+      return GameMapPerformanceProbe(child: shell);
+    }
+    return shell;
   }
 
   List<Widget> _buildProjectedSpotButtons(
@@ -3492,6 +4085,70 @@ class _GameWorldMapShell extends StatelessWidget {
     ];
   }
 
+  List<Widget> _buildVectorFallbackSpotButtons(
+    GameMapCamera camera,
+    List<ProjectedFishingSpot> projectedSpots,
+  ) {
+    final spotsById = {
+      for (final spot in spots) '${spot.name}:${spot.lat}:${spot.lng}': spot,
+    };
+    final clusters = clusterProjectedFishingSpots(
+      spots: projectedSpots,
+      viewportSize: camera.viewportSize,
+    );
+    return [
+      for (final cluster in clusters)
+        if (spotsById[cluster.representative.id] case final spot?)
+          Positioned(
+            left: cluster.displayPosition.dx - 46,
+            top: cluster.displayPosition.dy -
+                58 -
+                _projectedSpotLiftPixels(spot),
+            width: 92,
+            height: 92,
+            child: Semantics(
+              button: true,
+              label:
+                  'Fishing spot: ${spot.name}${cluster.count > 1 ? ', ${cluster.count} spots' : ''}',
+              child: GestureDetector(
+                behavior: HitTestBehavior.translucent,
+                onTap: () => onSpotSelected(spot),
+                child: const SizedBox.expand(),
+              ),
+            ),
+          ),
+    ];
+  }
+
+  void _onVectorFallbackMapTap(
+    Offset tapPosition,
+    GameMapCamera camera,
+    List<ProjectedFishingSpot> projectedSpots,
+  ) {
+    final clusters = clusterProjectedFishingSpots(
+      spots: projectedSpots,
+      viewportSize: camera.viewportSize,
+    );
+    ProjectedFishingSpotCluster? closestCluster;
+    var closestDistance = double.infinity;
+    for (final cluster in clusters) {
+      final distance = (cluster.displayPosition - tapPosition).distance;
+      if (distance < closestDistance) {
+        closestCluster = cluster;
+        closestDistance = distance;
+      }
+    }
+    if (closestCluster == null || closestDistance > 78) return;
+
+    final spotId = closestCluster.representative.id;
+    for (final spot in spots) {
+      if ('${spot.name}:${spot.lat}:${spot.lng}' == spotId) {
+        onSpotSelected(spot);
+        return;
+      }
+    }
+  }
+
   double _projectedSpotScale(
     GameMapCamera camera,
     ProjectedFishingSpot projectedSpot,
@@ -3525,34 +4182,38 @@ class _PanoramaMapButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Tooltip(
-      message: '全景地圖',
-      child: GestureDetector(
-        onTap: onTap,
-        child: Container(
-          width: 44,
-          height: 44,
-          decoration: const BoxDecoration(
-            shape: BoxShape.circle,
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [Colors.white, Color(0xFFE3F4FF)],
+    return Semantics(
+      button: true,
+      label: '全景地圖',
+      child: Tooltip(
+        message: '全景地圖',
+        child: GestureDetector(
+          onTap: onTap,
+          child: Container(
+            width: 44,
+            height: 44,
+            decoration: const BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Colors.white, Color(0xFFE3F4FF)],
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black38,
+                  blurRadius: 12,
+                  offset: Offset(0, 6),
+                ),
+                BoxShadow(
+                  color: Colors.white70,
+                  blurRadius: 2,
+                  offset: Offset(-1, -1),
+                ),
+              ],
             ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black38,
-                blurRadius: 12,
-                offset: Offset(0, 6),
-              ),
-              BoxShadow(
-                color: Colors.white70,
-                blurRadius: 2,
-                offset: Offset(-1, -1),
-              ),
-            ],
+            child: const Icon(Icons.map, color: Color(0xFF126B82), size: 23),
           ),
-          child: const Icon(Icons.map, color: Color(0xFF126B82), size: 23),
         ),
       ),
     );
@@ -3570,53 +4231,57 @@ class _RotateMapButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Tooltip(
-      message: '旋轉地圖',
-      child: GestureDetector(
-        onTap: onTap,
-        child: Container(
-          width: 52,
-          height: 52,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            gradient: const LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [Color(0xFF07323B), Color(0xFF126B82)],
-            ),
-            border: Border.all(
-              color: const Color(0xFF8EF7E8).withValues(alpha: 0.85),
-              width: 1.4,
-            ),
-            boxShadow: const [
-              BoxShadow(
-                color: Colors.black38,
-                blurRadius: 12,
-                offset: Offset(0, 6),
+    return Semantics(
+      button: true,
+      label: '旋轉地圖，方向 ${bearingDegrees.round()} 度',
+      child: Tooltip(
+        message: '旋轉地圖',
+        child: GestureDetector(
+          onTap: onTap,
+          child: Container(
+            width: 52,
+            height: 52,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Color(0xFF07323B), Color(0xFF126B82)],
               ),
-              BoxShadow(
-                color: Colors.white70,
-                blurRadius: 2,
-                offset: Offset(-1, -1),
+              border: Border.all(
+                color: const Color(0xFF8EF7E8).withValues(alpha: 0.85),
+                width: 1.4,
               ),
-            ],
-          ),
-          child: Transform.rotate(
-            angle: bearingDegrees * math.pi / 180,
-            child: Stack(
-              alignment: Alignment.center,
-              children: const [
-                Icon(
-                  Icons.sync,
-                  color: Color(0x66FFFFFF),
-                  size: 29,
+              boxShadow: const [
+                BoxShadow(
+                  color: Colors.black38,
+                  blurRadius: 12,
+                  offset: Offset(0, 6),
                 ),
-                Icon(
-                  Icons.explore,
-                  color: Colors.white,
-                  size: 22,
+                BoxShadow(
+                  color: Colors.white70,
+                  blurRadius: 2,
+                  offset: Offset(-1, -1),
                 ),
               ],
+            ),
+            child: Transform.rotate(
+              angle: bearingDegrees * math.pi / 180,
+              child: Stack(
+                alignment: Alignment.center,
+                children: const [
+                  Icon(
+                    Icons.sync,
+                    color: Color(0x66FFFFFF),
+                    size: 29,
+                  ),
+                  Icon(
+                    Icons.explore,
+                    color: Colors.white,
+                    size: 22,
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -3630,10 +4295,7 @@ class _PanoramaMapSheet extends StatelessWidget {
     required this.spots,
     required this.playerLatLng,
     required this.hasLiveLocation,
-    required this.playerAccuracyMeters,
-    required this.equipped,
     required this.avatarSnapshot,
-    required this.spotDisplayRadiusMeters,
     required this.rarityColor,
     required this.onSpotSelected,
   });
@@ -3641,122 +4303,85 @@ class _PanoramaMapSheet extends StatelessWidget {
   final List<_SpotDemo> spots;
   final LatLng playerLatLng;
   final bool hasLiveLocation;
-  final double? playerAccuracyMeters;
-  final Map<String, String> equipped;
   final _MapAvatarSnapshot avatarSnapshot;
-  final double spotDisplayRadiusMeters;
   final Color Function(int rarity) rarityColor;
   final void Function(_SpotDemo spot) onSpotSelected;
 
   @override
   Widget build(BuildContext context) {
     final padding = MediaQuery.of(context).padding;
-    final mapController = MapController();
-    final markers = [
-      ...spots.map(
-        (spot) => Marker(
-          point: LatLng(spot.lat, spot.lng),
-          width: 118,
-          height: 124,
-          alignment: const Alignment(0, -0.52),
-          child: GestureDetector(
-            onTap: () => onSpotSelected(spot),
-            child: _SpotMarker(spot: spot),
-          ),
+    final spotsById = <String, _SpotDemo>{
+      for (final spot in spots) _panoramaSpotId(spot): spot,
+    };
+    final mapSpots = [
+      for (final spot in spots)
+        GameMapSpot(
+          id: _panoramaSpotId(spot),
+          name: spot.name,
+          latitude: spot.lat,
+          longitude: spot.lng,
+          markerColor: rarityColor(spot.rarity),
         ),
-      ),
-      Marker(
-        point: playerLatLng,
-        width: 82,
-        height: 100,
-        alignment: const Alignment(0, -0.28),
-        child: IgnorePointer(
-          child: PlayerAvatarMarker(
-            avatarState: avatarSnapshot.toAvatarProfileViewState(),
-            isLiveLocation: hasLiveLocation,
-          ),
-        ),
-      ),
     ];
+    final mapSurface = PublicAppConfig.mapLibreEnabled
+        ? GameMapLibre(
+            playerLocation: maplibre.Geographic(
+              lon: playerLatLng.longitude,
+              lat: playerLatLng.latitude,
+            ),
+            playerMarker: PlayerAvatarMarker(
+              avatarState: avatarSnapshot.toAvatarProfileViewState(),
+              isLiveLocation: hasLiveLocation,
+            ),
+            playerMarkerKey: avatarSnapshot.markerKey,
+            spots: mapSpots,
+            hasLiveLocation: hasLiveLocation,
+            initialZoom: 13,
+            initialPitch: 0,
+            onSpotSelected: (mapSpot) {
+              final spot = spotsById[mapSpot.id];
+              if (spot != null) onSpotSelected(spot);
+            },
+          )
+        : const ColoredBox(
+            color: Color(0xFF163843),
+            child: Center(
+              child: Text(
+                '全景地圖需要 MapLibre 模式',
+                style: TextStyle(color: Colors.white70, fontSize: 13),
+              ),
+            ),
+          );
 
     return Container(
       height: MediaQuery.of(context).size.height,
       decoration: const BoxDecoration(color: Color(0xFF0F2630)),
       child: Stack(
         children: [
-          FlutterMap(
-            mapController: mapController,
-            options: MapOptions(
-              initialCenter: playerLatLng,
-              initialZoom: 13,
-              minZoom: 11,
-              maxZoom: 16.5,
-              interactionOptions: const InteractionOptions(
-                flags: InteractiveFlag.drag |
-                    InteractiveFlag.pinchZoom |
-                    InteractiveFlag.doubleTapZoom,
-                pinchZoomThreshold: 0.4,
-              ),
-            ),
-            children: [
-              TileLayer(
-                urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                tileProvider: NetworkTileProvider(silenceExceptions: true),
-                evictErrorTileStrategy: EvictErrorTileStrategy.dispose,
-                errorTileCallback: (_, __, ___) {},
-                userAgentPackageName: 'com.fishergo.app',
-              ),
-              CircleLayer(
-                circles: [
-                  if (hasLiveLocation && playerAccuracyMeters != null)
-                    CircleMarker(
-                      point: playerLatLng,
-                      radius: playerAccuracyMeters!,
-                      useRadiusInMeter: true,
-                      color: Colors.cyanAccent.withValues(alpha: 0.14),
-                      borderColor: Colors.cyanAccent.withValues(alpha: 0.7),
-                      borderStrokeWidth: 1.2,
-                    ),
-                  CircleMarker(
-                    point: playerLatLng,
-                    radius: spotDisplayRadiusMeters,
-                    useRadiusInMeter: true,
-                    color: Colors.cyanAccent.withValues(alpha: 0.05),
-                    borderColor: Colors.cyanAccent.withValues(alpha: 0.35),
-                    borderStrokeWidth: 1,
-                  ),
-                  ...spots.map((spot) => CircleMarker(
-                        point: LatLng(spot.lat, spot.lng),
-                        radius: 80,
-                        useRadiusInMeter: true,
-                        color: rarityColor(spot.rarity).withValues(alpha: 0.15),
-                        borderColor: rarityColor(spot.rarity),
-                        borderStrokeWidth: 1.5,
-                      )),
-                ],
-              ),
-              MarkerLayer(markers: markers),
-            ],
-          ),
+          mapSurface,
           Positioned(
             top: padding.top + 12,
             left: 12,
             right: 12,
             child: Row(
               children: [
-                GestureDetector(
-                  onTap: () => Navigator.of(context).pop(),
-                  child: Container(
-                    width: 44,
-                    height: 44,
-                    decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.62),
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.22),
+                Semantics(
+                  button: true,
+                  label: '關閉全景地圖',
+                  child: GestureDetector(
+                    onTap: () => Navigator.of(context).pop(),
+                    child: Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.62),
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.22),
+                        ),
                       ),
+                      child: const Icon(Icons.close, color: Colors.white),
                     ),
-                    child: const Icon(Icons.close, color: Colors.white),
                   ),
                 ),
                 const SizedBox(width: 10),
@@ -3801,6 +4426,9 @@ class _PanoramaMapSheet extends StatelessWidget {
     );
   }
 }
+
+String _panoramaSpotId(_SpotDemo spot) =>
+    '${spot.name}:${spot.lat}:${spot.lng}';
 
 class _GameWorldAtmospherePainter extends CustomPainter {
   const _GameWorldAtmospherePainter({
@@ -4343,6 +4971,17 @@ class _MapAvatarSnapshot {
         equipped: equipped,
       );
 
+  String get markerKey {
+    final equipment = equipped.entries.toList()
+      ..sort((a, b) => a.key.compareTo(b.key));
+    return [
+      selectedGender,
+      selectedHairStyle,
+      selectedPreset,
+      for (final entry in equipment) '${entry.key}:${entry.value}',
+    ].join('|');
+  }
+
   final String selectedGender;
   final String selectedHairStyle;
   final int selectedPreset;
@@ -4659,6 +5298,63 @@ class _TopStatusBar extends StatelessWidget {
   }
 }
 
+class _NoNearbySpotsNotice extends StatelessWidget {
+  const _NoNearbySpotsNotice({
+    required this.hasLiveLocation,
+    required this.onOpenPanorama,
+  });
+
+  final bool hasLiveLocation;
+  final VoidCallback onOpenPanorama;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      container: true,
+      liveRegion: true,
+      label: hasLiveLocation ? '目前位置 500 米內沒有已核實釣點' : '正在取得 GPS 位置，暫時未顯示附近釣點',
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(14, 12, 10, 10),
+        decoration: BoxDecoration(
+          color: const Color(0xE6142930),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: Colors.white24),
+          boxShadow: const [
+            BoxShadow(
+                color: Colors.black38, blurRadius: 12, offset: Offset(0, 4)),
+          ],
+        ),
+        child: Row(
+          children: [
+            const Icon(Icons.location_searching, color: Colors.cyanAccent),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                hasLiveLocation ? '500 米內暫無已核實釣點' : '正在取得 GPS 位置…',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+            TextButton.icon(
+              onPressed: onOpenPanorama,
+              icon: const Icon(Icons.map_outlined, size: 17),
+              label: const Text('全景'),
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.cyanAccent,
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                minimumSize: const Size(0, 36),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _SideButtons extends StatelessWidget {
   const _SideButtons({required this.onOpenScreen, required this.isAdmin});
 
@@ -4672,7 +5368,7 @@ class _SideButtons extends StatelessWidget {
       _HudBtn(
         icon: Icons.account_circle,
         color: Colors.blue,
-        label: '帐戶',
+        label: '帳戶',
         onTap: () => onOpenScreen(GameScreen.profile),
       ),
       const SizedBox(height: 8),
@@ -4686,7 +5382,7 @@ class _SideButtons extends StatelessWidget {
       _HudBtn(
         icon: Icons.inventory_2,
         color: Colors.orange,
-        label: '背包',
+        label: '裝備',
         onTap: () => onOpenScreen(GameScreen.profile),
       ),
       const SizedBox(height: 8),
@@ -4731,22 +5427,27 @@ class _HudBtn extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Column(mainAxisSize: MainAxisSize.min, children: [
-        Container(
-          width: 44,
-          height: 44,
-          decoration: BoxDecoration(
-            color: Colors.black54,
-            shape: BoxShape.circle,
-            border: Border.all(color: color, width: 2),
+    return Semantics(
+      button: true,
+      label: label,
+      child: GestureDetector(
+        onTap: onTap,
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: Colors.black54,
+              shape: BoxShape.circle,
+              border: Border.all(color: color, width: 2),
+            ),
+            child: Icon(icon, color: color, size: 22),
           ),
-          child: Icon(icon, color: color, size: 22),
-        ),
-        const SizedBox(height: 2),
-        Text(label, style: const TextStyle(color: Colors.white70, fontSize: 9)),
-      ]),
+          const SizedBox(height: 2),
+          Text(label,
+              style: const TextStyle(color: Colors.white70, fontSize: 9)),
+        ]),
+      ),
     );
   }
 }

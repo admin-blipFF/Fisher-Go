@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
+import '../update/update_prompt_overlay.dart';
 import '../../features/fish/data/fish_species_repository.dart';
 import '../../features/game_home/presentation/game_home_screen.dart';
 import '../../features/fish/presentation/fish_encyclopedia_screen.dart';
@@ -21,15 +24,88 @@ class AppShell extends StatefulWidget {
 class _AppShellState extends State<AppShell> {
   GameScreen _currentScreen = GameScreen.map;
   int _boatPromptNonce = 0;
+  final Set<int> _builtScreens = <int>{GameScreen.map.index};
+  final List<Widget?> _screenWidgets =
+      List<Widget?>.filled(GameScreen.values.length, null);
 
-  void _openScreen(GameScreen screen) =>
-      setState(() => _currentScreen = screen);
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) unawaited(checkForAppUpdate(context));
+    });
+  }
+
+  void _openScreen(GameScreen screen) {
+    setState(() {
+      _currentScreen = screen;
+      _builtScreens.add(screen.index);
+    });
+  }
 
   void _openBoatFishingFromProfile() {
+    final nextBoatPromptNonce = _boatPromptNonce + 1;
     setState(() {
       _currentScreen = GameScreen.map;
-      _boatPromptNonce++;
+      _builtScreens.add(GameScreen.map.index);
+      _boatPromptNonce = nextBoatPromptNonce;
+      _screenWidgets[GameScreen.map.index] = GameHomeScreen(
+        onOpenScreen: _openScreen,
+        boatPromptNonce: nextBoatPromptNonce,
+      );
     });
+  }
+
+  Widget _createScreen(GameScreen screen) {
+    switch (screen) {
+      case GameScreen.map:
+        return GameHomeScreen(
+          onOpenScreen: _openScreen,
+          boatPromptNonce: _boatPromptNonce,
+        );
+      case GameScreen.encyclopedia:
+        return _WithMapButton(
+          onMapPressed: () => _openScreen(GameScreen.map),
+          child: FishEncyclopediaScreen(
+            repository: widget.fishSpeciesRepository,
+            onOpenMap: () => _openScreen(GameScreen.map),
+          ),
+        );
+      case GameScreen.catchLog:
+        return _WithMapButton(
+          onMapPressed: () => _openScreen(GameScreen.map),
+          child: const CatchLogScreen(),
+        );
+      case GameScreen.leaderboard:
+        return _WithMapButton(
+          onMapPressed: () => _openScreen(GameScreen.map),
+          child: const LeaderboardScreen(),
+        );
+      case GameScreen.profile:
+        return _WithMapButton(
+          onMapPressed: () => _openScreen(GameScreen.map),
+          child: ProfileScreen(onBoatRented: _openBoatFishingFromProfile),
+        );
+      case GameScreen.settings:
+        return _WithMapButton(
+          onMapPressed: () => _openScreen(GameScreen.map),
+          child: ProfileScreen(onBoatRented: _openBoatFishingFromProfile),
+        );
+      case GameScreen.admin:
+        return _WithMapButton(
+          onMapPressed: () => _openScreen(GameScreen.map),
+          child: const AdminScreen(),
+        );
+    }
+  }
+
+  Widget _screenSlot(GameScreen screen) {
+    if (!_builtScreens.contains(screen.index)) return const SizedBox.shrink();
+    final child = _screenWidgets[screen.index] ??= _createScreen(screen);
+    return Offstage(
+      offstage: _currentScreen != screen,
+      child: child,
+    );
   }
 
   @override
@@ -37,53 +113,14 @@ class _AppShellState extends State<AppShell> {
     return Scaffold(
       body: IndexedStack(
         index: _currentScreen.index,
-        children: [
-          // 0: 地圖首頁
-          GameHomeScreen(
-            onOpenScreen: _openScreen,
-            boatPromptNonce: _boatPromptNonce,
-          ),
-          // 1: 魚類圖鑑
-          _WithMapButton(
-            onMapPressed: () => _openScreen(GameScreen.map),
-            child: FishEncyclopediaScreen(
-              repository: widget.fishSpeciesRepository,
-              onOpenMap: () => _openScreen(GameScreen.map),
-            ),
-          ),
-          // 2: 魚獲記錄
-          _WithMapButton(
-            onMapPressed: () => _openScreen(GameScreen.map),
-            child: const CatchLogScreen(),
-          ),
-          // 3: 排行榜
-          _WithMapButton(
-            onMapPressed: () => _openScreen(GameScreen.map),
-            child: const LeaderboardScreen(),
-          ),
-          // 4: 角色個人頁
-          _WithMapButton(
-            onMapPressed: () => _openScreen(GameScreen.map),
-            child: ProfileScreen(onBoatRented: _openBoatFishingFromProfile),
-          ),
-          // 5: 設定（暫以個人頁代替，待商店/設定頁完成）
-          _WithMapButton(
-            onMapPressed: () => _openScreen(GameScreen.map),
-            child: ProfileScreen(onBoatRented: _openBoatFishingFromProfile),
-          ),
-          // 6: Admin 營運後台
-          _WithMapButton(
-            onMapPressed: () => _openScreen(GameScreen.map),
-            child: const AdminScreen(),
-          ),
-        ],
+        children: [for (final screen in GameScreen.values) _screenSlot(screen)],
       ),
     );
   }
 }
 
-/// Wraps any screen with a floating "MAP" button at the bottom-center
-/// to quickly return to the game home map.
+/// Wraps secondary screens with a reserved bottom navigation area so the map
+/// action never covers scrollable content.
 class _WithMapButton extends StatelessWidget {
   const _WithMapButton({required this.onMapPressed, required this.child});
 
@@ -93,14 +130,14 @@ class _WithMapButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    return Stack(
+    return Column(
       children: [
-        child,
-        Positioned(
-          left: 0,
-          right: 0,
-          bottom: 24,
-          child: Center(
+        Expanded(child: child),
+        SafeArea(
+          top: false,
+          minimum: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+          child: Align(
+            alignment: Alignment.center,
             child: _GameFloatingMapButton(
               onPressed: onMapPressed,
               colorScheme: colorScheme,
@@ -112,7 +149,7 @@ class _WithMapButton extends StatelessWidget {
   }
 }
 
-/// Game-styled floating MAP button — prominent, always visible.
+/// Compact game-styled map navigation control.
 class _GameFloatingMapButton extends StatelessWidget {
   const _GameFloatingMapButton({
     required this.onPressed,
@@ -125,51 +162,19 @@ class _GameFloatingMapButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Semantics(
+      key: const ValueKey('return-map-control'),
       button: true,
       label: '返回地圖',
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onPressed,
-          borderRadius: BorderRadius.circular(28),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
-            decoration: BoxDecoration(
-              color: colorScheme.primaryContainer,
-              borderRadius: BorderRadius.circular(28),
-              border: Border.all(
-                color: colorScheme.primary.withValues(alpha: 0.4),
-                width: 2,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: colorScheme.primary.withValues(alpha: 0.25),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  Icons.map,
-                  color: colorScheme.onPrimaryContainer,
-                  size: 22,
-                ),
-                const SizedBox(width: 10),
-                Text(
-                  'MAP',
-                  style: TextStyle(
-                    color: colorScheme.onPrimaryContainer,
-                    fontWeight: FontWeight.w900,
-                    fontSize: 16,
-                    letterSpacing: 1.2,
-                  ),
-                ),
-              ],
-            ),
-          ),
+      child: IconButton.filled(
+        tooltip: '返回地圖',
+        onPressed: onPressed,
+        icon: const Icon(Icons.map_outlined),
+        style: IconButton.styleFrom(
+          backgroundColor: colorScheme.primaryContainer,
+          foregroundColor: colorScheme.onPrimaryContainer,
+          fixedSize: const Size(52, 52),
+          elevation: 4,
+          shadowColor: colorScheme.primary.withValues(alpha: 0.3),
         ),
       ),
     );

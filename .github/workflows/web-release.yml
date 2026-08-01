@@ -1,0 +1,76 @@
+name: Web release
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_id:
+        description: >-
+          Optional shared release id. Leave empty to use app version plus the
+          selected commit SHA.
+        required: false
+        default: ''
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: fishergo-web-release
+  cancel-in-progress: false
+
+jobs:
+  production:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    environment: fishergo-web-release
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_PROJECT: fishergo
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+      FISHERGO_PRIVACY_URL: ${{ secrets.FISHERGO_PRIVACY_URL }}
+      FISHERGO_SUPPORT_EMAIL: ${{ secrets.FISHERGO_SUPPORT_EMAIL }}
+      FISHERGO_ANALYTICS_ENABLED: 'true'
+      FISHERGO_PUBLIC_URL: https://fisher-go.app
+      FISHERGO_PUBLIC_ALIAS_URL: https://www.fisher-go.app
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Verify release source contracts
+        run: >-
+          flutter test --no-pub --reporter compact
+          test/deploy_script_source_test.dart
+
+      - name: Resolve release id
+        shell: bash
+        env:
+          INPUT_RELEASE_ID: ${{ inputs.release_id }}
+        run: |
+          set -euo pipefail
+          app_version="$(sed -n 's/^version:[[:space:]]*\([^[:space:]#]*\).*/\1/p' pubspec.yaml | head -n 1)"
+          test -n "$app_version"
+          if [ -n "$INPUT_RELEASE_ID" ]; then
+            release_id="$INPUT_RELEASE_ID"
+          else
+            release_id="${app_version}-${GITHUB_SHA:0:12}"
+          fi
+          printf 'FISHERGO_RELEASE_ID=%s\n' "$release_id" >> "$GITHUB_ENV"
+          echo "Resolved release id: $release_id"
+
+      - name: Deploy, promote, and verify canonical aliases
+        run: bash scripts/deploy.sh

@@ -1,0 +1,95 @@
+name: Flutter quality
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Format
+        run: dart format --output=none --set-exit-if-changed lib test tool
+
+      - name: Analyze
+        run: flutter analyze --no-pub
+
+      - name: Test
+        run: flutter test --no-pub
+
+      - name: Build Web release
+        run: >-
+          flutter build web --release --no-pub
+          --dart-define=FISHERGO_MAPLIBRE=true
+          --dart-define=FISHERGO_RELEASE_ID=ci-${{ github.run_id }}
+
+      - name: Build Android release bundle
+        run: >-
+          flutter build appbundle --release --no-pub
+          --dart-define=FISHERGO_MAPLIBRE=true
+          --dart-define=FISHERGO_RELEASE_ID=ci-${{ github.run_id }}
+          --target-platform android-arm64
+
+      - name: Scan client artifacts
+        run: dart run tool/check_client_artifacts_for_secrets.dart build/web build/app/outputs
+
+      - name: Check asset budgets
+        run: >-
+          dart run tool/check_asset_budget.dart
+          --web-root=build/web
+          --android-output-root=build/app/outputs
+          --packaged-asset-root=build/web/assets
+
+  android-integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Run API 35 integration tests
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          arch: x86_64
+          profile: pixel_2
+          script: |
+             set -euo pipefail
+             pwsh -NoProfile -File tool/run_android_integration_smoke.ps1 -TestFile startup_auth_flow_test.dart -DeviceSerial emulator-5554 -ClearAppData -TimeoutSeconds 240
+             pwsh -NoProfile -File tool/run_android_integration_smoke.ps1 -TestFile app_resume_flow_test.dart -DeviceSerial emulator-5554 -ClearAppData -TimeoutSeconds 240
+             pwsh -NoProfile -File tool/run_android_integration_smoke.ps1 -TestFile panorama_map_flow_test.dart -DeviceSerial emulator-5554 -ClearAppData -TimeoutSeconds 240
+             pwsh -NoProfile -File tool/run_android_integration_smoke.ps1 -TestFile map_rotation_flow_test.dart -DeviceSerial emulator-5554 -ClearAppData -TimeoutSeconds 240
+             pwsh -NoProfile -File tool/run_android_integration_smoke.ps1 -TestFile map_spot_selection_flow_test.dart -DeviceSerial emulator-5554 -ClearAppData -GeoLongitude 114.109537072 -GeoLatitude 22.354208013 -TimeoutSeconds 240
+             pwsh -NoProfile -File tool/run_android_integration_smoke.ps1 -TestFile fishing_minigame_flow_test.dart -DeviceSerial emulator-5554 -ClearAppData -TimeoutSeconds 240
+             pwsh -NoProfile -File tool/run_android_integration_smoke.ps1 -TestFile offline_reconnect_flow_test.dart -DeviceSerial emulator-5554 -ClearAppData -TimeoutSeconds 240
+             pwsh -NoProfile -File tool/run_android_integration_smoke.ps1 -TestFile offline_network_toggle_flow_test.dart -DeviceSerial emulator-5554 -ToggleNetwork -ClearAppData -TimeoutSeconds 180
+             pwsh -NoProfile -File tool/run_android_integration_smoke.ps1 -TestFile daily_task_reward_flow_test.dart -DeviceSerial emulator-5554 -ClearAppData -TimeoutSeconds 240
+             pwsh -NoProfile -File tool/run_android_integration_smoke.ps1 -TestFile location_permission_denied_flow_test.dart -DeviceSerial emulator-5554 -ClearAppData -PermissionProfile deny-location -TimeoutSeconds 240
+             pwsh -NoProfile -File tool/run_android_integration_smoke.ps1 -TestFile location_service_disabled_flow_test.dart -DeviceSerial emulator-5554 -ClearAppData -PermissionProfile location-disabled -TimeoutSeconds 240
+             pwsh -NoProfile -File tool/run_android_integration_smoke.ps1 -TestFile limited_photo_permission_flow_test.dart -DeviceSerial emulator-5554 -ClearAppData -PermissionProfile limited-photo -TimeoutSeconds 240

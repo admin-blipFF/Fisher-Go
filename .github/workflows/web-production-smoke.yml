@@ -1,0 +1,99 @@
+name: Web production smoke
+
+on:
+  workflow_dispatch:
+    inputs:
+      url:
+        description: Public Web URL to exercise after a production promotion
+        required: false
+        default: https://fisher-go.app/
+        type: string
+      release_id:
+        description: Optional exact release id expected on both canonical aliases
+        required: false
+        default: ''
+        type: string
+      enforce_frame_budget:
+        description: Fail when a viewport misses the 30 FPS motion budget
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+concurrency:
+  group: fishergo-web-production-smoke
+  cancel-in-progress: false
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    environment: fishergo-web-release
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: |
+          flutter pub get
+          npm ci
+
+      - name: Verify canonical release manifests
+        shell: bash
+        env:
+          INPUT_RELEASE_ID: ${{ inputs.release_id }}
+        run: |
+          set -euo pipefail
+          args=(
+            "--url=https://fisher-go.app"
+            "--alias=https://www.fisher-go.app"
+          )
+          if [[ -n "$INPUT_RELEASE_ID" ]]; then
+            args+=("--release-id=$INPUT_RELEASE_ID")
+          fi
+          dart run tool/verify_deployed_web.dart "${args[@]}"
+
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Run production browser smoke
+        shell: bash
+        env:
+          TARGET_URL: ${{ inputs.url }}
+          ENFORCE_FRAME_BUDGET: ${{ inputs.enforce_frame_budget }}
+        run: |
+          set -euo pipefail
+          args=(
+            "--url=$TARGET_URL"
+            "--output=tmp/web-map-benchmark-production.json"
+            "--golden-manifest=test/goldens/game_map/manifest.json"
+          )
+          if [[ "$ENFORCE_FRAME_BUDGET" == "true" ]]; then
+            args+=(--enforce-frame-budget)
+          fi
+          node tool/run_web_map_benchmark.js "${args[@]}"
+
+      - name: Upload production smoke evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fishergo-web-production-smoke
+          retention-days: 14
+          if-no-files-found: warn
+          path: |
+            tmp/web-map-benchmark-production.json
+            output/playwright/web-map-proof-390x844.png
+            output/playwright/web-map-proof-1440x900.png

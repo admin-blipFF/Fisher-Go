@@ -31,6 +31,55 @@ void main() {
       expect(features.every((feature) => feature.points.length >= 2), isTrue);
     });
 
+    test('reuses visible terrain results for an equivalent camera', () {
+      const dataset = GeoTerrainDataset(
+        features: [
+          GeoTerrainFeature(
+            kind: TerrainKind.road,
+            name: 'Nearby road',
+            lat: 22.3517,
+            lng: 114.0743,
+            radiusMeters: 50,
+            roadClass: RoadClass.primary,
+            geometry: GeoTerrainGeometry(
+              type: 'lineString',
+              coordinates: [
+                LatLng(22.3515, 114.0740),
+                LatLng(22.3520, 114.0748),
+              ],
+            ),
+          ),
+        ],
+      );
+      final store = GameMapFeatureStore(dataset: dataset);
+      final firstCamera = GameMapCamera(
+        center: const LatLng(22.3517, 114.0743),
+        visibleRadiusMeters: 500,
+        bearingDegrees: 0,
+        viewportSize: const Size(390, 844),
+      );
+      final equivalentCamera = GameMapCamera(
+        center: const LatLng(22.3517, 114.0743),
+        visibleRadiusMeters: 500,
+        bearingDegrees: 0,
+        viewportSize: const Size(390, 844),
+      );
+
+      final first = store.visibleTerrainFeatures(firstCamera);
+      final second = store.visibleTerrainFeatures(equivalentCamera);
+
+      expect(identical(second, first), isTrue);
+    });
+
+    test('reuses a store for the same dataset instance', () {
+      const dataset = GeoTerrainDataset(features: []);
+
+      final first = GameMapFeatureStore.cached(dataset: dataset);
+      final second = GameMapFeatureStore.cached(dataset: dataset);
+
+      expect(identical(second, first), isTrue);
+    });
+
     test('projects fishing spots through the same camera', () {
       const dataset = GeoTerrainDataset(features: []);
       const spot = GameMapFishingSpot(

@@ -128,11 +128,27 @@ class GameMapFeatureStore {
         ];
 
   static final _indexCache = Expando<List<_IndexedTerrainFeature>>();
+  static final _storeCache = Expando<GameMapFeatureStore>();
+
+  static GameMapFeatureStore cached({required GeoTerrainDataset dataset}) {
+    return _storeCache[dataset] ??= GameMapFeatureStore(dataset: dataset);
+  }
+
   final GeoTerrainDataset dataset;
   final List<_IndexedTerrainFeature> _indexedFeatures;
+  GameMapCamera? _visibleTerrainCamera;
+  List<TerrainVectorFeature>? _visibleTerrainCache;
 
   List<TerrainVectorFeature> visibleTerrainFeatures(GameMapCamera camera) {
-    return [
+    final cachedCamera = _visibleTerrainCamera;
+    final cachedFeatures = _visibleTerrainCache;
+    if (cachedCamera != null &&
+        cachedFeatures != null &&
+        _sameCamera(cachedCamera, camera)) {
+      return cachedFeatures;
+    }
+
+    final visibleFeatures = [
       for (final indexed in _candidateFeatures(camera))
         if (indexed.feature case final feature)
           if (_isVisibleTerrainFeature(camera, feature) &&
@@ -151,6 +167,19 @@ class GameMapFeatureStore {
               lanes: feature.lanes,
             ),
     ];
+    _visibleTerrainCamera = camera;
+    _visibleTerrainCache = visibleFeatures;
+    return visibleFeatures;
+  }
+
+  bool _sameCamera(GameMapCamera left, GameMapCamera right) {
+    return left.center.latitude == right.center.latitude &&
+        left.center.longitude == right.center.longitude &&
+        left.visibleRadiusMeters == right.visibleRadiusMeters &&
+        left.bearingDegrees == right.bearingDegrees &&
+        left.viewportSize == right.viewportSize &&
+        left.perspectiveStrength == right.perspectiveStrength &&
+        left.viewportAnchorY == right.viewportAnchorY;
   }
 
   int candidateFeatureCount(GameMapCamera camera) =>

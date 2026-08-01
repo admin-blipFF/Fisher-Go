@@ -45,6 +45,24 @@ class GameMapCamera {
   final double perspectiveStrength;
   final double viewportAnchorY;
 
+  GameMapCamera copyWith({
+    LatLng? center,
+    double? visibleRadiusMeters,
+    double? bearingDegrees,
+    Size? viewportSize,
+    double? perspectiveStrength,
+    double? viewportAnchorY,
+  }) {
+    return GameMapCamera(
+      center: center ?? this.center,
+      visibleRadiusMeters: visibleRadiusMeters ?? this.visibleRadiusMeters,
+      bearingDegrees: bearingDegrees ?? this.bearingDegrees,
+      viewportSize: viewportSize ?? this.viewportSize,
+      perspectiveStrength: perspectiveStrength ?? this.perspectiveStrength,
+      viewportAnchorY: viewportAnchorY ?? this.viewportAnchorY,
+    );
+  }
+
   Offset get viewportCenter =>
       Offset(viewportSize.width * 0.5, viewportSize.height * viewportAnchorY);
 

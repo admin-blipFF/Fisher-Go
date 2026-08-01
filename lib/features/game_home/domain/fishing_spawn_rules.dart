@@ -8,6 +8,32 @@ class FishingSpawnRules {
 
   const FishingSpawnRules._();
 
+  /// Reads an optional per-spot multiplier from the remote registry.
+  ///
+  /// Fish IDs are preferred because they are stable across translations;
+  /// localized names remain supported for hand-authored registry rows. A
+  /// missing key keeps the normal spawn weight, while zero intentionally
+  /// removes that species from the spot.
+  static double configuredSpeciesWeight({
+    required Map<String, double> weights,
+    required String fishName,
+    String? fishId,
+  }) {
+    if (weights.isEmpty) return 1;
+    final normalized = <String, double>{
+      for (final entry in weights.entries) _normalize(entry.key): entry.value,
+    };
+    for (final key in [fishId, fishName]) {
+      final normalizedKey = key == null ? '' : _normalize(key);
+      if (normalizedKey.isEmpty) continue;
+      final value = normalized[normalizedKey];
+      if (value == null) continue;
+      if (!value.isFinite || value < 0) return 0;
+      return value;
+    }
+    return 1;
+  }
+
   static double locationMultiplier({
     required String spotName,
     required String fishName,

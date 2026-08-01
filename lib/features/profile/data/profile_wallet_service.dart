@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:hive/hive.dart';
 
 import '../../../core/auth/local_account_service.dart';
+import '../../../core/telemetry/app_telemetry.dart';
 import '../data/player_profile_sync_service.dart';
 import '../domain/game_shop_item.dart';
 
@@ -33,18 +36,41 @@ class ProfileWalletService {
   }
 
   /// Cloud-first addCoins. Writes to Supabase + Hive cache.
-  static Future<int> addCoins(int amount, {required String reason}) async {
+  static Future<int> addCoins(
+    int amount, {
+    required String reason,
+    String rewardKind = 'virtual_catch',
+    String? claimKey,
+    String? fishId,
+    String? gameplaySessionId,
+  }) async {
     final userId = LocalAccountService.supabaseUserId;
     int updated;
     if (userId != null) {
       try {
-        updated = await PlayerProfileSyncService.addCoins(userId, amount);
+        updated = await PlayerProfileSyncService.addCoins(
+          userId,
+          amount,
+          reason: reason,
+          rewardKind: rewardKind,
+          claimKey: claimKey,
+          fishId: fishId,
+          gameplaySessionId: gameplaySessionId,
+          idempotencyKey: claimKey ??
+              'reward:${DateTime.now().toUtc().microsecondsSinceEpoch}',
+        );
         if (updated >= 0) {
           final box = await Hive.openBox(_profileBoxName);
           final state = await _loadState();
           state['coins'] = updated;
           _appendHistory(state, amount: amount, reason: reason, type: 'income');
           await box.put('avatar_state', state);
+          unawaited(
+            AppTelemetry.instance.record(
+              TelemetryEventName.rewardClaimed,
+              fields: {'amount': amount, 'cloud': true},
+            ),
+          );
           return updated;
         }
         return -1;
@@ -60,6 +86,12 @@ class ProfileWalletService {
     state['coins'] = updated;
     _appendHistory(state, amount: amount, reason: reason, type: 'income');
     await box.put('avatar_state', state);
+    unawaited(
+      AppTelemetry.instance.record(
+        TelemetryEventName.rewardClaimed,
+        fields: {'amount': amount, 'cloud': false},
+      ),
+    );
     return updated;
   }
 
@@ -69,7 +101,12 @@ class ProfileWalletService {
     int updated;
     if (userId != null) {
       try {
-        updated = await PlayerProfileSyncService.deductCoins(userId, amount);
+        updated = await PlayerProfileSyncService.deductCoins(
+          userId,
+          amount,
+          idempotencyKey:
+              'spend:${DateTime.now().toUtc().microsecondsSinceEpoch}',
+        );
         if (updated >= 0) {
           await _cacheCoins(updated);
           return updated;
@@ -174,8 +211,12 @@ class ProfileWalletService {
     // Deduct via cloud
     final userId = LocalAccountService.supabaseUserId;
     if (userId != null) {
-      final result =
-          await PlayerProfileSyncService.deductCoins(userId, item.price);
+      final result = await PlayerProfileSyncService.deductCoins(
+        userId,
+        item.price,
+        idempotencyKey:
+            'purchase:${item.id}:${DateTime.now().toUtc().microsecondsSinceEpoch}',
+      );
       if (result < 0) return false;
     } else {
       // No cloud — deduct from Hive directly

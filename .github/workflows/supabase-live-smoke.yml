@@ -1,0 +1,69 @@
+name: Supabase live smoke
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  authenticated-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: fishergo-live-smoke
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Verify Supabase project identity
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+        run: dart run tool/verify_supabase_project_identity.dart
+
+      - name: Verify analytics ingestion
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+        run: dart run tool/verify_supabase_analytics_ingestion.dart
+
+      - name: Verify Auth provider configuration
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          FISHERGO_REQUIRE_GOOGLE_PROVIDER: 'true'
+        run: dart run tool/verify_supabase_auth_provider_config.dart
+
+      - name: Verify server-validated gameplay session
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+          FISHERGO_SMOKE_GAMEPLAY_SPOT_ID: ${{ secrets.FISHERGO_SMOKE_GAMEPLAY_SPOT_ID }}
+        run: dart run tool/verify_supabase_gameplay_session.dart
+
+      - name: Verify anonymous account upgrade
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          FISHERGO_SMOKE_UPGRADE_EMAIL: ${{ secrets.FISHERGO_SMOKE_UPGRADE_EMAIL }}
+          FISHERGO_SMOKE_UPGRADE_PASSWORD: ${{ secrets.FISHERGO_SMOKE_UPGRADE_PASSWORD }}
+        run: dart run tool/verify_supabase_auth_upgrade.dart
+
+      - name: Verify private catch photo storage
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          FISHERGO_SMOKE_ANONYMOUS: 'true'
+        run: dart run tool/verify_supabase_catch_photo_storage.dart

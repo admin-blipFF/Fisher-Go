@@ -1,12 +1,18 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import 'package:hive/hive.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/auth/local_account_service.dart';
 import '../../../core/admin/admin_ops_service.dart';
-import '../../../core/browser_location.dart';
+import '../../../core/config/auth_redirect_config.dart';
+import '../../../core/config/public_app_config.dart';
 import '../../../core/config/supabase_config.dart';
+import '../../../core/notifications/notification_opt_in.dart';
+import '../../../core/notifications/notification_permission_service.dart';
 import '../data/player_progress_service.dart';
 import '../data/profile_wallet_service.dart';
 import '../domain/game_shop_item.dart';
@@ -22,11 +28,14 @@ class ProfileScreen extends StatefulWidget {
   State<ProfileScreen> createState() => _ProfileScreenState();
 }
 
-class _ProfileScreenState extends State<ProfileScreen> {
+class _ProfileScreenState extends State<ProfileScreen>
+    with WidgetsBindingObserver {
   static const _profileBoxName = 'profile_customization';
 
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _notificationStore = NotificationPreferenceStore();
+  final _notificationPermission = NotificationPermissionService();
 
   bool _isLoading = false;
   bool _isProfileLoading = true;
@@ -36,19 +45,33 @@ class _ProfileScreenState extends State<ProfileScreen> {
   List<Map<String, dynamic>> _coinHistory = const [];
   Map<String, int> _gameConsumables = const {};
   String _selectedEquipmentSlot = 'rod';
+  NotificationPreference _notificationPreference =
+      const NotificationPreference.undecided();
+  NotificationPermissionStatus _notificationPermissionStatus =
+      NotificationPermissionStatus.unavailable;
+  bool _notificationLoading = false;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _avatarState = AvatarProfileViewState.initial();
     _loadAvatarState();
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      unawaited(_refreshNotificationState());
+    }
   }
 
   Future<void> _loadAvatarState() async {
@@ -60,6 +83,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final history = await ProfileWalletService.getCoinHistory();
     final consumables = await ProfileWalletService.getConsumables();
     final progress = await PlayerProgressService.loadState();
+    final notificationPreference = await _notificationStore.load();
+    final notificationStatus = await _notificationPermission.status();
     if (!mounted) return;
 
     if (claimedAmount > 0) {
@@ -75,6 +100,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
         _coinHistory = history;
         _gameConsumables = consumables;
         _progressState = progress;
+        _notificationPreference = notificationPreference;
+        _notificationPermissionStatus = notificationStatus;
         _isProfileLoading = false;
       });
       return;
@@ -84,7 +111,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
       _coinHistory = history;
       _gameConsumables = consumables;
       _progressState = progress;
+      _notificationPreference = notificationPreference;
+      _notificationPermissionStatus = notificationStatus;
       _isProfileLoading = false;
+    });
+  }
+
+  Future<void> _refreshNotificationState() async {
+    final preference = await _notificationStore.load();
+    final status = await _notificationPermission.status();
+    if (!mounted) return;
+    setState(() {
+      _notificationPreference = preference;
+      _notificationPermissionStatus = status;
     });
   }
 
@@ -117,6 +156,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         email: _emailController.text.trim(),
         password: _passwordController.text,
       );
+      await LocalAccountService.restoreSession();
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('登入成功')),
@@ -149,8 +189,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
             email: _emailController.text.trim(),
             password: _passwordController.text,
           ),
-          emailRedirectTo: 'https://fisher-go.app',
+          emailRedirectTo: AuthRedirectConfig.oauthRedirect,
         );
+        await LocalAccountService.restoreSession();
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -158,11 +199,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
         );
       } else {
-        await auth.signUp(
+        final response = await auth.signUp(
           email: _emailController.text.trim(),
           password: _passwordController.text,
-          emailRedirectTo: 'https://fisher-go.app',
+          emailRedirectTo: AuthRedirectConfig.oauthRedirect,
         );
+        final newUserId = response.user?.id;
+        if (newUserId != null) {
+          await LocalAccountService.migrateGuestDataToAccount(newUserId);
+        }
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('請檢查電郵，按連結完成 FisherGO 帳戶驗證。')),
@@ -185,17 +230,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
       final auth = Supabase.instance.client.auth;
       final session = auth.currentSession;
       if (session != null) {
-        final response = await auth.getLinkIdentityUrl(
+        final launched = await auth.linkIdentity(
           OAuthProvider.google,
-          redirectTo: 'https://fisher-go.app',
+          redirectTo: AuthRedirectConfig.oauthRedirect,
         );
-        setBrowserLocationHref(response.url);
+        if (!launched) {
+          throw StateError('無法開啟 Google 登入頁面');
+        }
         return;
       }
 
       await auth.signInWithOAuth(
         OAuthProvider.google,
-        redirectTo: 'https://fisher-go.app',
+        redirectTo: AuthRedirectConfig.oauthRedirect,
       );
     } on AuthException catch (e) {
       if (!mounted) return;
@@ -215,11 +262,71 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Future<void> _signOut() async {
     if (!SupabaseConfig.isConfigured) return;
     await Supabase.instance.client.auth.signOut();
+    await LocalAccountService.signOut();
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('已登出')),
     );
     setState(() {});
+  }
+
+  Future<void> _deleteAccount() async {
+    if (!SupabaseConfig.isConfigured) return;
+    final user = Supabase.instance.client.auth.currentUser;
+    if (user == null || user.isAnonymous) return;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('刪除帳戶？'),
+        content: const Text(
+          '這會永久刪除雲端魚獲、相片和帳戶資料，不能復原。',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('取消'),
+          ),
+          FilledButton.tonal(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: const Text('確認刪除'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+
+    setState(() => _isLoading = true);
+    try {
+      final response = await Supabase.instance.client.functions.invoke(
+        'delete-account',
+      );
+      final deleted =
+          response.data is Map && (response.data as Map)['deleted'] == true;
+      if (!deleted) {
+        throw StateError('帳戶刪除服務沒有確認完成');
+      }
+
+      await LocalAccountService.clearCurrentAccountData();
+      try {
+        await Supabase.instance.client.auth.signOut();
+      } catch (_) {
+        // The Auth user has already been removed server-side.
+      }
+      await LocalAccountService.signOut();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('帳戶及雲端資料已刪除')),
+      );
+      setState(() {});
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('刪除帳戶未完成，請聯絡支援：$error')),
+      );
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 
   Future<void> _selectOption(
@@ -319,6 +426,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final updatedCoins = await ProfileWalletService.addCoins(
       result.rewardCoins,
       reason: '每日任務獎勵：${task.title}',
+      rewardKind: 'daily_task_${task.id}',
+      claimKey:
+          'daily-task:${task.id}:${DateTime.now().toUtc().toIso8601String().substring(0, 10)}',
     );
     final history = await ProfileWalletService.getCoinHistory();
     final box =
@@ -360,8 +470,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                 if (configured && user == null) _buildAuthForm(),
                 if (configured && user != null) _buildSignedIn(user),
+                if (_hasLegalSupportLinks) ...[
+                  const SizedBox(height: 16),
+                  _buildLegalSupportPanel(),
+                ],
                 const SizedBox(height: 16),
                 _buildProgressPanel(),
+                if (_shouldShowNotificationOptIn) ...[
+                  const SizedBox(height: 16),
+                  _buildNotificationOptInPanel(),
+                ] else if (_shouldShowNotificationSettings) ...[
+                  const SizedBox(height: 16),
+                  _buildNotificationSettingsPanel(),
+                ],
                 const SizedBox(height: 16),
                 _buildAvatarPreview(),
                 const SizedBox(height: 16),
@@ -383,22 +504,97 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildAuthForm() {
+  bool get _hasLegalSupportLinks =>
+      _privacyPolicyUri != null ||
+      PublicAppConfig.supportEmail.trim().isNotEmpty;
+
+  Uri? get _privacyPolicyUri {
+    final uri = Uri.tryParse(PublicAppConfig.privacyPolicyUrl.trim());
+    if (uri == null || uri.host.isEmpty) return null;
+    if (uri.scheme != 'https' && uri.scheme != 'http') return null;
+    return uri;
+  }
+
+  Widget _buildLegalSupportPanel() {
+    final privacyUri = _privacyPolicyUri;
+    final supportEmail = PublicAppConfig.supportEmail.trim();
+    final reportUri = PublicAppConfig.problemReportUri;
+
+    return Card(
+      child: Column(
+        children: [
+          if (privacyUri != null)
+            ListTile(
+              leading: const Icon(Icons.privacy_tip_outlined),
+              title: const Text('私隱政策'),
+              trailing: const Icon(Icons.open_in_new),
+              onTap: () => _openExternalLink(privacyUri),
+            ),
+          if (supportEmail.isNotEmpty)
+            ListTile(
+              leading: const Icon(Icons.support_agent),
+              title: const Text('聯絡支援'),
+              subtitle: Text(supportEmail),
+              trailing: const Icon(Icons.mail_outline),
+              onTap: () => _openExternalLink(
+                Uri(scheme: 'mailto', path: supportEmail),
+              ),
+            ),
+          if (reportUri != null)
+            ListTile(
+              leading: const Icon(Icons.flag_outlined),
+              title: const Text('報告問題'),
+              subtitle: const Text('把問題位置和描述寄給支援團隊'),
+              trailing: const Icon(Icons.mail_outline),
+              onTap: () => _openExternalLink(reportUri),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _openExternalLink(Uri uri) async {
+    try {
+      final launched = await launchUrl(
+        uri,
+        mode: LaunchMode.externalApplication,
+      );
+      if (!launched && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('暫時未能開啟連結')),
+        );
+      }
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('暫時未能開啟連結')),
+      );
+    }
+  }
+
+  Widget _buildAuthForm({bool isUpgrade = false}) {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Text('FisherGO 帳戶',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600)),
+            Text(
+              isUpgrade ? '建立帳戶保存進度' : 'FisherGO 帳戶',
+              style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
             const SizedBox(height: 6),
-            const Text(
-              '可先匿名試玩；建立帳戶後可備份魚獲、換機保留紀錄，之後參加排行榜。',
+            Text(
+              isUpgrade
+                  ? '你目前使用訪客雲端帳戶；用 Email 或 Google 建立帳戶即可保留現有進度。'
+                  : '可先以訪客模式試玩；建立帳戶後可備份魚獲、換機保留紀錄，之後參加排行榜。',
               style: TextStyle(color: Colors.black54),
             ),
             const SizedBox(height: 4),
-            Text('v0.1.0 — Google 登入測試中',
+            Text('v0.1.1 — Google 登入測試中',
                 style: TextStyle(color: Colors.grey.shade500, fontSize: 11)),
             const SizedBox(height: 12),
             TextField(
@@ -437,14 +633,48 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildSignedIn(User user) {
+    if (user.isAnonymous) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Card(
+            child: ListTile(
+              title: const Text('訪客雲端帳戶'),
+              subtitle: const Text('目前進度已同步；建立正式帳戶即可換機保留。'),
+              trailing: TextButton(
+                onPressed: _signOut,
+                child: const Text('退出訪客'),
+              ),
+            ),
+          ),
+          _buildAuthForm(isUpgrade: true),
+        ],
+      );
+    }
+
     return Card(
-      child: ListTile(
-        title: Text('FisherGO 帳戶：${user.email ?? user.id}'),
-        subtitle: const Text('魚獲可備份到雲端，之後可換機保留紀錄。'),
-        trailing: FilledButton.tonal(
-          onPressed: _signOut,
-          child: const Text('登出'),
-        ),
+      child: Column(
+        children: [
+          ListTile(
+            title: Text('FisherGO 帳戶：${user.email ?? user.id}'),
+            subtitle: const Text('魚獲可備份到雲端，之後可換機保留紀錄。'),
+            trailing: FilledButton.tonal(
+              onPressed: _signOut,
+              child: const Text('登出'),
+            ),
+          ),
+          Align(
+            alignment: Alignment.centerRight,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+              child: OutlinedButton.icon(
+                onPressed: _isLoading ? null : _deleteAccount,
+                icon: const Icon(Icons.delete_forever_outlined),
+                label: const Text('刪除帳戶'),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -546,6 +776,175 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  bool get _shouldShowNotificationOptIn =>
+      _notificationPermissionStatus !=
+          NotificationPermissionStatus.unavailable &&
+      NotificationOptInPolicy.shouldPrompt(
+        totalCatches: _progressState.totalCatches,
+        preference: _notificationPreference,
+        now: DateTime.now(),
+      );
+
+  bool get _shouldShowNotificationSettings =>
+      _notificationPermissionStatus == NotificationPermissionStatus.denied &&
+      _notificationPreference.choice != NotificationOptInChoice.undecided;
+
+  Widget _buildNotificationOptInPanel() {
+    final theme = Theme.of(context);
+    return Card(
+      color: theme.colorScheme.secondaryContainer,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.notifications_active_outlined,
+                    color: theme.colorScheme.onSecondaryContainer),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    '釣點及活動提醒',
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w800,
+                      color: theme.colorScheme.onSecondaryContainer,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              '完成首個釣獲後，你可以開啟通知，收到附近釣點及活動更新。',
+              style: TextStyle(color: theme.colorScheme.onSecondaryContainer),
+            ),
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                OutlinedButton(
+                  onPressed:
+                      _notificationLoading ? null : _deferNotificationOptIn,
+                  child: const Text('稍後'),
+                ),
+                FilledButton.icon(
+                  onPressed: _notificationLoading ? null : _enableNotifications,
+                  icon: _notificationLoading
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.notifications_active_outlined),
+                  label: const Text('開啟通知'),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNotificationSettingsPanel() {
+    final theme = Theme.of(context);
+    return Card(
+      color: theme.colorScheme.errorContainer,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(
+              Icons.notifications_off_outlined,
+              color: theme.colorScheme.onErrorContainer,
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '通知未開啟',
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w800,
+                      color: theme.colorScheme.onErrorContainer,
+                    ),
+                  ),
+                  const SizedBox(height: 5),
+                  Text(
+                    '你可以在系統設定重新開啟釣點及活動提醒。',
+                    style: TextStyle(
+                      color: theme.colorScheme.onErrorContainer,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: FilledButton.tonalIcon(
+                      onPressed: _openNotificationSettings,
+                      icon: const Icon(Icons.settings_outlined),
+                      label: const Text('前往系統設定'),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _deferNotificationOptIn() async {
+    final now = DateTime.now();
+    await _notificationStore.defer(now);
+    if (!mounted) return;
+    setState(
+        () => _notificationPreference = NotificationPreference.deferredAt(now));
+  }
+
+  Future<void> _enableNotifications() async {
+    setState(() => _notificationLoading = true);
+    final status = await _notificationPermission.request();
+    if (status == NotificationPermissionStatus.granted) {
+      await _notificationStore.setEnabled();
+    } else if (status == NotificationPermissionStatus.denied) {
+      await _notificationStore.setDeclined();
+    }
+    if (!mounted) return;
+
+    setState(() {
+      _notificationPermissionStatus = status;
+      _notificationPreference = switch (status) {
+        NotificationPermissionStatus.granted =>
+          const NotificationPreference.enabled(),
+        NotificationPermissionStatus.denied =>
+          const NotificationPreference.declined(),
+        NotificationPermissionStatus.unavailable => _notificationPreference,
+      };
+      _notificationLoading = false;
+    });
+
+    final message = switch (status) {
+      NotificationPermissionStatus.granted => '通知已開啟',
+      NotificationPermissionStatus.denied => '通知權限未開啟',
+      NotificationPermissionStatus.unavailable => '此裝置未提供通知權限',
+    };
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  Future<void> _openNotificationSettings() async {
+    final opened = await _notificationPermission.openSettings();
+    if (!mounted || opened) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('暫時未能開啟通知設定')),
     );
   }
 

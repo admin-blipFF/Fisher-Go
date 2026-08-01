@@ -4,6 +4,15 @@
 *.zip
 *.tar
 *.tar.gz
+assets/fish/icons/generated/
+assets/fish/icons/backup_*/
 assets/fish/icons/renumbered_*/
 /data/
 /coverage/
+/tmp/
+/output/
+/.playwright-cli/
+.env
+.env.*
+!.env.example
+vectorengine.env

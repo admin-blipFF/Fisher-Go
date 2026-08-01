@@ -125,5 +125,4 @@ void _writeBlendedPair(
 
 double _smoothstep(double value) => value * value * (3 - 2 * value);
 
-num _lerp(num start, num end, double amount) =>
-    start + (end - start) * amount;
+num _lerp(num start, num end, double amount) => start + (end - start) * amount;

@@ -9,6 +9,10 @@ void main() {
     final source = File(
       'lib/features/game_home/presentation/game_home_screen.dart',
     ).readAsStringSync();
+    final gameHomeSource = source.substring(
+      0,
+      source.indexOf('class _FishingOverlay'),
+    );
     final rendererSource = File(
       'lib/features/game_home/presentation/game_map_renderer.dart',
     ).readAsStringSync();
@@ -26,17 +30,36 @@ void main() {
         source, contains('verticalCellCount: hasVectorWorldSurface ? 10 : 28'));
     expect(source, contains('rows: gridLayout.rows'));
     expect(source, contains('cols: gridLayout.cols'));
-    expect(source, contains('static const bool _debugDisableTutorial = true'));
-    expect(source, contains('if (_debugDisableTutorial) return'));
+    expect(source, isNot(contains('_debugDisableTutorial')));
+    expect(source, contains('_resolveStartupState'));
     expect(source, contains('_mapBearingDegrees'));
+    expect(source, contains('_mapRotationRevision'));
+    expect(source, contains('ValueListenableBuilder<int>'));
+    expect(source, contains('_mapRotationRevision.value++'));
     expect(source, contains('_RotateMapButton'));
+    expect(source, contains('motionBaseBearingDegrees'));
+    expect(source, contains('final renderCamera ='));
+    expect(source, contains('Transform.rotate'));
+    expect(source, contains('copyWith(bearingDegrees:'));
+    expect(gameHomeSource, isNot(contains('with TickerProviderStateMixin')));
+    expect(gameHomeSource, isNot(contains('_radarController')));
+    expect(gameHomeSource, isNot(contains('_fishEffectController')));
+    expect(gameHomeSource, isNot(contains('_fishingController')));
     expect(
         source, contains('static const double _spotDisplayRadiusMeters = 500'));
     expect(source, isNot(contains('_minVisibleSpots')));
     expect(source, isNot(contains('sorted.take')));
     expect(source, isNot(contains('spotCount.clamp(3, 7)')));
     expect(source, contains('_rotateMapByDrag'));
+    expect(source, contains('_rotateMapLibreClockwise'));
+    expect(source, contains('_animateMapLibreBearing'));
+    expect(source, contains('catch (_)'));
+    expect(source, contains('onMapCreated:'));
+    expect(source, contains('_isMapInteracting'));
+    expect(source, contains('onHorizontalDragStart'));
     expect(source, contains('onHorizontalDragUpdate'));
+    expect(source, contains('onHorizontalDragEnd'));
+    expect(source, contains('texturesEnabled'));
     expect(source, contains('visibleVectorFeatures'));
     expect(source, contains('terrainDataSource.buildTiles'));
     expect(source, isNot(contains('rows: 29')));
@@ -52,13 +75,19 @@ void main() {
     expect(source, contains('https://www.openstreetmap.org/copyright'));
     expect(source, contains('launchUrl'));
     expect(source, contains('compute(GeoTerrainDataset.fromJson, source)'));
-    expect(source, contains("const _fishIconDir = 'assets/fish/mobile'"));
+    expect(source, contains("const _fishIconDir = 'assets/fish/mobile_webp'"));
     expect(
       source,
-      contains("'assets/fish/mobile/', 'assets/fish/icons/silhouettes/'"),
+      contains(
+        "'assets/fish/mobile_webp/',\n        'assets/fish/icons/silhouettes/'",
+      ),
     );
-    expect(source, contains('_developerTestSpots'));
-    expect(source, contains('沙田希爾頓中心測試釣點'));
+    expect(source, isNot(contains('_developerTestSpots')));
+    expect(source, isNot(contains('沙田希爾頓中心測試釣點')));
+    expect(source, isNot(contains('developerTestSpotsEnabled')));
+    expect(source, contains('FishingSpotRepository'));
+    expect(source, contains('_loadFishingSpotRegistry'));
+    expect(source, isNot(contains('..._verifiedIslandRockSpots')));
     expect(source, isNot(contains('Map<String, String> get _equipped => {}')));
     expect(source, contains('_loadAvatarSnapshot'));
     expect(source, contains('_MapAvatarSnapshot'));
@@ -296,5 +325,8 @@ void main() {
     );
 
     expect(loader, contains('await Future.wait<ui.Image>('));
+    expect(loader, contains('criticalTextures'));
+    expect(loader, contains('Duration(milliseconds: 1200)'));
+    expect(loader, contains('optionalTextures'));
   });
 }

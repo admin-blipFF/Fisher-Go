@@ -1,0 +1,10 @@
+{
+  "name": "fishergo-web-benchmark",
+  "private": true,
+  "scripts": {
+    "web:benchmark": "node tool/run_web_map_benchmark.js"
+  },
+  "devDependencies": {
+    "playwright": "1.55.0"
+  }
+}

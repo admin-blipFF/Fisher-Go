@@ -1,11 +1,15 @@
 import 'dart:async';
+import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import 'core/config/public_app_config.dart';
 import 'core/config/supabase_config.dart';
+import 'core/auth/local_account_service.dart';
+import 'core/telemetry/app_telemetry.dart';
+import 'core/telemetry/supabase_analytics_sink.dart';
 import 'core/web_session_clear.dart';
 import 'core/widgets/app_shell.dart';
 import 'features/fish/data/local_fish_species_data_source.dart';
@@ -14,7 +18,40 @@ import 'features/fish/data/remote_fish_species_data_source.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
+  _installGlobalErrorTelemetry();
   runApp(const FisherGoBootstrap());
+}
+
+final SupabaseAnalyticsSink _supabaseAnalyticsSink = SupabaseAnalyticsSink();
+
+void _installGlobalErrorTelemetry() {
+  FlutterError.onError ??= (details) {
+    FlutterError.presentError(details);
+    unawaited(
+      AppTelemetry.instance.record(
+        TelemetryEventName.appError,
+        fields: {
+          'source': 'flutter',
+          'fatal': false,
+          'library': details.library,
+        },
+      ),
+    );
+  };
+
+  PlatformDispatcher.instance.onError ??= (error, stackTrace) {
+    unawaited(
+      AppTelemetry.instance.record(
+        TelemetryEventName.appError,
+        fields: {
+          'source': 'platform',
+          'fatal': true,
+          'error_type': error.runtimeType.toString(),
+        },
+      ),
+    );
+    return false;
+  };
 }
 
 class FisherGoBootstrap extends StatefulWidget {
@@ -40,15 +77,19 @@ class _FisherGoBootstrapState extends State<FisherGoBootstrap> {
   }
 
   Future<void> _initializeServices() async {
-    try {
-      await dotenv.load(fileName: '.env');
-    } catch (_) {
-      // Keep app bootable in deployments where .env is intentionally absent.
-    }
     await Hive.initFlutter();
+    unawaited(
+      AppTelemetry.instance.record(
+        TelemetryEventName.appBootstrap,
+        fields: {'supabaseConfigured': SupabaseConfig.isConfigured},
+      ),
+    );
 
     if (!SupabaseConfig.isConfigured) {
-      debugPrint('DEBUG: Supabase NOT configured - check .env');
+      debugPrint(
+        'DEBUG: Supabase NOT configured - pass public values via --dart-define',
+      );
+      await LocalAccountService.restoreSession();
       return;
     }
 
@@ -59,10 +100,13 @@ class _FisherGoBootstrapState extends State<FisherGoBootstrap> {
         url: SupabaseConfig.url,
         anonKey: SupabaseConfig.anonKey,
       );
-      unawaited(_signInAnonymouslyIfNeeded());
+      if (PublicAppConfig.analyticsEnabled) {
+        AppTelemetry.instance.configureSink(_supabaseAnalyticsSink.call);
+      }
     } catch (error) {
       debugPrint('Supabase init error (non-fatal): $error');
     }
+    await LocalAccountService.restoreSession();
   }
 
   @override
@@ -115,17 +159,6 @@ class _FisherGoLoadingScreen extends StatelessWidget {
         ),
       ),
     );
-  }
-}
-
-Future<void> _signInAnonymouslyIfNeeded() async {
-  final auth = Supabase.instance.client.auth;
-  if (auth.currentUser != null) return;
-  try {
-    await auth.signInAnonymously();
-    debugPrint('DEBUG: signed in anonymously');
-  } catch (error) {
-    debugPrint('Anonymous sign-in failed (non-fatal): $error');
   }
 }
 

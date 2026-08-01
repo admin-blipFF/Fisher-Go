@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
-import 'package:web/web.dart' as web;
+
+import 'update_platform.dart';
 
 /// Shows a non-dismissable overlay when a new app version is available.
 class UpdatePromptOverlay extends StatelessWidget {
@@ -43,7 +44,7 @@ class UpdatePromptOverlay extends StatelessWidget {
                 ),
                 const SizedBox(height: 24),
                 FilledButton.icon(
-                  onPressed: () => web.window.location.reload(),
+                  onPressed: reloadApp,
                   icon: const Icon(Icons.refresh),
                   label: const Text('立即更新'),
                   style: FilledButton.styleFrom(
@@ -65,58 +66,29 @@ class UpdatePromptOverlay extends StatelessWidget {
 /// Shows [UpdatePromptOverlay] if a new build is detected.
 Future<void> checkForAppUpdate(BuildContext context) async {
   try {
-    // Use Flutter's build timestamp (injected at build time via build_number)
-    // Simple approach: store a build ID in localStorage, compare each startup
     const boxName = 'update_box';
     final b = await Hive.openBox(boxName);
     final lastBuild =
         (b.get('build_number', defaultValue: 0) as num?)?.toInt() ?? 0;
 
-    // Read current build number from window (set by index.html injection)
-    final currentBuild = _getCurrentBuildNumber();
+    final currentBuild = await fetchCurrentBuildNumber();
 
-    if (currentBuild > lastBuild && lastBuild != 0 && context.mounted) {
+    if (shouldPromptForAppUpdate(
+          lastBuild: lastBuild,
+          currentBuild: currentBuild,
+        ) &&
+        context.mounted) {
       Navigator.of(context).push(
         MaterialPageRoute(builder: (_) => const UpdatePromptOverlay()),
       );
     }
 
-    await b.put('build_number', currentBuild);
+    if (currentBuild > 0) await b.put('build_number', currentBuild);
   } catch (_) {}
 }
 
-/// Reads build number injected by the build process.
-/// Returns 0 if not found (first run).
-int _getCurrentBuildNumber() {
-  try {
-    // The build number is set as a data attribute on <html> by our vercel.json
-    // For simplicity, we use a timestamp approach:
-    // A new build always has a newer timestamp in version.json
-    // We read it via JS interop
-    return _fetchBuildNumber();
-  } catch (_) {
-    return 0;
-  }
-}
-
-int _fetchBuildNumber() {
-  // Use JS to get build info
-  // We store build number in a meta tag or window variable set by index.html
-  // For now return a fixed sentinel that changes each deploy
-  // (the actual build number is passed via Flutter's build_info or similar)
-  try {
-    // Check if version.json exists and get its timestamp
-    // This is handled by Flutter's service worker but we need a web-native approach
-    final doc = web.document;
-    final meta = doc.querySelector('meta[name="build-ts"]');
-    if (meta != null) {
-      return int.tryParse(meta.getAttribute('content') ?? '') ?? 0;
-    }
-    // Fallback: use service worker registration timestamp
-    final swMeta = doc.querySelector('meta[name="flutter-service-worker"]');
-    if (swMeta != null) {
-      return int.tryParse(swMeta.getAttribute('content') ?? '') ?? 0;
-    }
-  } catch (_) {}
-  return 0;
-}
+bool shouldPromptForAppUpdate({
+  required int lastBuild,
+  required int currentBuild,
+}) =>
+    lastBuild > 0 && currentBuild > lastBuild;

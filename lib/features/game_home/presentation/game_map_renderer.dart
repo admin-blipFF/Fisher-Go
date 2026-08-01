@@ -2,9 +2,11 @@ import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:latlong2/latlong.dart' hide Path;
 
+import '../../map/application/map_performance_monitor.dart';
 import '../domain/game_map_camera.dart';
 import '../domain/game_map_feature_store.dart';
 import '../domain/game_building_style.dart';
@@ -94,7 +96,9 @@ ui.TileMode terrainTextureTileMode({
 }) {
   if (worldAnchored) {
     return switch (kind) {
-      TerrainKind.water || TerrainKind.land || TerrainKind.building =>
+      TerrainKind.water ||
+      TerrainKind.land ||
+      TerrainKind.building =>
         ui.TileMode.repeated,
       TerrainKind.shore ||
       TerrainKind.road ||
@@ -251,6 +255,29 @@ class _ProjectedTerrainTile {
   final Offset center;
 }
 
+class TerrainGridDimensions {
+  const TerrainGridDimensions({
+    required this.rowCount,
+    required this.columnCount,
+  });
+
+  final int rowCount;
+  final int columnCount;
+}
+
+TerrainGridDimensions terrainGridDimensions(Iterable<TerrainTile> tiles) {
+  var maxRow = -1;
+  var maxColumn = -1;
+  for (final tile in tiles) {
+    if (tile.row > maxRow) maxRow = tile.row;
+    if (tile.col > maxColumn) maxColumn = tile.col;
+  }
+  return TerrainGridDimensions(
+    rowCount: maxRow + 1,
+    columnCount: maxColumn + 1,
+  );
+}
+
 enum _TerrainCellEdge { top, right, bottom, left }
 
 enum _FishingSpotMarkerDetail { compact, full }
@@ -359,12 +386,14 @@ class GameMapRenderer extends StatefulWidget {
     required this.terrainTiles,
     required this.terrainFeatures,
     required this.fishingSpots,
+    this.motionOptimized = false,
   });
 
   final GameMapCamera camera;
   final List<TerrainTile> terrainTiles;
   final List<TerrainVectorFeature> terrainFeatures;
   final List<ProjectedFishingSpot> fishingSpots;
+  final bool motionOptimized;
 
   @override
   State<GameMapRenderer> createState() => _GameMapRendererState();
@@ -391,36 +420,63 @@ class _GameMapRendererState extends State<GameMapRenderer> {
   }
 
   Future<void> _loadTextures() async {
+    late final List<ui.Image> criticalTextures;
     try {
-      final loaded = await Future.wait<ui.Image>([
+      // The base surfaces arrive first so the map can paint a useful frame
+      // without waiting for every decorative grass variant.
+      criticalTextures = await Future.wait<ui.Image>([
         _loadTexture(_waterTexture),
         _loadTexture(_landTexture),
         _loadTexture(_grassMicroTexture),
+        _loadTexture(_shoreTexture),
+        _loadTexture(_roadTexture),
+      ]);
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _texturePack = const GameMapTexturePack());
+      return;
+    }
+
+    if (!mounted) return;
+    setState(
+      () => _texturePack = GameMapTexturePack(
+        water: criticalTextures[0],
+        land: criticalTextures[1],
+        grassMicro: criticalTextures[2],
+        shore: criticalTextures[3],
+        road: criticalTextures[4],
+      ),
+    );
+
+    await Future<void>.delayed(const Duration(milliseconds: 1200));
+    if (!mounted) return;
+
+    try {
+      final optionalTextures = await Future.wait<ui.Image>([
         _loadTexture(_grassLightTexture),
         _loadTexture(_grassMidTexture),
         _loadTexture(_grassDarkTexture),
         _loadTexture(_groundMossTexture),
         _loadTexture(_shoreGrassTexture),
-        _loadTexture(_shoreTexture),
-        _loadTexture(_roadTexture),
       ]);
-      final textures = GameMapTexturePack(
-        water: loaded[0],
-        land: loaded[1],
-        grassMicro: loaded[2],
-        grassLight: loaded[3],
-        grassMid: loaded[4],
-        grassDark: loaded[5],
-        groundMoss: loaded[6],
-        shoreGrass: loaded[7],
-        shore: loaded[8],
-        road: loaded[9],
+      if (!mounted) return;
+      final current = _texturePack;
+      setState(
+        () => _texturePack = GameMapTexturePack(
+          water: current.water,
+          land: current.land,
+          grassMicro: current.grassMicro,
+          grassLight: optionalTextures[0],
+          grassMid: optionalTextures[1],
+          grassDark: optionalTextures[2],
+          groundMoss: optionalTextures[3],
+          shoreGrass: optionalTextures[4],
+          shore: current.shore,
+          road: current.road,
+        ),
       );
-      if (!mounted) return;
-      setState(() => _texturePack = textures);
     } catch (_) {
-      if (!mounted) return;
-      setState(() => _texturePack = const GameMapTexturePack());
+      // Critical surfaces remain usable when a decorative texture is absent.
     }
   }
 
@@ -444,6 +500,7 @@ class _GameMapRendererState extends State<GameMapRenderer> {
         terrainTiles: widget.terrainTiles,
         terrainFeatures: widget.terrainFeatures,
         fishingSpots: widget.fishingSpots,
+        motionOptimized: widget.motionOptimized,
         texturePack: _texturePack,
       ),
       size: Size.infinite,
@@ -451,12 +508,72 @@ class _GameMapRendererState extends State<GameMapRenderer> {
   }
 }
 
+/// Records the same bounded frame window for the classic painter as the
+/// MapLibre and vector-fallback proofs. It is only mounted for opt-in builds.
+class GameMapPerformanceProbe extends StatefulWidget {
+  const GameMapPerformanceProbe({required this.child, super.key});
+
+  final Widget child;
+
+  @override
+  State<GameMapPerformanceProbe> createState() =>
+      _GameMapPerformanceProbeState();
+}
+
+class _GameMapPerformanceProbeState extends State<GameMapPerformanceProbe> {
+  late final MapPerformanceMonitor _monitor;
+  late final MapPerformanceReporter _reporter;
+  TimingsCallback? _timingsCallback;
+  int _frameCount = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _monitor = MapPerformanceMonitor()..markStarted();
+    _reporter = MapPerformanceReporter();
+    _timingsCallback = (timings) {
+      for (final timing in timings) {
+        _monitor.recordFrame(
+          MapFrameSample(
+            buildDuration: timing.buildDuration,
+            rasterDuration: timing.rasterDuration,
+            totalDuration: timing.totalSpan,
+            vsyncOverhead: timing.vsyncOverhead,
+            frameGap: frameTimingGap(timing),
+          ),
+        );
+        _frameCount++;
+      }
+      if (_reporter.shouldReport(_frameCount)) {
+        debugPrint(
+          'FisherGO map performance: renderer=classic '
+          '${_monitor.snapshot().toJson()}',
+        );
+      }
+    };
+    SchedulerBinding.instance.addTimingsCallback(_timingsCallback!);
+  }
+
+  @override
+  void dispose() {
+    final timingsCallback = _timingsCallback;
+    if (timingsCallback != null) {
+      SchedulerBinding.instance.removeTimingsCallback(timingsCallback);
+    }
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
+}
+
 class GameMapPainter extends CustomPainter {
-  const GameMapPainter({
+  GameMapPainter({
     required this.camera,
     required this.terrainTiles,
     required this.terrainFeatures,
     required this.fishingSpots,
+    this.motionOptimized = false,
     this.texturePack = const GameMapTexturePack(),
   });
 
@@ -464,7 +581,10 @@ class GameMapPainter extends CustomPainter {
   final List<TerrainTile> terrainTiles;
   final List<TerrainVectorFeature> terrainFeatures;
   final List<ProjectedFishingSpot> fishingSpots;
+  final bool motionOptimized;
   final GameMapTexturePack texturePack;
+  late final TerrainGridDimensions _gridDimensions =
+      terrainGridDimensions(terrainTiles);
 
   GameMapRenderBudget get _renderBudget => GameMapRenderBudget.forScene(
         terrainTileCount: terrainTiles.length,
@@ -483,6 +603,12 @@ class GameMapPainter extends CustomPainter {
       _drawTerrainBoundaryBlendLayer(canvas, size);
       _drawTerrainDetailLayer(canvas, size);
     }
+    if (motionOptimized) {
+      // Keep the GPS-derived topology and primary roads readable while the
+      // parent rotates this cached surface. Decorative layers return at idle.
+      _drawMotionMapSurface(canvas, size);
+      return;
+    }
     _drawWorldSeamFusionLayer(canvas, size);
     _drawImagegenInspiredMapLayer(canvas, size);
     _drawCoastlineDepthLayer(canvas, size);
@@ -493,6 +619,11 @@ class GameMapPainter extends CustomPainter {
     _drawLandmarkLabelLayer(canvas, size);
     _drawFishingSpotLayer(canvas, size);
     _drawAtmosphereLayer(canvas, size);
+  }
+
+  void _drawMotionMapSurface(Canvas canvas, Size size) {
+    _drawRoadLayer(canvas, size);
+    _drawPierLayer(canvas, size);
   }
 
   bool get _hasVectorWorldSurface => terrainFeatures.any(
@@ -791,16 +922,8 @@ class GameMapPainter extends CustomPainter {
   }
 
   Rect? _projectTerrainCellFromCamera(Size size, TerrainTile tile) {
-    final rowCount = terrainTiles.map((tile) => tile.row).fold<int>(
-              0,
-              (max, row) => row > max ? row : max,
-            ) +
-        1;
-    final colCount = terrainTiles.map((tile) => tile.col).fold<int>(
-              0,
-              (max, col) => col > max ? col : max,
-            ) +
-        1;
+    final rowCount = _gridDimensions.rowCount;
+    final colCount = _gridDimensions.columnCount;
     if (rowCount <= 0 || colCount <= 0) return null;
     final center = camera.project(tile.centerLatLng);
     final depth = (center.dy / size.height).clamp(0.0, 1.0);
@@ -4685,6 +4808,7 @@ class GameMapPainter extends CustomPainter {
       !_sameTerrainTiles(oldDelegate.terrainTiles, terrainTiles) ||
       !_sameTerrainFeatures(oldDelegate.terrainFeatures, terrainFeatures) ||
       !_sameFishingSpots(oldDelegate.fishingSpots, fishingSpots) ||
+      oldDelegate.motionOptimized != motionOptimized ||
       oldDelegate.texturePack != texturePack;
 
   bool _sameCamera(GameMapCamera a, GameMapCamera b) =>

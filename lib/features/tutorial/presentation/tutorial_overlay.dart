@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/tutorial/tutorial_service.dart';
+import '../../fish/domain/fish_collection_copy.dart';
 
 /// Tutorial overlay widget with 4 steps.
 ///
@@ -13,10 +14,12 @@ class TutorialOverlay extends StatefulWidget {
     super.key,
     required this.onStartFishing,
     required this.onComplete,
+    this.identityKey = 'local',
   });
 
   final VoidCallback onStartFishing;
   final VoidCallback onComplete;
+  final String identityKey;
 
   @override
   State<TutorialOverlay> createState() => _TutorialOverlayState();
@@ -41,7 +44,7 @@ class _TutorialOverlayState extends State<TutorialOverlay> {
     if (_isCompleting) return;
 
     setState(() => _isCompleting = true);
-    await TutorialService.markCompleted();
+    await TutorialService.markCompleted(identityKey: widget.identityKey);
     if (!mounted) return;
     widget.onComplete();
   }
@@ -50,7 +53,7 @@ class _TutorialOverlayState extends State<TutorialOverlay> {
     if (_isCompleting) return;
 
     setState(() => _isCompleting = true);
-    await TutorialService.markCompleted();
+    await TutorialService.markCompleted(identityKey: widget.identityKey);
     if (!mounted) return;
     widget.onComplete();
   }
@@ -405,8 +408,8 @@ class _CompleteStep extends StatelessWidget {
       const SizedBox(height: 20),
       _FishCard(fishId: fishId, fishName: fishName),
       const SizedBox(height: 16),
-      const Text(
-        '圖鑑規則：遊戲釣獲會顯示灰版彩圖；真實上魚獲驗證後會變成完整彩圖。',
+      Text(
+        FishDiscoveryCopy.tutorialRule(),
         style: TextStyle(color: Colors.white70, fontSize: 14, height: 1.35),
         textAlign: TextAlign.center,
       ),

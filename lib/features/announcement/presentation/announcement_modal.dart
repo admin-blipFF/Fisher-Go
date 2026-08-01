@@ -41,6 +41,9 @@ class _AnnouncementModalState extends State<AnnouncementModal> {
       await ProfileWalletService.addCoins(
         data.coinReward,
         reason: '每日公告獎勵',
+        rewardKind: 'daily_announcement',
+        claimKey:
+            'announcement:${DateTime.now().toUtc().toIso8601String().substring(0, 10)}',
       );
       await AnnouncementService.markSeen();
       await AnnouncementService.markClaimed();

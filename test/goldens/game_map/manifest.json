@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "description": "Structural visual golden for the GPS-centred MapLibre game surface. Thresholds intentionally tolerate live OSM tile colour changes while rejecting blank or single-colour map captures.",
+  "viewports": {
+    "390x844": {
+      "width": 390,
+      "height": 844,
+      "min_distinct_colors": 8,
+      "min_color_range": 24,
+      "min_adjacent_change_ratio": 0.2,
+      "max_dominant_sample_ratio": 0.75,
+      "required_tile_host": "tiles.openfreemap.org"
+    },
+    "1440x900": {
+      "width": 1440,
+      "height": 900,
+      "min_distinct_colors": 8,
+      "min_color_range": 24,
+      "min_adjacent_change_ratio": 0.2,
+      "max_dominant_sample_ratio": 0.75,
+      "required_tile_host": "tiles.openfreemap.org"
+    }
+  }
+}

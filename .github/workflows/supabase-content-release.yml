@@ -1,0 +1,160 @@
+name: Supabase content release
+
+on:
+  workflow_dispatch:
+    inputs:
+      reconcile_legacy_history:
+        description: >-
+          Owner-approved one-time repair of remote migration history rows 001/002
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+concurrency:
+  group: fishergo-content-release
+  cancel-in-progress: false
+
+jobs:
+  apply-and-verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: fishergo-content-release
+    outputs:
+      project_ref: ${{ steps.release-target.outputs.project_ref }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Set up Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Install Flutter dependencies
+        run: flutter pub get
+
+      - name: Verify content release source contracts
+        run: >-
+          flutter test --no-pub --reporter compact
+          test/admin_spot_moderation_source_test.dart
+          test/admin_spot_content_source_test.dart
+          test/real_catch_moderation_source_test.dart
+          test/analytics_ingestion_source_test.dart
+          test/supabase_analytics_ingestion_source_test.dart
+          test/analytics_retention_source_test.dart
+          test/server_event_config_source_test.dart
+          test/security/supabase_ci_source_test.dart
+          test/remote_event_species_identity_source_test.dart
+          test/real_catch_leaderboard_source_test.dart
+          test/server_gameplay_session_source_test.dart
+          test/location_integrity_source_test.dart
+          test/supabase_content_release_workflow_source_test.dart
+
+      - name: Link and apply migrations
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          SUPABASE_LEGACY_HISTORY_REPAIR_CONFIRMATION: ${{ secrets.SUPABASE_LEGACY_HISTORY_REPAIR_CONFIRMATION }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$SUPABASE_ACCESS_TOKEN"
+          test -n "$SUPABASE_PROJECT_REF"
+          test -n "$SUPABASE_DB_PASSWORD"
+          supabase link --project-ref "$SUPABASE_PROJECT_REF" --password "$SUPABASE_DB_PASSWORD"
+          echo "Linked migration history before optional reconciliation:"
+          supabase migration list --linked
+          if [ "${{ inputs.reconcile_legacy_history }}" = "true" ]; then
+            test "$SUPABASE_LEGACY_HISTORY_REPAIR_CONFIRMATION" = "FISHERGO_REPAIR_001_002"
+            echo "Applying owner-approved migration history repair for 001/002"
+            supabase migration repair 001 002 --linked --status reverted --yes
+          fi
+          # These are compatibility markers for retired three-digit history rows.
+          # Keep them in Git for audit context, but never re-apply them after repair.
+          rm -f supabase/migrations/001_player_cloud_sync.sql
+          rm -f supabase/migrations/002_grant_linked_test_runner_access.sql
+          test ! -e supabase/migrations/001_player_cloud_sync.sql
+          test ! -e supabase/migrations/002_grant_linked_test_runner_access.sql
+          echo "Planned linked migration changes:"
+          supabase db push --linked --include-all --dry-run
+          supabase db push --linked --include-all --yes
+
+      - name: Export linked project ref
+        id: release-target
+        env:
+          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$SUPABASE_PROJECT_REF"
+          echo "project_ref=$SUPABASE_PROJECT_REF" >> "$GITHUB_OUTPUT"
+
+      - name: Verify linked database
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          supabase test db --linked
+          supabase db lint --linked --schema public --fail-on error
+
+  hosted-gameplay-smoke:
+    needs: apply-and-verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: fishergo-live-smoke
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Verify hosted fishing-spot habitat weights
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+          SUPABASE_EXPECTED_PROJECT_REF: ${{ needs.apply-and-verify.outputs.project_ref }}
+        run: dart run tool/verify_supabase_fishing_spot_habitat.dart
+
+      - name: Verify hosted analytics ingestion
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+          SUPABASE_EXPECTED_PROJECT_REF: ${{ needs.apply-and-verify.outputs.project_ref }}
+        run: dart run tool/verify_supabase_analytics_ingestion.dart
+
+      - name: Verify hosted server event configuration
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+          SUPABASE_EXPECTED_PROJECT_REF: ${{ needs.apply-and-verify.outputs.project_ref }}
+        run: dart run tool/verify_supabase_event_config.dart
+
+      - name: Verify hosted gameplay session
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+          SUPABASE_EXPECTED_PROJECT_REF: ${{ needs.apply-and-verify.outputs.project_ref }}
+          FISHERGO_SMOKE_GAMEPLAY_SPOT_ID: ${{ secrets.FISHERGO_SMOKE_GAMEPLAY_SPOT_ID }}
+        run: dart run tool/verify_supabase_gameplay_session.dart

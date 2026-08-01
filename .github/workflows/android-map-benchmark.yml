@@ -1,0 +1,74 @@
+name: Android map benchmark
+
+on:
+  workflow_dispatch:
+    inputs:
+      enforce_frame_budget:
+        description: 'Fail when native gfx p95 exceeds 20 ms'
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+jobs:
+  map-benchmark:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build API 35 profile APK
+        run: >-
+          flutter build apk --profile --no-pub
+          --dart-define=FISHERGO_MAPLIBRE=true
+          --dart-define=FISHERGO_MAP_PERF=true
+          --target-platform android-x64
+
+      - name: Run host-GPU MapLibre benchmark
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          arch: x86_64
+          profile: pixel_2
+          emulator-options: -no-window -gpu host -no-snapshot -noaudio
+          disable-animations: true
+          script: |
+            set -euo pipefail
+            benchmark_args=(
+              -NoProfile
+              -File tool/android_map_benchmark.ps1
+              -DeviceSerial emulator-5554
+              -ApkPath build/app/outputs/flutter-apk/app-profile.apk
+              -RequireHostGpu
+              -RequireMapReadiness
+              -WarmupRounds 1
+              -OutputPath tmp/android-map-benchmark-ci.json
+            )
+            if [[ "${{ inputs.enforce_frame_budget }}" == "true" ]]; then
+              benchmark_args+=( -EnforceFrameBudget )
+            fi
+            pwsh "${benchmark_args[@]}"
+            adb -s emulator-5554 exec-out screencap -p > tmp/android-map-benchmark-ci.png
+
+      - name: Upload map benchmark evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fishergo-android-map-benchmark
+          path: |
+            tmp/android-map-benchmark-ci.json
+            tmp/android-map-benchmark-ci.png
+          if-no-files-found: warn
+          retention-days: 14

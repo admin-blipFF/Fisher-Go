@@ -1,5 +1,7 @@
 import 'dart:collection';
 
+import '../../../core/config/public_app_config.dart';
+
 enum FishingTimeWindow {
   morning,
   daytime,
@@ -29,6 +31,7 @@ class FishingEventRules {
     required String spotName,
     required DateTime now,
   }) {
+    if (!PublicAppConfig.eventsEnabled) return const [];
     final spot = _normalize(spotName);
     final window = timeWindowFor(now);
     final labels = <String>[];
@@ -57,6 +60,7 @@ class FishingEventRules {
     String? fishId,
     required DateTime now,
   }) {
+    if (!PublicAppConfig.eventsEnabled) return 1.0;
     final spot = _normalize(spotName);
     final fish = _normalize('$fishName ${fishId ?? ''}');
     final window = timeWindowFor(now);

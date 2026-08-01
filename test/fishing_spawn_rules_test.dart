@@ -162,6 +162,38 @@ void main() {
       );
     });
 
+    test('applies optional remote species weights by fish id or name', () {
+      const weights = <String, double>{
+        'fish-073': 3,
+        '烏頭': 0,
+      };
+
+      expect(
+        FishingSpawnRules.configuredSpeciesWeight(
+          weights: weights,
+          fishName: '石斑魚',
+          fishId: 'fish-073',
+        ),
+        3,
+      );
+      expect(
+        FishingSpawnRules.configuredSpeciesWeight(
+          weights: weights,
+          fishName: '烏頭',
+          fishId: 'fish-063',
+        ),
+        0,
+      );
+      expect(
+        FishingSpawnRules.configuredSpeciesWeight(
+          weights: weights,
+          fishName: '藍鰭鮪',
+          fishId: 'fish-153',
+        ),
+        1,
+      );
+    });
+
     test('summarizes visible local fish intel for matching spots', () {
       expect(
         FishingSpawnRules.spotIntelLabels('赤鱲角機場跑道尾'),

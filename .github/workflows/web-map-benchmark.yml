@@ -1,0 +1,90 @@
+name: Web map benchmark
+
+on:
+  workflow_dispatch:
+    inputs:
+      enforce_frame_budget:
+        description: Fail when a viewport misses 30 FPS, p95 33.3 ms, or 5% jank
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+jobs:
+  web-map-benchmark:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Install Flutter dependencies
+        run: flutter pub get
+
+      - name: Build Web release
+        run: >-
+          flutter build web --release --no-pub
+          --dart-define=FISHERGO_MAPLIBRE=true
+          --dart-define=FISHERGO_MAP_PERF=true
+
+      - name: Scan client artifacts
+        run: dart run tool/check_client_artifacts_for_secrets.dart build/web
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install Playwright
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+
+      - name: Serve release build
+        shell: bash
+        run: |
+          mkdir -p tmp output/playwright
+          python3 -m http.server 4173 --directory build/web > tmp/web-server.log 2>&1 &
+          echo $! > tmp/web-server.pid
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:4173/ > /dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat tmp/web-server.log
+          exit 1
+
+      - name: Run Web map benchmark
+        shell: bash
+        run: |
+          args=()
+          if [[ "${{ inputs.enforce_frame_budget }}" == "true" ]]; then
+            args+=(--enforce-frame-budget)
+          fi
+          node tool/run_web_map_benchmark.js \
+            --url=http://127.0.0.1:4173/ \
+            --output=tmp/web-map-benchmark-ci.json \
+            --golden-manifest=test/goldens/game_map/manifest.json \
+            "${args[@]}"
+
+      - name: Upload Web map evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fishergo-web-map-benchmark
+          retention-days: 14
+          if-no-files-found: warn
+          path: |
+            tmp/web-map-benchmark-ci.json
+            tmp/web-server.log
+            output/playwright/web-map-proof-390x844.png
+            output/playwright/web-map-proof-1440x900.png

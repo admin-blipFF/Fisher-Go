@@ -1,21 +1,62 @@
 import 'package:hive/hive.dart';
 import 'package:latlong2/latlong.dart';
 
+import '../auth/local_account_service.dart';
 import '../../domain/boat_vendor.dart';
 import '../../features/profile/data/profile_wallet_service.dart';
 
 class BoatVendorService {
-  // Use a fixed (non-per-user) box so BoatRouteScreen reads the same data.
-  static const String _boxName = 'boat_vendor_box';
+  static const String _legacyBoxName = 'boat_vendor_box';
+  static const String _accountBoxBaseName = 'boat_vendor';
+  static const String _legacyMigrationKey = 'boat_vendor_legacy_migrated';
   static const String _activeVendorKey = 'active_boat_vendor_id';
   static const _boatSpotRadiusMeters = 100.0;
 
   static Box? _openedBox;
+  static String? _openedBoxName;
 
   static Future<Box> get _box async {
-    if (_openedBox != null && _openedBox!.isOpen) return _openedBox!;
-    _openedBox = await Hive.openBox(_boxName);
+    final boxName = LocalAccountService.boxNameFor(_accountBoxBaseName);
+    if (_openedBox != null && _openedBox!.isOpen && _openedBoxName == boxName) {
+      return _openedBox!;
+    }
+
+    _openedBox = await Hive.openBox(boxName);
+    _openedBoxName = boxName;
+    await _migrateLegacyBoxIfNeeded(_openedBox!);
     return _openedBox!;
+  }
+
+  /// Preserves data created before boat state became account-scoped.
+  ///
+  /// The old box was device-local, so it is copied once to the account that
+  /// first opens the new namespace. It is never read again after migration.
+  static Future<void> _migrateLegacyBoxIfNeeded(Box target) async {
+    final markerBox = await Hive.openBox<dynamic>('local_accounts');
+    if (markerBox.get(_legacyMigrationKey) == true) return;
+
+    if (Hive.isBoxOpen(_legacyBoxName)) {
+      final legacy = Hive.box<dynamic>(_legacyBoxName);
+      for (final key in legacy.keys) {
+        if (!target.containsKey(key)) {
+          await target.put(key, legacy.get(key));
+        }
+      }
+    } else {
+      try {
+        final legacy = await Hive.openBox<dynamic>(_legacyBoxName);
+        for (final key in legacy.keys) {
+          if (!target.containsKey(key)) {
+            await target.put(key, legacy.get(key));
+          }
+        }
+        await legacy.close();
+      } catch (_) {
+        // A missing legacy box is expected on new installs.
+      }
+    }
+
+    await markerBox.put(_legacyMigrationKey, true);
   }
 
   /// Rent a boat vendor for the player. Deducts coins.

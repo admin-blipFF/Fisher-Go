@@ -1,6 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/config/supabase_config.dart';
+import '../../../core/config/supabase_rpc_errors.dart';
 
 /// Cloud-first player profile sync service.
 /// Reads from Supabase; writes to both Supabase (primary) and Hive (cache).
@@ -65,7 +66,76 @@ class PlayerProfileSyncService {
   }
 
   /// Adds coins to player's account. Returns updated coin count, or -1 on failure.
-  static Future<int> addCoins(String userId, int amount) async {
+  static Future<int> addCoins(
+    String userId,
+    int amount, {
+    String reason = 'client_reward',
+    String rewardKind = 'virtual_catch',
+    String? claimKey,
+    String? fishId,
+    String? gameplaySessionId,
+    String? idempotencyKey,
+  }) async {
+    if (amount <= 0) return -1;
+    if (_client != null) {
+      try {
+        final result = await _client!.rpc(
+          'claim_gameplay_reward_ticket',
+          params: {
+            'p_reward_kind': rewardKind,
+            'p_requested_amount': amount,
+            'p_claim_key': claimKey ?? idempotencyKey ?? _newClaimKey(reason),
+            'p_fish_id': fishId,
+            'p_gameplay_session_id': gameplaySessionId,
+          },
+        );
+        final map = result is Map
+            ? Map<String, dynamic>.from(result)
+            : const <String, dynamic>{};
+        final balance = (map['balance'] as num?)?.toInt();
+        return balance ?? -1;
+      } catch (error) {
+        // Keep rollout compatible with projects before migration 0016. A
+        // session-bound reward must never fall back to a generic ticket.
+        if (!_isMissingWalletRpc(error, 'claim_gameplay_reward_ticket')) {
+          return -1;
+        }
+        if (gameplaySessionId != null) return -1;
+
+        try {
+          final legacyResult = await _client!.rpc(
+            'claim_gameplay_reward_ticket',
+            params: {
+              'p_reward_kind': rewardKind,
+              'p_requested_amount': amount,
+              'p_claim_key': claimKey ?? idempotencyKey ?? _newClaimKey(reason),
+              'p_fish_id': fishId,
+            },
+          );
+          final legacyMap = legacyResult is Map
+              ? Map<String, dynamic>.from(legacyResult)
+              : const <String, dynamic>{};
+          final legacyBalance = (legacyMap['balance'] as num?)?.toInt();
+          if (legacyBalance != null) return legacyBalance;
+        } catch (legacyError) {
+          if (!_isMissingWalletRpc(
+            legacyError,
+            'claim_gameplay_reward_ticket',
+          )) {
+            return -1;
+          }
+        }
+
+        final adjusted = await _adjustCoinsWithRpc(
+          amount,
+          reason: reason,
+          idempotencyKey: idempotencyKey ?? claimKey,
+        );
+        if (adjusted != null) return adjusted;
+      }
+    }
+
+    // Temporary migration fallback. Remove after 0014 is applied everywhere.
     final profile = await load(userId);
     final updated = profile.copyWith(
       coins: profile.coins + amount,
@@ -76,14 +146,66 @@ class PlayerProfileSyncService {
     return updated.coins;
   }
 
+  static Future<int?> _adjustCoinsWithRpc(
+    int amount, {
+    required String reason,
+    String? idempotencyKey,
+  }) async {
+    try {
+      final result = await _client!.rpc(
+        'adjust_player_coins',
+        params: {
+          'p_amount': amount,
+          'p_reason': reason,
+          'p_idempotency_key': idempotencyKey,
+        },
+      );
+      return (result as num?)?.toInt();
+    } catch (error) {
+      if (!_isMissingWalletRpc(error, 'adjust_player_coins')) return -1;
+      return null;
+    }
+  }
+
+  static String _newClaimKey(String reason) =>
+      '$reason:${DateTime.now().toUtc().microsecondsSinceEpoch}';
+
   /// Deducts coins. Returns updated coin count, or -1 on failure (insufficient).
-  static Future<int> deductCoins(String userId, int amount) async {
+  static Future<int> deductCoins(
+    String userId,
+    int amount, {
+    String? idempotencyKey,
+  }) async {
+    if (amount <= 0) return -1;
+    if (_client != null) {
+      try {
+        final result = await _client!.rpc(
+          'spend_player_coins',
+          params: {
+            'p_amount': amount,
+            'p_idempotency_key': idempotencyKey,
+          },
+        );
+        final balance = (result as num?)?.toInt();
+        return balance ?? -1;
+      } catch (error) {
+        // Keep rollout compatible with projects before migration 0014. Any
+        // other server error must fail closed instead of mutating the balance.
+        if (!_isMissingWalletRpc(error, 'spend_player_coins')) return -1;
+      }
+    }
+
+    // Temporary migration fallback. Remove after 0014 is applied everywhere.
     final profile = await load(userId);
     if (profile.coins < amount) return -1;
     final updated = profile.copyWith(coins: profile.coins - amount);
     final saved = await save(updated);
     if (!saved) return -1;
     return updated.coins;
+  }
+
+  static bool _isMissingWalletRpc(Object error, String functionName) {
+    return isMissingSupabaseRpc(error, functionName);
   }
 }
 

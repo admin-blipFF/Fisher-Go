@@ -195,5 +195,27 @@ void main() {
       expect(fullTurn.dx, closeTo(zeroBearing.dx, 0.01));
       expect(fullTurn.dy, closeTo(zeroBearing.dy, 0.01));
     });
+
+    test(
+        'copyWith can freeze a motion-pass bearing without changing GPS camera',
+        () {
+      const camera = GameMapCamera(
+        center: LatLng(22.3517, 114.0743),
+        visibleRadiusMeters: 500,
+        bearingDegrees: 135,
+        viewportSize: Size(390, 844),
+        perspectiveStrength: 0.52,
+        viewportAnchorY: 0.68,
+      );
+
+      final motionCamera = camera.copyWith(bearingDegrees: 0);
+
+      expect(motionCamera.center, camera.center);
+      expect(motionCamera.viewportSize, camera.viewportSize);
+      expect(motionCamera.visibleRadiusMeters, camera.visibleRadiusMeters);
+      expect(motionCamera.perspectiveStrength, camera.perspectiveStrength);
+      expect(motionCamera.viewportAnchorY, camera.viewportAnchorY);
+      expect(motionCamera.bearingDegrees, 0);
+    });
   });
 }

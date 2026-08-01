@@ -74,6 +74,13 @@ void main() {
       expect(result, true);
     });
 
+    test('completion is isolated by player identity', () async {
+      await TutorialService.markCompleted(identityKey: 'player-a');
+
+      expect(await TutorialService.isCompleted(identityKey: 'player-a'), true);
+      expect(await TutorialService.isCompleted(identityKey: 'player-b'), false);
+    });
+
     test('reset followed by isCompleted returns false', () async {
       // Verify the reset actually persists
       await TutorialService.reset();

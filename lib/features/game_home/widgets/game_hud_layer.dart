@@ -81,7 +81,8 @@ class GameHudLayer extends StatelessWidget {
               const SizedBox(height: 10),
               _buildSideButton(Icons.camera_alt, '魚獲', GameScreen.catchLog),
               const SizedBox(height: 10),
-              _buildSideButton(Icons.emoji_events, '排行', GameScreen.leaderboard),
+              _buildSideButton(
+                  Icons.emoji_events, '排行', GameScreen.leaderboard),
               const SizedBox(height: 10),
               _buildSideButton(Icons.person, '角色', GameScreen.profile),
             ],

@@ -1,16 +1,20 @@
 import 'package:hive/hive.dart';
 
+import '../../../core/auth/local_account_service.dart';
 import '../domain/catch_log_entry.dart';
 
 class CatchLogLocalDataSource {
   CatchLogLocalDataSource({
-    this.boxName = 'catch_queue',
+    String? boxName,
     this.itemsKey = 'items',
-  });
+  }) : _explicitBoxName = boxName;
 
-  final String boxName;
+  final String? _explicitBoxName;
   final String itemsKey;
   List<CatchLogEntry> _fallbackMemory = [];
+
+  String get boxName =>
+      _explicitBoxName ?? LocalAccountService.catchQueueBoxName;
 
   Future<List<CatchLogEntry>> loadPending() async {
     try {

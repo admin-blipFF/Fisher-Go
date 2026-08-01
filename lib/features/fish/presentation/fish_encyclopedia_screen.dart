@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import '../data/fish_real_photo_urls.dart';
 import '../data/fish_species_repository.dart';
 import '../data/sample_fish_species_repository.dart';
+import '../domain/fish_catalog_view_model.dart';
 import '../domain/fish_collection_service.dart';
+import '../domain/fish_collection_copy.dart';
 import '../domain/fish_collection_status.dart';
 import '../domain/fish_species.dart';
 
@@ -26,6 +28,7 @@ class _FishEncyclopediaScreenState extends State<FishEncyclopediaScreen> {
   Map<String, PlayerFishCollectionEntry> _collection = const {};
   var _isRefreshing = false;
   bool _hasLoadedOnce = false;
+  FishCatalogFilter _filter = FishCatalogFilter.all;
 
   @override
   void initState() {
@@ -109,8 +112,30 @@ class _FishEncyclopediaScreenState extends State<FishEncyclopediaScreen> {
           }
 
           final species = snapshot.data ?? const <FishSpecies>[];
+          final visibleSpecies = FishCatalogViewModel.sortByNumber(
+            FishCatalogViewModel.filter(species, _collection, _filter),
+          );
           return CustomScrollView(
             slivers: [
+              SliverToBoxAdapter(
+                child: _CatalogProgressHeader(
+                  total: species.length,
+                  unlocked: _collection.values
+                      .where(FishCatalogViewModel.isUnlocked)
+                      .length,
+                  verified: _collection.values
+                      .where((entry) =>
+                          entry.status == FishDiscoveryStatus.verifiedRealCatch)
+                      .length,
+                  filter: _filter,
+                  onFilterChanged: (value) => setState(() => _filter = value),
+                ),
+              ),
+              if (visibleSpecies.isEmpty)
+                const SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: Center(child: Text('這個分類暫時沒有魚種')),
+                ),
               SliverPadding(
                 padding: const EdgeInsets.fromLTRB(12, 12, 12, 24),
                 sliver: SliverLayoutBuilder(
@@ -124,9 +149,9 @@ class _FishEncyclopediaScreenState extends State<FishEncyclopediaScreen> {
                         crossAxisSpacing: 10,
                         childAspectRatio: 0.78,
                       ),
-                      itemCount: species.length,
+                      itemCount: visibleSpecies.length,
                       itemBuilder: (context, index) {
-                        final item = species[index];
+                        final item = visibleSpecies[index];
                         final status = _statusFor(item.id);
                         return _FishSpeciesCard(
                           species: item,
@@ -148,11 +173,124 @@ class _FishEncyclopediaScreenState extends State<FishEncyclopediaScreen> {
   }
 
   int _gridColumns(double width) {
-    return 3;
+    if (width < 420) return 2;
+    if (width < 900) return 3;
+    return 4;
   }
 
   FishDiscoveryStatus _statusFor(String fishId) =>
       _collection[fishId]?.status ?? FishDiscoveryStatus.unknown;
+}
+
+class _CatalogProgressHeader extends StatelessWidget {
+  const _CatalogProgressHeader({
+    required this.total,
+    required this.unlocked,
+    required this.verified,
+    required this.filter,
+    required this.onFilterChanged,
+  });
+
+  final int total;
+  final int unlocked;
+  final int verified;
+  final FishCatalogFilter filter;
+  final ValueChanged<FishCatalogFilter> onFilterChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final progress = total == 0 ? 0.0 : unlocked / total;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  '$unlocked/$total 已解鎖',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w800,
+                      ),
+                ),
+              ),
+              Text(
+                '$verified 個魚鈎認證',
+                style: Theme.of(context).textTheme.labelMedium,
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: LinearProgressIndicator(
+              value: progress.clamp(0.0, 1.0),
+              minHeight: 8,
+            ),
+          ),
+          const SizedBox(height: 10),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                for (final option in FishCatalogFilter.values) ...[
+                  SizedBox(
+                    width: _chipWidth(option),
+                    child: ChoiceChip(
+                      label: Center(
+                        child: Text(
+                          _label(option),
+                          maxLines: 1,
+                          softWrap: false,
+                        ),
+                      ),
+                      showCheckmark: false,
+                      labelPadding: const EdgeInsets.symmetric(horizontal: 4),
+                      selected: filter == option,
+                      onSelected: (_) => onFilterChanged(option),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _label(FishCatalogFilter value) {
+    return switch (value) {
+      FishCatalogFilter.all => '全部',
+      FishCatalogFilter.unlocked => '已釣獲',
+      FishCatalogFilter.verified => '真實認證',
+    };
+  }
+
+  double _chipWidth(FishCatalogFilter value) {
+    return switch (value) {
+      FishCatalogFilter.all => 92,
+      FishCatalogFilter.unlocked => 112,
+      FishCatalogFilter.verified => 132,
+    };
+  }
+}
+
+/// Keeps card semantics aligned with the discovery rules shown in the UI.
+/// Unknown and encountered fish must not expose the species name before the
+/// player completes the game catch.
+String fishEncyclopediaCardSemanticsLabel({
+  required String numberLabel,
+  required String displayName,
+  required FishDiscoveryStatus status,
+  bool hasPhotoProof = false,
+}) {
+  final visibleName = status.showsBasicInfo ? displayName : '名稱未知';
+  final photoProof = hasPhotoProof ? '，已附真實魚獲相片' : '';
+  return '魚種 $numberLabel，$visibleName，'
+      '${FishDiscoveryCopy.statusLabel(status)}$photoProof';
 }
 
 class _FishSpeciesCard extends StatelessWidget {
@@ -180,94 +318,156 @@ class _FishSpeciesCard extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final numberLabel = _speciesNumberLabel(species.id);
 
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      elevation: _basicUnlocked ? 2 : 0,
-      child: InkWell(
-        onTap: _basicUnlocked
-            ? () {
-                final realPhotoUrl = kFishRealPhotoUrls[species.id];
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => _FishSpeciesDetailScreen(
-                      species: species,
-                      status: status,
-                      realPhotoUrl: _fullUnlocked ? realPhotoUrl : null,
-                      onOpenMap: onOpenMap,
+    final semanticsLabel = fishEncyclopediaCardSemanticsLabel(
+      numberLabel: numberLabel,
+      displayName: species.displayLocalName,
+      status: status,
+      hasPhotoProof: _photoProofUnlocked,
+    );
+    void openDetails() {
+      final realPhotoUrl = kFishRealPhotoUrls[species.id];
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => _FishSpeciesDetailScreen(
+            species: species,
+            status: status,
+            realPhotoUrl: _fullUnlocked ? realPhotoUrl : null,
+            onOpenMap: onOpenMap,
+          ),
+        ),
+      );
+    }
+
+    return Semantics(
+      container: true,
+      excludeSemantics: true,
+      label: semanticsLabel,
+      enabled: _basicUnlocked,
+      button: _basicUnlocked,
+      onTap: _basicUnlocked ? openDetails : null,
+      child: Card(
+        clipBehavior: Clip.antiAlias,
+        elevation: _basicUnlocked ? 2 : 0,
+        child: InkWell(
+          onTap: _basicUnlocked ? openDetails : null,
+          child: Padding(
+            padding: const EdgeInsets.all(10),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Text(
+                      numberLabel,
+                      style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                            fontWeight: FontWeight.w800,
+                            color: colorScheme.primary,
+                          ),
                     ),
-                  ),
-                );
-              }
-            : null,
-        child: Padding(
-          padding: const EdgeInsets.all(10),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Text(
-                    numberLabel,
-                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                          fontWeight: FontWeight.w800,
-                          color: colorScheme.primary,
-                        ),
-                  ),
-                  const Spacer(),
-                  Icon(
-                    _fullUnlocked
-                        ? Icons.verified
-                        : _basicUnlocked
-                            ? Icons.lock_open
-                            : Icons.lock,
-                    size: 15,
-                    color: _fullUnlocked
-                        ? Colors.amber.shade700
-                        : _basicUnlocked
-                            ? colorScheme.primary
-                            : colorScheme.outline,
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Expanded(
-                child: Center(
-                  child: Stack(
-                    clipBehavior: Clip.none,
-                    children: [
-                      _FishArtwork(
-                        discovered: _basicUnlocked,
-                        colorUnlocked: _colorIconUnlocked,
-                        imagePath: species.imageUrl,
-                        silhouettePath: species.silhouetteUrl,
-                        colorScheme: colorScheme,
+                    const Spacer(),
+                    Tooltip(
+                      message: FishDiscoveryCopy.statusLabel(status),
+                      child: Icon(
+                        _fullUnlocked
+                            ? Icons.verified
+                            : _basicUnlocked
+                                ? Icons.lock_open
+                                : Icons.lock,
+                        size: 15,
+                        color: _fullUnlocked
+                            ? Colors.amber.shade700
+                            : _basicUnlocked
+                                ? colorScheme.primary
+                                : colorScheme.outline,
                       ),
-                      if (_photoProofUnlocked)
-                        Positioned(
-                          left: -4,
-                          top: -4,
-                          child: _PhotoProofBadge(colorScheme: colorScheme),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Expanded(
+                  child: Center(
+                    child: Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        _FishArtwork(
+                          discovered: _basicUnlocked,
+                          colorUnlocked: _colorIconUnlocked,
+                          imagePath: species.imageUrl,
+                          silhouettePath: species.silhouetteUrl,
+                          colorScheme: colorScheme,
+                          cacheWidth: fishCatalogArtworkCacheWidth(
+                            MediaQuery.devicePixelRatioOf(context),
+                          ),
+                          cacheHeight: fishCatalogArtworkCacheHeight(
+                            MediaQuery.devicePixelRatioOf(context),
+                          ),
                         ),
-                    ],
+                        if (_photoProofUnlocked)
+                          Positioned(
+                            left: -4,
+                            top: -4,
+                            child: _PhotoProofBadge(colorScheme: colorScheme),
+                          ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                _basicUnlocked ? species.displayLocalName : '???',
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      fontWeight: FontWeight.w700,
-                      color: _basicUnlocked ? null : colorScheme.outline,
-                      fontStyle: _basicUnlocked ? null : FontStyle.italic,
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        _basicUnlocked ? species.displayLocalName : '???',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              fontWeight: FontWeight.w700,
+                              color:
+                                  _basicUnlocked ? null : colorScheme.outline,
+                              fontStyle:
+                                  _basicUnlocked ? null : FontStyle.italic,
+                            ),
+                      ),
                     ),
-              ),
-            ],
+                    if (_basicUnlocked)
+                      Icon(
+                        _photoProofUnlocked ? Icons.phishing : Icons.check,
+                        size: 15,
+                        color: _photoProofUnlocked
+                            ? Colors.deepOrange
+                            : colorScheme.primary,
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  status.labelZh,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: _statusColor(colorScheme),
+                        fontWeight: FontWeight.w700,
+                      ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
     );
+  }
+
+  Color _statusColor(ColorScheme colorScheme) {
+    switch (status) {
+      case FishDiscoveryStatus.unknown:
+        return colorScheme.outline;
+      case FishDiscoveryStatus.encountered:
+        return colorScheme.secondary;
+      case FishDiscoveryStatus.gameCaught:
+        return colorScheme.primary;
+      case FishDiscoveryStatus.verifiedRealCatch:
+        return Colors.amber.shade800;
+    }
   }
 }
 
@@ -278,6 +478,43 @@ String _speciesNumberLabel(String id) {
   return '#$padded';
 }
 
+/// Returns the only artwork that a catalog card needs for its current state.
+/// Locked cards must not decode the full-color fish image just to grayscale it.
+String? fishArtworkAssetPath({
+  required bool discovered,
+  required String? imagePath,
+  required String? silhouettePath,
+}) {
+  return discovered ? imagePath : silhouettePath;
+}
+
+/// Catalog cards use transparent fish art so the image itself does not add a
+/// white square behind the game UI. Local-name badge files only have a
+/// numbered transparent fallback, while standard badge files have a matching
+/// descriptor-based transparent asset.
+String? fishCatalogArtworkAssetPath({
+  required bool discovered,
+  required String? imagePath,
+  required String? silhouettePath,
+}) {
+  final selected = fishArtworkAssetPath(
+    discovered: discovered,
+    imagePath: imagePath,
+    silhouettePath: silhouettePath,
+  );
+  return fishGameArtworkAssetPath(selected);
+}
+
+/// Keep grid cards from decoding the full-resolution catalog artwork.
+///
+/// Detail pages intentionally do not use this cap because they are the place
+/// where the player inspects a fish closely.
+int fishCatalogArtworkCacheWidth(double devicePixelRatio) =>
+    (150 * devicePixelRatio).round().clamp(180, 480).toInt();
+
+int fishCatalogArtworkCacheHeight(double devicePixelRatio) =>
+    (135 * devicePixelRatio).round().clamp(162, 432).toInt();
+
 class _FishArtwork extends StatelessWidget {
   const _FishArtwork({
     required this.discovered,
@@ -285,6 +522,8 @@ class _FishArtwork extends StatelessWidget {
     required this.imagePath,
     required this.silhouettePath,
     required this.colorScheme,
+    required this.cacheWidth,
+    required this.cacheHeight,
   });
 
   final bool discovered;
@@ -292,10 +531,16 @@ class _FishArtwork extends StatelessWidget {
   final String? imagePath;
   final String? silhouettePath;
   final ColorScheme colorScheme;
+  final int cacheWidth;
+  final int cacheHeight;
 
   @override
   Widget build(BuildContext context) {
-    final previewPath = discovered ? imagePath : silhouettePath;
+    final previewPath = fishCatalogArtworkAssetPath(
+      discovered: discovered,
+      imagePath: imagePath,
+      silhouettePath: silhouettePath,
+    );
     if (previewPath != null && previewPath.startsWith('assets/')) {
       return ColorFiltered(
         colorFilter: colorUnlocked
@@ -327,7 +572,9 @@ class _FishArtwork extends StatelessWidget {
           child: Image.asset(
             previewPath,
             fit: BoxFit.contain,
-            filterQuality: FilterQuality.high,
+            cacheWidth: cacheWidth,
+            cacheHeight: cacheHeight,
+            filterQuality: FilterQuality.medium,
             errorBuilder: (_, __, ___) => _fallbackIcon(),
           ),
         ),
@@ -506,12 +753,17 @@ class _FishSpeciesDetailScreen extends StatelessWidget {
           children: [
             _FishRealPhoto(
               realPhotoUrl: realPhotoUrl,
-              fallbackAsset: status.showsFullInfo
-                  ? species.imageUrl
-                  : species.silhouetteUrl,
+              fallbackAsset: fishCatalogArtworkAssetPath(
+                discovered: status.showsFullInfo,
+                imagePath: species.imageUrl,
+                silhouettePath: species.silhouetteUrl,
+              ),
             ),
             const SizedBox(height: 16),
-            _InfoTile(title: '解鎖狀態', value: status.labelZh),
+            _InfoTile(
+              title: '解鎖狀態',
+              value: FishDiscoveryCopy.statusLabel(status),
+            ),
             _InfoTile(title: '本地名', value: species.displayLocalName),
             if (species.commonNameZh.trim() != species.displayLocalName)
               _InfoTile(title: '正式名', value: species.commonNameZh.trim()),
@@ -524,9 +776,9 @@ class _FishSpeciesDetailScreen extends StatelessWidget {
               _InfoTile(title: '棲息地', value: species.habitatZh ?? '待補'),
               _InfoTile(title: '描述', value: species.descriptionZh ?? '待補'),
             ] else
-              const _InfoTile(
-                title: '完整資料',
-                value: '需要現實釣獲拍照上傳並確認，才會解鎖彩色徽章、學名、詳細生態及比賽資格。',
+              _InfoTile(
+                title: '下一步',
+                value: FishDiscoveryCopy.detailHint(status),
               ),
           ],
         ),

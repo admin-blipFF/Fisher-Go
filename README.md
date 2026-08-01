@@ -37,7 +37,7 @@ flutter run -d chrome
 Build the Android debug APK after Android SDK setup:
 
 ```bash
-flutter build apk --debug
+flutter build apk --debug --dart-define=FISHERGO_MAPLIBRE=true
 ```
 
 Android SDK setup on this Windows machine:
@@ -47,33 +47,42 @@ choco install -y temurin17 androidstudio
 $env:Path = [Environment]::GetEnvironmentVariable('Path','Machine') + ';' + [Environment]::GetEnvironmentVariable('Path','User')
 flutter doctor --android-licenses
 flutter doctor -v
-flutter build apk --debug
+flutter build apk --debug --dart-define=FISHERGO_MAPLIBRE=true
 ```
 
 Build the web release:
 
 ```bash
-flutter build web
+flutter build web --dart-define=FISHERGO_MAPLIBRE=true
 ```
 
 Windows can prepare Flutter code, tests, web builds, backend logic, shared mobile architecture, and Android builds once the Android SDK is installed. iOS simulator/device builds require macOS with Xcode or a macOS CI runner.
 
 ## Environment
 
-A local `.env` is needed because Flutter declares it as an asset. Use placeholder values for local web MVP work:
+The Flutter client does not package `.env` files. Public Supabase values are
+provided at build time through `--dart-define` or the Vercel build environment:
 
-```bash
-cp .env.example .env
+```powershell
+flutter run -d chrome `
+  --dart-define=SUPABASE_URL=https://your-project.supabase.co `
+  --dart-define=SUPABASE_ANON_KEY=your-anon-key `
+  --dart-define=FISHERGO_PRIVACY_URL=https://your-domain.example/privacy `
+  --dart-define=FISHERGO_SUPPORT_EMAIL=support@your-domain.example
 ```
 
-When Supabase is ready, replace the placeholders:
+`FISHERGO_PRIVACY_URL` and `FISHERGO_SUPPORT_EMAIL` are optional public
+release values. When omitted, the Profile screen does not show legal/support
+links. The Vercel build reads the same names from its environment; the
+protected Android release workflow reads them from the
+`fishergo-android-release` environment.
 
-```env
-SUPABASE_URL=https://your-project.supabase.co
-SUPABASE_ANON_KEY=your-anon-key
-```
+Provider credentials such as `VECTOR_ENGINE_API_KEY` belong only in the
+Supabase Edge Function environment. Fish recognition calls the authenticated
+`recognize-fish` function and never sends a provider key from the client.
 
-If these remain placeholders, the encyclopedia automatically uses the bundled fish samples and local cache.
+When Supabase values are omitted, the encyclopedia falls back to bundled fish
+samples and the local cache.
 
 ## Supabase setup
 
@@ -101,7 +110,7 @@ If using the Supabase dashboard, run:
 
 ## Remaining environment notes
 
-- Chrome web development works on this machine.
-- Android SDK is not installed on this machine yet, so `flutter build apk` is blocked until Android Studio or command-line SDK tools are installed and configured with `flutter config --android-sdk`.
+- Chrome web development and Android API 35 emulator verification work on this machine.
+- Android smoke tests intentionally reject the connected Android 6/API 23 photo-frame device.
 - iOS builds require macOS + Xcode and are deferred.
 - Codex CLI may need `codex login --device-auth` if it reports `refresh_token_reused` or `token_expired`.

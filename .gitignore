@@ -15,3 +15,8 @@ vectorengine.env
 supabase/.branches/
 supabase/.temp/
 .vercel
+.env*
+/.playwright-cli/
+/node_modules/
+/output/
+/tmp/

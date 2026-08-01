@@ -1,6 +1,10 @@
+import 'dart:async';
+
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/config/supabase_config.dart';
+import '../../../core/telemetry/app_telemetry.dart';
+import 'catch_photo_storage.dart';
 import '../domain/catch_log_entry.dart';
 
 class CatchSyncSummary {
@@ -27,37 +31,81 @@ abstract class CatchRemoteDataSource {
 }
 
 class SupabaseCatchRemoteDataSource implements CatchRemoteDataSource {
-  SupabaseCatchRemoteDataSource(this._client);
+  SupabaseCatchRemoteDataSource(
+    this._client, {
+    CatchPhotoUploader? photoUploader,
+  }) : _photoUploader = photoUploader ?? CatchPhotoStorage(_client);
 
   final SupabaseClient _client;
+  final CatchPhotoUploader _photoUploader;
 
   @override
   Future<void> uploadCatch({
     required String userId,
     required CatchLogEntry entry,
   }) async {
-    await _client.from('catches').insert({
-      'user_id': userId,
-      'species_id': _toNullableUuid(entry.speciesId),
-      'species_name': entry.speciesName,
-      'photo_url': null,
-      'local_photo_name': entry.photoPath,
-      'latitude': entry.latitude,
-      'longitude': entry.longitude,
-      'caught_at': entry.caughtAt.toIso8601String(),
-      'length_cm': entry.lengthCm,
-      'weight_kg': entry.weightKg,
-      'notes': entry.notes,
-      'checkpoint_count': entry.checkpoints.length,
-      'checkpoint_path': entry.checkpoints.map((e) => e.toMap()).toList(),
-      'is_real_catch_proof': entry.isRealCatchProof,
-      'recognition_confidence': entry.recognitionConfidence,
-      'recognized_species_id': entry.recognizedSpeciesId,
-      'verified_at': entry.verifiedAt?.toIso8601String(),
-      'sync_status': 'synced',
-      'score': 1,
-      'is_new_species': false,
-    });
+    final stopwatch = Stopwatch()..start();
+    unawaited(
+      AppTelemetry.instance.record(
+        TelemetryEventName.catchUpload,
+        fields: {'proof': entry.isRealCatchProof, 'outcome': 'started'},
+      ),
+    );
+    try {
+      String? photoStoragePath;
+      if (entry.isRealCatchProof && entry.photoPath != null) {
+        photoStoragePath = await _photoUploader.upload(
+          userId: userId,
+          entry: entry,
+        );
+      }
+
+      await _client.from('catches').insert({
+        'user_id': userId,
+        'species_id': _toNullableUuid(entry.speciesId),
+        'species_name': entry.speciesName,
+        'photo_url': null,
+        'photo_storage_path': photoStoragePath,
+        'local_photo_name': entry.photoPath,
+        'latitude': entry.latitude,
+        'longitude': entry.longitude,
+        'caught_at': entry.caughtAt.toIso8601String(),
+        'length_cm': entry.lengthCm,
+        'weight_kg': entry.weightKg,
+        'notes': entry.notes,
+        'checkpoint_count': entry.checkpoints.length,
+        'checkpoint_path': entry.checkpoints.map((e) => e.toMap()).toList(),
+        'is_real_catch_proof': entry.isRealCatchProof,
+        'recognition_confidence': entry.recognitionConfidence,
+        'recognized_species_id': entry.recognizedSpeciesId,
+        'verified_at': entry.verifiedAt?.toIso8601String(),
+        'sync_status': 'synced',
+        'score': 1,
+        'is_new_species': false,
+      });
+      unawaited(
+        AppTelemetry.instance.record(
+          TelemetryEventName.catchUpload,
+          fields: {
+            'proof': entry.isRealCatchProof,
+            'outcome': 'success',
+            'durationMs': stopwatch.elapsedMilliseconds,
+          },
+        ),
+      );
+    } catch (_) {
+      unawaited(
+        AppTelemetry.instance.record(
+          TelemetryEventName.catchUpload,
+          fields: {
+            'proof': entry.isRealCatchProof,
+            'outcome': 'failure',
+            'durationMs': stopwatch.elapsedMilliseconds,
+          },
+        ),
+      );
+      rethrow;
+    }
   }
 
   String? _toNullableUuid(String value) {
@@ -83,25 +131,34 @@ class CatchSyncService {
   final String? Function() _currentUserId;
 
   Future<CatchSyncSummary> sync(List<CatchLogEntry> entries) async {
+    final stopwatch = Stopwatch()..start();
     if (!_isConfigured()) {
-      return CatchSyncSummary(
+      final summary = CatchSyncSummary(
         total: entries.length,
         synced: 0,
         failed: 0,
         skipped: entries.length,
         failedIds: const <String>{},
       );
+      unawaited(
+        _recordSync(summary, durationMs: stopwatch.elapsedMilliseconds),
+      );
+      return summary;
     }
 
     final userId = _currentUserId();
     if (userId == null) {
-      return CatchSyncSummary(
+      final summary = CatchSyncSummary(
         total: entries.length,
         synced: 0,
         failed: 0,
         skipped: entries.length,
         failedIds: const <String>{},
       );
+      unawaited(
+        _recordSync(summary, durationMs: stopwatch.elapsedMilliseconds),
+      );
+      return summary;
     }
 
     var syncedCount = 0;
@@ -116,12 +173,32 @@ class CatchSyncService {
       }
     }
 
-    return CatchSyncSummary(
+    final summary = CatchSyncSummary(
       total: entries.length,
       synced: syncedCount,
       failed: failedIds.length,
       skipped: 0,
       failedIds: failedIds,
+    );
+    unawaited(
+      _recordSync(summary, durationMs: stopwatch.elapsedMilliseconds),
+    );
+    return summary;
+  }
+
+  Future<void> _recordSync(
+    CatchSyncSummary summary, {
+    required int durationMs,
+  }) {
+    return AppTelemetry.instance.record(
+      TelemetryEventName.catchSync,
+      fields: {
+        'total': summary.total,
+        'synced': summary.synced,
+        'failed': summary.failed,
+        'skipped': summary.skipped,
+        'durationMs': durationMs,
+      },
     );
   }
 }

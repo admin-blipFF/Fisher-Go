@@ -120,8 +120,41 @@ class FishSpecies {
 
 String? normalizeFishAssetUrl(String? value) {
   if (value == null) return null;
-  return value.replaceFirst(
-    'assets/fish/icons/generated/',
-    'assets/fish/mobile/',
+  final normalized = value
+      .replaceFirst(
+        'assets/fish/icons/generated/',
+        'assets/fish/mobile_webp/',
+      )
+      .replaceFirst(
+        'assets/fish/mobile/',
+        'assets/fish/mobile_webp/',
+      );
+  if (normalized.startsWith('assets/fish/mobile_webp/') &&
+      normalized.endsWith('.png')) {
+    return '${normalized.substring(0, normalized.length - 4)}.webp';
+  }
+  return normalized;
+}
+
+/// Returns the compact transparent artwork used by game surfaces.
+///
+/// Catalog sources historically point at generated `*-badge` assets. Those
+/// badges are useful for data compatibility but include a square background;
+/// gameplay surfaces need the matching transparent WebP instead.
+String? fishGameArtworkAssetPath(String? value) {
+  final normalized = normalizeFishAssetUrl(value);
+  if (normalized == null ||
+      !normalized.startsWith('assets/fish/mobile_webp/')) {
+    return normalized;
+  }
+
+  final localBadge = RegExp(r'/([0-9]{3})(?:_|-)').firstMatch(normalized);
+  if (normalized.endsWith('-local-badge.webp') && localBadge != null) {
+    return 'assets/fish/mobile_webp/${localBadge.group(1)}.webp';
+  }
+
+  return normalized.replaceFirst(
+    RegExp(r'[-_]badge\.webp$'),
+    '.webp',
   );
 }

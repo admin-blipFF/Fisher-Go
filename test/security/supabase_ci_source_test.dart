@@ -73,6 +73,26 @@ void main() {
     expect(migration, contains('is_valid_fishing_spot_species_weights'));
   });
 
+  test('catch photo bucket constraints are covered by a local pgTAP shape', () {
+    final shape = File(
+      'supabase/tests/catch_photo_bucket_shape_test.sql',
+    ).readAsStringSync().toLowerCase();
+    final migration = File(
+      'supabase/migrations/0026_catch_photo_bucket_constraints.sql',
+    ).readAsStringSync().toLowerCase();
+
+    expect(shape, contains("id = 'catch-photos'"));
+    expect(shape, contains('file_size_limit = 8388608'));
+    expect(shape, contains('allowed_mime_types'));
+    expect(shape, contains('finish()'));
+    expect(shape, contains('begin;'));
+    expect(shape, contains('rollback;'));
+    expect(shape, contains('public is false'));
+    expect(shape, isNot(contains('to anon')));
+    expect(migration, contains('update storage.buckets'));
+    expect(migration, contains("where id = 'catch-photos'"));
+  });
+
   test('real catch moderation is covered by local pgTAP shape and behavior',
       () {
     final shape = File(

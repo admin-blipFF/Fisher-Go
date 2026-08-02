@@ -859,8 +859,9 @@ private `catch-photos` bucket to an 8 MiB still-image MIME allowlist. The
 Flutter upload boundary rejects video and unknown explicit extensions before
 reading a file, and failed catch-row inserts clean up a newly uploaded object
 without hiding the original retry error. Focused client/source tests are
-green; applying and linting the migration in the linked project remains part
-of the owner-controlled hosted release.
+green, and `supabase/tests/catch_photo_bucket_shape_test.sql` adds the CI
+pgTAP shape proof. Applying and linting the migration in the linked project
+remains part of the owner-controlled hosted release.
 
 ## 15. Extraction Order
 

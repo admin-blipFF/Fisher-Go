@@ -14,7 +14,9 @@ Last updated: 2026-08-03
   `supabase/migrations/0026_catch_photo_bucket_constraints.sql` limits the
   private bucket to 8 MiB still-image MIME types. The source contract passed;
   local Docker was unavailable for a reset/lint on this workstation, so the
-  CI Supabase-quality job remains the SQL execution evidence.
+  The new `supabase/tests/catch_photo_bucket_shape_test.sql` is also wired
+  into the CI pgTAP suite; CI remains the SQL execution evidence because
+  local Docker was unavailable on this workstation.
 
 - The pushed `43e55f1` release produced Vercel deployment
   `dpl_GafVp3giHX6M4Qsz1KbLSkgMnFzB` in `READY` state. Both

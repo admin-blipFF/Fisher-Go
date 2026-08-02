@@ -854,6 +854,14 @@ registration and live push delivery are intentionally still separate work.
 Hosted migrations remain an owner-controlled gate; the latest source is
 available as a Vercel Preview, not a production alias.
 
+Migration `0026_catch_photo_bucket_constraints.sql` additively tightens the
+private `catch-photos` bucket to an 8 MiB still-image MIME allowlist. The
+Flutter upload boundary rejects video and unknown explicit extensions before
+reading a file, and failed catch-row inserts clean up a newly uploaded object
+without hiding the original retry error. Focused client/source tests are
+green; applying and linting the migration in the linked project remains part
+of the owner-controlled hosted release.
+
 ## 15. Extraction Order
 
 Avoid a repository-wide rewrite. Extract one tested boundary at a time:

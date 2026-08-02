@@ -21,9 +21,17 @@ void main() {
 
   test('content type follows supported image extensions', () {
     expect(CatchPhotoStorage.contentTypeFor('fish.JPG'), 'image/jpeg');
+    expect(CatchPhotoStorage.contentTypeFor('fish.jpeg'), 'image/jpeg');
     expect(CatchPhotoStorage.contentTypeFor('fish.png'), 'image/png');
     expect(CatchPhotoStorage.contentTypeFor('fish.webp'), 'image/webp');
-    expect(CatchPhotoStorage.contentTypeFor('fish.unknown'), 'image/jpeg');
+    expect(
+      () => CatchPhotoStorage.contentTypeFor('fish.mp4'),
+      throwsArgumentError,
+    );
+    expect(
+      () => CatchPhotoStorage.contentTypeFor('fish.unknown'),
+      throwsArgumentError,
+    );
   });
 
   test('storage path rejects empty or path-injecting account ids', () {
@@ -89,5 +97,36 @@ void main() {
     expect(capturedObjectPath, object);
     expect(uploadedBytes, bytes);
     expect(capturedContentType, 'image/png');
+  });
+
+  test('rejects video paths before calling the storage uploader', () async {
+    var called = false;
+    final storage = CatchPhotoStorage(
+      SupabaseClient('https://example.supabase.co', 'test-anon-key'),
+      binaryUploader: ({
+        required String bucket,
+        required String objectPath,
+        required Uint8List bytes,
+        required String contentType,
+      }) async {
+        called = true;
+      },
+    );
+
+    await expectLater(
+      storage.upload(
+        userId: 'user-123',
+        entry: CatchLogEntry(
+          id: 'catch-video',
+          speciesId: 'fish-010',
+          speciesName: '白䱛',
+          caughtAt: DateTime(2026, 7, 19),
+          photoPath: 'capture.mp4',
+          isRealCatchProof: true,
+        ),
+      ),
+      throwsArgumentError,
+    );
+    expect(called, isFalse);
   });
 }

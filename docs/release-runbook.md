@@ -39,7 +39,7 @@ release failure; exit `2` is the local fail-closed skip state.
 
 The current linked project has legacy three-digit history rows `001` and `002`.
 The corresponding local files are valid and content-matched, but their
-underscore separator makes them sort after `0010` through `0024`; the CLI's
+underscore separator makes them sort after `0010` through `0026`; the CLI's
 ordered history check therefore fails before it can plan the new migrations.
 Do not try to fix this by renaming files to bare `001.sql` or `002.sql`: those
 names are skipped because migrations must use `<timestamp>_name.sql`.
@@ -54,7 +54,7 @@ the compatibility-only SQL, uses the workflow input
    `supabase migration repair 001 002 --linked --status reverted --yes`, which edits
    migration history only; it does not roll back schema or grants.
 3. The CI checkout temporarily excludes the two compatibility markers, then
-   the dry-run must plan only local `0012` through `0024` before apply and hosted
+   the dry-run must plan only local `0012` through `0026` before apply and hosted
    smoke.
 
 With the input left `false`, the workflow never runs repair and remains

@@ -1,6 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:fishergo/features/catches/data/catch_sync_service.dart';
+import 'package:fishergo/features/catches/data/catch_photo_storage.dart';
 import 'package:fishergo/features/catches/domain/catch_log_entry.dart';
 
 class _FakeRemote implements CatchRemoteDataSource {
@@ -18,6 +20,23 @@ class _FakeRemote implements CatchRemoteDataSource {
       throw Exception('fail');
     }
     uploaded.add(entry);
+  }
+}
+
+class _FakePhotoUploader implements CatchPhotoUploader {
+  final List<String> deleted = [];
+
+  @override
+  Future<String> upload({
+    required String userId,
+    required CatchLogEntry entry,
+  }) async {
+    return '$userId/${entry.id}.jpg';
+  }
+
+  @override
+  Future<void> delete({required String objectPath}) async {
+    deleted.add(objectPath);
   }
 }
 
@@ -99,5 +118,33 @@ void main() {
     expect(remote.uploaded.single.recognitionConfidence, 0.82);
     expect(remote.uploaded.single.recognizedSpeciesId, 'fish-063');
     expect(remote.uploaded.single.verifiedAt, DateTime.utc(2026, 6, 24, 8, 1));
+  });
+
+  test('deletes the uploaded photo when the catch row insert fails', () async {
+    final uploader = _FakePhotoUploader();
+    final remote = SupabaseCatchRemoteDataSource(
+      SupabaseClient('https://example.supabase.co', 'test-anon-key'),
+      photoUploader: uploader,
+      rowInserter: (_) async {
+        throw StateError('row insert failed');
+      },
+    );
+
+    await expectLater(
+      remote.uploadCatch(
+        userId: 'user-1',
+        entry: CatchLogEntry(
+          id: 'proof-cleanup',
+          speciesId: 'fish-063',
+          speciesName: '烏頭',
+          caughtAt: DateTime.utc(2026, 6, 24, 8),
+          photoPath: '/local/photo.jpg',
+          isRealCatchProof: true,
+        ),
+      ),
+      throwsStateError,
+    );
+
+    expect(uploader.deleted, ['user-1/proof-cleanup.jpg']);
   });
 }

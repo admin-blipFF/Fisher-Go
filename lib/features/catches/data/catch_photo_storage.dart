@@ -10,6 +10,12 @@ abstract class CatchPhotoUploader {
     required String userId,
     required CatchLogEntry entry,
   });
+
+  /// Removes an object created by a failed catch-row transaction.
+  ///
+  /// Implementations that do not own remote storage can keep the default
+  /// no-op; the Supabase implementation overrides it.
+  Future<void> delete({required String objectPath}) async {}
 }
 
 typedef CatchPhotoBinaryUploader = Future<void> Function({
@@ -49,6 +55,8 @@ class CatchPhotoStorage implements CatchPhotoUploader {
     return switch (_extensionFor(photoPath)) {
       'png' => 'image/png',
       'webp' => 'image/webp',
+      'heic' => 'image/heic',
+      'heif' => 'image/heif',
       _ => 'image/jpeg',
     };
   }
@@ -65,13 +73,19 @@ class CatchPhotoStorage implements CatchPhotoUploader {
     _assertSafeSegment(segments[0], 'objectPath');
     _assertSafeSegment(segments[1].split('.').first, 'objectPath');
     final extension = _extensionFor(segments[1]);
-    if (!const {'jpg', 'png', 'webp'}.contains(extension)) {
+    if (!const {'jpg', 'png', 'webp', 'heic', 'heif'}.contains(extension)) {
       throw ArgumentError.value(
         objectPath,
         'objectPath',
         'Unsupported catch photo extension',
       );
     }
+  }
+
+  @override
+  Future<void> delete({required String objectPath}) async {
+    assertSafeObjectPath(objectPath);
+    await _client.storage.from(bucket).remove([objectPath]);
   }
 
   @override
@@ -85,16 +99,18 @@ class CatchPhotoStorage implements CatchPhotoUploader {
           entry.photoPath, 'photoPath', 'Photo is required');
     }
 
-    final bytes = await XFile(sourcePath).readAsBytes();
-    if (bytes.isEmpty) {
-      throw StateError('Catch photo is empty');
-    }
-
+    // Reject non-image paths before touching the local file system or remote
+    // storage. This keeps video uploads out of the private catch-photo bucket.
     final objectPath = storagePathFor(
       userId: userId,
       catchId: entry.id,
       photoPath: sourcePath,
     );
+    final bytes = await XFile(sourcePath).readAsBytes();
+    if (bytes.isEmpty) {
+      throw StateError('Catch photo is empty');
+    }
+
     final contentType = contentTypeFor(sourcePath);
     final binaryUploader = _binaryUploader;
     if (binaryUploader != null) {
@@ -123,9 +139,17 @@ class CatchPhotoStorage implements CatchPhotoUploader {
     final dot = fileName.lastIndexOf('.');
     final extension = dot == -1 ? '' : fileName.substring(dot + 1);
     return switch (extension) {
+      '' => 'jpg',
+      'jpg' || 'jpeg' => 'jpg',
       'png' => 'png',
       'webp' => 'webp',
-      _ => 'jpg',
+      'heic' => 'heic',
+      'heif' => 'heif',
+      _ => throw ArgumentError.value(
+          photoPath,
+          'photoPath',
+          'Only still-image files are supported',
+        ),
     };
   }
 

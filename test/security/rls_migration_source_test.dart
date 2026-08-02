@@ -107,6 +107,22 @@ void main() {
     expect(sql, contains('catches_photo_storage_path_idx'));
   });
 
+  test('catch photo storage is limited to small still-image MIME types', () {
+    final sql = File(
+      '${Directory.current.path}${Platform.pathSeparator}'
+      'supabase${Platform.pathSeparator}migrations${Platform.pathSeparator}'
+      '0026_catch_photo_bucket_constraints.sql',
+    ).readAsStringSync().toLowerCase();
+
+    expect(sql, contains('file_size_limit = 8388608'));
+    expect(sql, contains("image/jpeg"));
+    expect(sql, contains("image/png"));
+    expect(sql, contains("image/webp"));
+    expect(sql, contains("image/heic"));
+    expect(sql, contains("image/heif"));
+    expect(sql, isNot(contains('video/')));
+  });
+
   test('linked test-runner grants are safe when the role is absent locally',
       () {
     final sql = File(

@@ -30,14 +30,21 @@ abstract class CatchRemoteDataSource {
   });
 }
 
+typedef CatchRowInserter = Future<void> Function(
+  Map<String, dynamic> row,
+);
+
 class SupabaseCatchRemoteDataSource implements CatchRemoteDataSource {
   SupabaseCatchRemoteDataSource(
     this._client, {
     CatchPhotoUploader? photoUploader,
-  }) : _photoUploader = photoUploader ?? CatchPhotoStorage(_client);
+    CatchRowInserter? rowInserter,
+  })  : _photoUploader = photoUploader ?? CatchPhotoStorage(_client),
+        _rowInserter = rowInserter;
 
   final SupabaseClient _client;
   final CatchPhotoUploader _photoUploader;
+  final CatchRowInserter? _rowInserter;
 
   @override
   Future<void> uploadCatch({
@@ -51,8 +58,8 @@ class SupabaseCatchRemoteDataSource implements CatchRemoteDataSource {
         fields: {'proof': entry.isRealCatchProof, 'outcome': 'started'},
       ),
     );
+    String? photoStoragePath;
     try {
-      String? photoStoragePath;
       if (entry.isRealCatchProof && entry.photoPath != null) {
         photoStoragePath = await _photoUploader.upload(
           userId: userId,
@@ -60,7 +67,7 @@ class SupabaseCatchRemoteDataSource implements CatchRemoteDataSource {
         );
       }
 
-      await _client.from('catches').insert({
+      final row = <String, dynamic>{
         'user_id': userId,
         'species_id': _toNullableUuid(entry.speciesId),
         'species_name': entry.speciesName,
@@ -82,7 +89,13 @@ class SupabaseCatchRemoteDataSource implements CatchRemoteDataSource {
         'sync_status': 'synced',
         'score': 1,
         'is_new_species': false,
-      });
+      };
+      final rowInserter = _rowInserter;
+      if (rowInserter != null) {
+        await rowInserter(row);
+      } else {
+        await _client.from('catches').insert(row);
+      }
       unawaited(
         AppTelemetry.instance.record(
           TelemetryEventName.catchUpload,
@@ -94,6 +107,14 @@ class SupabaseCatchRemoteDataSource implements CatchRemoteDataSource {
         ),
       );
     } catch (_) {
+      if (photoStoragePath != null) {
+        try {
+          await _photoUploader.delete(objectPath: photoStoragePath);
+        } catch (_) {
+          // Preserve the row-insert error; the next operational cleanup can
+          // remove an orphaned object without losing the catch retry.
+        }
+      }
       unawaited(
         AppTelemetry.instance.record(
           TelemetryEventName.catchUpload,

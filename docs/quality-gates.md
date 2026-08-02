@@ -1,8 +1,20 @@
 # FisherGO Quality Gates
 
-Last updated: 2026-08-01
+Last updated: 2026-08-03
 
-## Current verification snapshot (2026-08-01)
+## Current verification snapshot (2026-08-03; production evidence through 2026-08-01)
+
+- On 2026-08-03, the real-catch photo boundary was tightened end to end.
+  `CatchPhotoStorage` now rejects video and unknown explicit extensions before
+  reading or uploading a file, while retaining JPEG/PNG/WebP/HEIC/HEIF photo
+  support. If the private object upload succeeds but the `catches` row insert
+  fails, the remote data source deletes the object and preserves the original
+  row error for the local retry queue. Focused storage/sync coverage passed 10
+  tests. Additive migration
+  `supabase/migrations/0026_catch_photo_bucket_constraints.sql` limits the
+  private bucket to 8 MiB still-image MIME types. The source contract passed;
+  local Docker was unavailable for a reset/lint on this workstation, so the
+  CI Supabase-quality job remains the SQL execution evidence.
 
 - The production deployment captured by this quality snapshot is the clean
   `a11b22a` commit with
@@ -131,7 +143,7 @@ Last updated: 2026-08-01
   was reverted after the run. Evidence:
   `tmp/web-map-benchmark-native-spots-default-20260801.json`.
 
-- The local Workstream 10 bundle now reaches migration `0025`. Retention uses
+- The local Workstream 10 bundle now reaches migration `0026`. Retention uses
   the admin-only aggregate RPC from `0021_admin_retention_report.sql`, while
   GameHome reads active event boosts through the parent-event-validated
   projection in `0022_server_event_configuration.sql`. The local event
@@ -2270,7 +2282,7 @@ Open items:
   0015) through the protected content-release workflow.
 - A read-only `npx supabase migration list --linked` check on 2026-08-01
   confirmed the current release target still has remote migrations through
-  `0011`, while local migrations `0012` through `0024` remain unapplied. No
+  `0011`, while local migrations `0012` through `0026` remain unapplied. No
   production schema was changed by this check; the protected workflow remains
   the only intended apply path.
 - A read-only management-API schema probe on 2026-08-01 also returned null for
@@ -2284,7 +2296,7 @@ Open items:
   `LegacyDbPushMissingLocalError`: remote legacy versions `001` and `002` are
   and the exact local counterparts are sorted after `0010` through `0019`, so
   the CLI's ordered comparison reports them as missing before it can plan
-  `0012` through `0024`. A read-only management query and `migration fetch`
+  `0012` through `0026`. A read-only management query and `migration fetch`
   confirmed that both remote names/statements match the local compatibility
   files; no production schema was changed.
 - A disposable follow-up probe confirmed that renaming the local legacy files to

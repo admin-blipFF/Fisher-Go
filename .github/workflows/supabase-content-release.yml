@@ -57,6 +57,7 @@ jobs:
           test/real_catch_leaderboard_source_test.dart
           test/server_gameplay_session_source_test.dart
           test/location_integrity_source_test.dart
+          test/supabase_legacy_rls_smoke_source_test.dart
           test/supabase_content_release_workflow_source_test.dart
 
       - name: Link and apply migrations
@@ -105,8 +106,31 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          supabase test db --linked
+          supabase test db --linked supabase/tests/remote_player_rls_shape_test.sql \
+            supabase/tests/remote_player_rls_behavior_test.sql
           supabase db lint --linked --schema public --fail-on error
+
+      - name: Prepare legacy Auth-backed RLS fixture
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          FISHERGO_RLS_USER_A_EMAIL: ${{ secrets.FISHERGO_RLS_USER_A_EMAIL }}
+          FISHERGO_RLS_USER_A_PASSWORD: ${{ secrets.FISHERGO_RLS_USER_A_PASSWORD }}
+          FISHERGO_RLS_USER_B_EMAIL: ${{ secrets.FISHERGO_RLS_USER_B_EMAIL }}
+          FISHERGO_RLS_USER_B_PASSWORD: ${{ secrets.FISHERGO_RLS_USER_B_PASSWORD }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          dart run tool/prepare_supabase_legacy_rls_test.dart \
+            --output=tmp/legacy_auth_rls_test.sql
+
+      - name: Verify legacy Auth-backed RLS behavior
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          supabase test db --linked tmp/legacy_auth_rls_test.sql
 
   hosted-gameplay-smoke:
     needs: apply-and-verify

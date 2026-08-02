@@ -1445,7 +1445,7 @@ Open owner actions:
 
 ## Gate 1: Database Isolation
 
-Status: **PARTIAL - linked player-table behavior passes; legacy auth fixture remains local/CI-only**
+Status: **PARTIAL - linked behavior and protected legacy-auth proof are ready; hosted legacy run remains owner-controlled**
 
 The local Supabase stack applied the current migration bundle from a clean
 database. The pgTAP suite now runs 66 assertions across the three `player_*`
@@ -1493,13 +1493,20 @@ Evidence from this run:
   engine: both fixtures completed successfully with 39 tests, and the linked
   public-schema lint again returned `No schema errors found`.
 - The legacy `public.profiles` and `public.catches` portions of the full fixture
-  remain intentionally local/CI-only because their foreign keys require real
-  managed `auth.users` rows. The linked player-table behavior plus shape suite
-  is now the authoritative non-destructive production check for the active app
-  sync tables.
-
-The legacy auth-backed fixture must still run in a release CI environment with
-real test users before Gate 1 is treated as fully released.
+  cannot insert synthetic `auth.users` rows in the hosted pgTAP runner because
+  the managed `auth` schema is protected. The new protected workflow boundary
+  resolves two pre-provisioned disposable Auth users through the password-token
+  endpoint, renders their UUIDs into a transaction-only fixture, and runs the
+  same legacy cross-user behavior checks before rolling back every row. The
+  local rendered proof passed all `18` assertions on 2026-08-03; source coverage
+  is in `test/supabase_legacy_rls_smoke_source_test.dart` and the preparer is
+  `tool/prepare_supabase_legacy_rls_test.dart`.
+- `.github/workflows/supabase-content-release.yml` now runs that proof after
+  linked migration/lint checks. It requires only protected
+  `FISHERGO_RLS_USER_A/B_EMAIL/PASSWORD` values and never logs tokens or user
+  identifiers. The hosted execution remains owner-controlled until those two
+  disposable accounts are configured and the content-release workflow is
+  dispatched.
 
 ## Gate 2: MapLibre Engine Decision
 

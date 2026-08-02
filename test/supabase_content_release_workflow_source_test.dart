@@ -23,6 +23,10 @@ void main() {
         contains('test/supabase_analytics_ingestion_source_test.dart'));
     expect(workflow, contains('test/security/supabase_ci_source_test.dart'));
     expect(workflow, contains('test/server_gameplay_session_source_test.dart'));
+    expect(
+      workflow,
+      contains('test/supabase_legacy_rls_smoke_source_test.dart'),
+    );
     expect(workflow, contains('supabase link --project-ref'));
     expect(
       workflow,
@@ -57,6 +61,11 @@ void main() {
     );
     expect(workflow, contains('supabase db push --linked --include-all'));
     expect(workflow, contains('supabase test db --linked'));
+    expect(
+      workflow,
+      contains(r'''supabase test db --linked supabase/tests/remote_player_rls_shape_test.sql \
+            supabase/tests/remote_player_rls_behavior_test.sql'''),
+    );
     expect(
       workflow,
       contains('supabase db lint --linked --schema public --fail-on error'),

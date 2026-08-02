@@ -12,6 +12,15 @@ Configure the protected GitHub environment `fishergo-content-release` with:
 - `SUPABASE_DB_PASSWORD`
 - `SUPABASE_LEGACY_HISTORY_REPAIR_CONFIRMATION` (only for the one-time legacy
   reconciliation; set it to `FISHERGO_REPAIR_001_002`)
+- `SUPABASE_URL` and `SUPABASE_ANON_KEY` for the protected Auth-backed RLS
+  proof
+- `FISHERGO_RLS_USER_A_EMAIL` / `FISHERGO_RLS_USER_A_PASSWORD`
+- `FISHERGO_RLS_USER_B_EMAIL` / `FISHERGO_RLS_USER_B_PASSWORD`
+
+The two RLS users must be dedicated disposable password accounts. The release
+workflow signs them in only to resolve their Auth UUIDs, renders a temporary
+pgTAP fixture, and runs it inside a transaction that rolls back profiles and
+catches. The workflow never prints credentials, access tokens, or UUIDs.
 
 Run **Actions -> Supabase content release -> Run workflow** on the intended
 branch. The `apply-and-verify` job will link the project, apply all versioned

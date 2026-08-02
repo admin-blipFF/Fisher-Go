@@ -207,6 +207,16 @@ Do not rewrite applied migration history.
 - Account deletion cascades or anonymizes owned data according to policy.
 - Two-user RLS tests run in CI.
 
+Current progress: the local and linked-safe player RLS suites pass. The legacy
+`profiles`/`catches` proof now has a protected hosted path: because the managed
+Supabase `auth` schema rejects synthetic user inserts in the linked pgTAP
+runner, `tool/prepare_supabase_legacy_rls_test.dart` resolves two dedicated
+disposable password users through Auth REST and renders their UUIDs into a
+transaction-only fixture. The local rendered fixture passed 18 pgTAP
+assertions; `.github/workflows/supabase-content-release.yml` runs it after
+linked migrations and lint when the owner supplies the protected test-user
+secrets. Gate 1 remains partial until that hosted run produces evidence.
+
 ## 6. Workstream 2: Quality Guardrails
 
 **Create**

@@ -2,7 +2,7 @@
 
 Last updated: 2026-08-03
 
-## Current verification snapshot (2026-08-03; production evidence through 2026-08-01)
+## Current verification snapshot (2026-08-03; production evidence through 2026-08-03)
 
 - On 2026-08-03, the real-catch photo boundary was tightened end to end.
   `CatchPhotoStorage` now rejects video and unknown explicit extensions before
@@ -15,6 +15,12 @@ Last updated: 2026-08-03
   private bucket to 8 MiB still-image MIME types. The source contract passed;
   local Docker was unavailable for a reset/lint on this workstation, so the
   CI Supabase-quality job remains the SQL execution evidence.
+
+- The pushed `43e55f1` release produced Vercel deployment
+  `dpl_GafVp3giHX6M4Qsz1KbLSkgMnFzB` in `READY` state. Both
+  `fisher-go.app` and `www.fisher-go.app` point to it; the deployed verifier
+  passed root HTTP 200, `/assets/.env` HTTP 404, release ID
+  `0.1.1+2-43e55f17479c`, and the effective cache headers on both aliases.
 
 - The production deployment captured by this quality snapshot is the clean
   `a11b22a` commit with

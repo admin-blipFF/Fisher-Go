@@ -373,6 +373,12 @@ the local database suite. The protected content-release workflow now includes
 a downstream anon-key habitat verifier before hosted gameplay smoke; linked
 production content deployment remains an owner-controlled action and has not
 run in this workspace.
+The non-destructive hosted audit now confirms the target project is reachable
+and has Google plus anonymous providers enabled, but the public habitat
+verifier fails because hosted spot `P017` lacks the expected
+`tung-chung-runway` tag. This is recorded as content drift; the migration was
+not applied locally because the protected release still requires the owner-
+controlled database password and legacy-history decision.
 
 An API 35 current-source vertical-slice rerun passed on `emulator-5554` for
 startup/auth, map rotation, GPS-centered verified-spot selection, the

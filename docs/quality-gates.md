@@ -20,6 +20,16 @@ Last updated: 2026-08-03
   is configured, so hosted migration and live delivery remain owner-controlled.
   The full local proof passed `482` Flutter tests and `285` pgTAP assertions.
 
+- A non-destructive hosted Supabase audit on 2026-08-03 passed the project
+  identity check and confirmed `google_enabled=true` plus
+  `anonymous_enabled=true`. The public habitat verifier then failed on the
+  configured project because fishing spot `P017` is missing the expected
+  `tung-chung-runway` habitat tag. This confirms hosted content drift rather
+  than a client fallback issue; no migration was applied from the workspace.
+  The protected content-release workflow still requires the owner-controlled
+  database password and legacy-history decision before it can reconcile and
+  apply the pending content migrations.
+
 - A fresh current-source Android vertical-slice rerun passed on API 35
   `emulator-5554`: startup/auth, map rotation, GPS-centered verified-spot
   selection, bite-first fishing minigame, Daily Task reward claim, offline

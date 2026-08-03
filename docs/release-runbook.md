@@ -131,6 +131,8 @@ storage. Use disposable test identities only.
 The workflow now performs a complete protected-input preflight before any
 analytics, gameplay, or account-upgrade request: the URL, anon key, project
 ref, and disposable upgrade email/password must all be present.
+It also uses a non-cancelling concurrency group, so a second live-smoke run
+waits instead of sharing the same disposable identity concurrently.
 
 Run **Supabase account deletion release** with its protected environment after
 the deletion policy has been reviewed. Confirm the disposable account and all
@@ -143,6 +145,8 @@ reject values other than `true`/`false`.
 Before deploying the Edge Function, it also verifies the service-role key and
 disposable deletion email/password, so missing smoke credentials cannot leave
 an unverified function deployment behind.
+Account deletion runs use a separate non-cancelling concurrency group so two
+deletion smokes cannot race over the same disposable account or photo objects.
 
 The live Auth upgrade smoke also deletes its disposable account through the
 authenticated `/auth/v1/user` endpoint after the identity-preservation check;

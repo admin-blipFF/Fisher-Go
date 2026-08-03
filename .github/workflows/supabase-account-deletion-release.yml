@@ -6,6 +6,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: fishergo-account-deletion-release
+  cancel-in-progress: false
+
 jobs:
   deploy-and-smoke:
     runs-on: ubuntu-latest

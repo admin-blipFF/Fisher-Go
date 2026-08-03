@@ -12,6 +12,9 @@ void main() {
     expect(workflow, contains('workflow_dispatch:'));
     expect(workflow, contains('flutter pub get'));
     expect(workflow, contains('flutter test --no-pub'));
+    expect(workflow, contains('concurrency:'));
+    expect(workflow, contains('group: fishergo-account-deletion-release'));
+    expect(workflow, contains('cancel-in-progress: false'));
     expect(
         workflow, contains('environment: fishergo-account-deletion-release'));
     final preflightStep = workflow.indexOf(

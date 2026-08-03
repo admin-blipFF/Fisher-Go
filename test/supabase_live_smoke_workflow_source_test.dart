@@ -11,6 +11,9 @@ void main() {
     expect(source, contains('workflow_dispatch:'));
     expect(source, contains('permissions:'));
     expect(source, contains('contents: read'));
+    expect(source, contains('concurrency:'));
+    expect(source, contains('group: fishergo-live-smoke'));
+    expect(source, contains('cancel-in-progress: false'));
     expect(source, contains('flutter pub get'));
     expect(source, contains('tool/verify_supabase_auth_upgrade.dart'));
     expect(source, contains('tool/verify_supabase_catch_photo_storage.dart'));

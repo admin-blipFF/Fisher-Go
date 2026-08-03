@@ -28,4 +28,11 @@ void main() {
     expect(source, contains('class _GameHudButton'));
     expect(source, contains('excludeSemantics: true'));
   });
+
+  test('custom catch-log semantics nodes keep their activation actions', () {
+    expect(source, contains('onTap: onTap'));
+    expect(source, contains('onTap: onToggleAuto'));
+    expect(source, contains('onTap: _resolved ? _finish : _pullRod'));
+    expect(source, contains('void onTap() {'));
+  });
 }

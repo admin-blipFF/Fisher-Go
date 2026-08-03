@@ -31,9 +31,12 @@ Last updated: 2026-08-03
 - CatchLog's real-photo form, fishing-spot map marker, radar toggle, and custom
   navigation HUD controls now expose explicit semantics. The focused source
   contract and CatchLog data/photo tests passed, the full Flutter suite passed
-  `490` tests, and the API 35 limited-photo smoke passed on `emulator-5554`;
-  API 23 remained excluded. Profile/equipment and other secondary-screen
-  semantics remain to be audited.
+  `507` tests, and the API 35 limited-photo smoke passed on `emulator-5554`;
+  API 23 remained excluded. The fishing-spot marker, radar toggle, minigame
+  pull-rod action, and custom HUD buttons now promote their real callbacks to
+  the semantics nodes, so assistive activation can invoke the same behavior as
+  a pointer tap. Profile/equipment and other secondary-screen semantics remain
+  to be audited.
 
 - Profile's custom equipment-slot markers and selected-equipment panel now
   expose explicit button semantics containing the slot, equipped item, current

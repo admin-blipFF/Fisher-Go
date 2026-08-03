@@ -566,29 +566,32 @@ class _CatchLogScreenState extends State<CatchLogScreen> {
     final renderedSpots = _renderSpotsByDetailTier(_mapDetailTier);
 
     final markers = <Marker>[
-      ...renderedSpots.map(
-        (rendered) => Marker(
+      ...renderedSpots.map((rendered) {
+        void onTap() {
+          if (rendered.spots.length == 1) {
+            _showSpotBottomSheet(rendered.spots.first);
+            return;
+          }
+          _showClusterBottomSheet(rendered);
+        }
+
+        return Marker(
           point: LatLng(rendered.latitude, rendered.longitude),
           width: 44,
           height: 44,
           child: Semantics(
             button: true,
             label: catchLogSpotSemanticsLabel(rendered.spots.length),
+            onTap: onTap,
             child: GestureDetector(
-              onTap: () {
-                if (rendered.spots.length == 1) {
-                  _showSpotBottomSheet(rendered.spots.first);
-                  return;
-                }
-                _showClusterBottomSheet(rendered);
-              },
+              onTap: onTap,
               child: _FishingSpotMapMarker(
                 count: rendered.spots.length,
               ),
             ),
           ),
-        ),
-      ),
+        );
+      }),
       if (widget.gameHome || hasCurrent)
         Marker(
           point: LatLng(
@@ -2162,6 +2165,7 @@ class _FishingMinigameDialogState extends State<_FishingMinigameDialog>
           excludeSemantics: true,
           button: true,
           label: actionLabel,
+          onTap: _resolved ? _finish : _pullRod,
           child: FilledButton.icon(
             onPressed: _resolved ? _finish : _pullRod,
             icon: Icon(_resolved
@@ -2511,6 +2515,7 @@ class _GameTopStatusBar extends StatelessWidget {
               button: true,
               excludeSemantics: true,
               label: catchLogRadarSemanticsLabel(autoEnabled),
+              onTap: onToggleAuto,
               child: GestureDetector(
                 onTap: onToggleAuto,
                 child: Container(
@@ -2636,6 +2641,7 @@ class _GameSideHudButton extends StatelessWidget {
       button: true,
       excludeSemantics: true,
       label: label,
+      onTap: onTap,
       child: GestureDetector(
         onTap: onTap,
         child: DecoratedBox(
@@ -2693,6 +2699,7 @@ class _GameHudButton extends StatelessWidget {
       button: true,
       excludeSemantics: true,
       label: label,
+      onTap: onTap,
       child: GestureDetector(
         onTap: onTap,
         child: Column(

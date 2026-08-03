@@ -112,10 +112,13 @@ accessibility audit.
 
 CatchLog control mitigation added on 2026-08-03: the real-photo form, fishing
 spot markers, radar toggle, and custom navigation HUD controls now expose
-explicit semantics. The source/data/photo contracts and full `490`-test Flutter
+explicit semantics. The source/data/photo contracts and full `507`-test Flutter
 suite passed, and the API 35 limited-photo smoke passed on `emulator-5554` while
-the API 23 photo-frame remained excluded. Profile/equipment and remaining
-secondary-screen semantics are still open.
+the API 23 photo-frame remained excluded. The fishing-spot marker, radar toggle,
+minigame pull-rod action, and custom HUD buttons now promote their callbacks to
+the semantics nodes, preserving assistive activation. The current full suite
+passes `507` tests; profile/equipment and remaining secondary-screen semantics
+are still open.
 
 Profile equipment semantics mitigation added on 2026-08-03: the custom slot
 markers and selected-equipment panel now expose the slot, equipped item,

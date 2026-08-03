@@ -542,8 +542,6 @@ const fisherGoGame3dMapStyle = r'''
           "primary", "#f1bf8c",
           "secondary", "#f7ddb0",
           "tertiary", "#f7ddb0",
-          "minor", "#fff9e8",
-          "service", "#fff9e8",
           "#fff9e8"
         ],
         "line-opacity": 0.96,
@@ -560,8 +558,6 @@ const fisherGoGame3dMapStyle = r'''
             "primary", 1,
             "secondary", 0.7,
             "tertiary", 0.7,
-            "minor", 0,
-            "service", 0,
             0
           ],
           13.5,
@@ -573,8 +569,6 @@ const fisherGoGame3dMapStyle = r'''
             "primary", 4.5,
             "secondary", 3.6,
             "tertiary", 3.6,
-            "minor", 1,
-            "service", 1,
             0
           ],
           16,
@@ -586,8 +580,6 @@ const fisherGoGame3dMapStyle = r'''
             "primary", 7,
             "secondary", 5.5,
             "tertiary", 5.5,
-            "minor", 3.6,
-            "service", 3.6,
             0
           ],
           20,
@@ -599,8 +591,6 @@ const fisherGoGame3dMapStyle = r'''
             "primary", 19,
             "secondary", 15,
             "tertiary", 15,
-            "minor", 12,
-            "service", 12,
             0
           ]
         ]

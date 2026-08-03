@@ -2368,6 +2368,12 @@ Open items:
 1. Reduce slow UI-thread and MapLibre draw-command/composition frames without
    weakening geography; the Android game 3D style is visually accepted but
    still measures p95 near 30 ms rather than the 20 ms target.
+   The 2026-08-03 `road-main` expression cleanup removed dead `minor/service`
+   branches that were unreachable under its major-road filter. Two matched
+   API 35 host-GPU pairs kept p95 at `32/38 ms` control versus `32/32 ms`
+   candidate, while slow draw commands moved `105/133` to `98/112` and slow
+   bitmap uploads moved `15/16` to `7/5`; both were ANR-free. Keep the cleanup
+   in the production style, but do not treat it as closing the 20 ms gate.
    The 2026-08-03 Web tile-cache depth 1/2 experiments preserved OpenFreeMap
    tile responses and both visual goldens, but the fresh production-like
    matched run regressed from `39.14 FPS` / `66.7 ms` p95 / `20.51%` jank at

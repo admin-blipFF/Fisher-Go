@@ -165,6 +165,14 @@ void main() {
           .length,
       1,
     );
+    expect((roadPaint['line-color'] as List<dynamic>),
+        isNot(contains('minor')));
+    expect((roadPaint['line-color'] as List<dynamic>),
+        isNot(contains('service')));
+    expect((roadPaint['line-width'] as List<dynamic>),
+        isNot(contains('minor')));
+    expect((roadPaint['line-width'] as List<dynamic>),
+        isNot(contains('service')));
   });
 
   test('fixed-height 3D diagnostic keeps geography but removes height lookup',

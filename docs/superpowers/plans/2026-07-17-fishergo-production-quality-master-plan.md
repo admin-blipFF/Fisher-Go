@@ -478,6 +478,18 @@ renderer remains unchanged and the 20 ms motion gate stays open. Evidence is
 `tmp/android-map-benchmark-landcover-control-20260803.json` and
 `tmp/android-map-benchmark-landcover-candidate-20260803.json`.
 
+The follow-up `road-main` expression cleanup was retained after two matched
+API 35 host-GPU pairs on `emulator-5554`. The layer already filters to
+motorway, trunk, primary, secondary, and tertiary roads, so removing its
+unreachable `minor/service` paint branches preserved road hierarchy and map
+readiness while reducing slow draw commands from `105/133` to `98/112` and
+slow bitmap uploads from `15/16` to `7/5`. The candidate remained ANR-free and
+did not close the 20 ms motion gate; the evidence is
+`tmp/android-map-benchmark-road-expression-control-api35.json`,
+`tmp/android-map-benchmark-road-expression-candidate-api35.json`,
+`tmp/android-map-benchmark-road-expression-control-api35-repeat.json`, and
+`tmp/android-map-benchmark-road-expression-candidate-api35-repeat.json`.
+
 The current-source textureless direct-Hybrid-Composition proof was also
 rechecked on API 35. The HUD and real OSM map remained visible, but gfx p95 was
 `53 ms` with `96.63%` jank and Flutter total p95 `105 ms`, so the product keeps

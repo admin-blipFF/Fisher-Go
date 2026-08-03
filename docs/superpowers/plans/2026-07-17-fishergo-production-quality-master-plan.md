@@ -1157,6 +1157,11 @@ from the guest namespace during guest-to-account upgrade. Focused cleanup and
 guest-migration tests pass; hosted Edge Function deployment and deletion smoke
 remain owner-controlled.
 
+Deletion coverage is now regression-checked from the migration sources: every
+public table definition containing `user_id` (plus the legacy `profiles` row)
+must appear in the protected deletion function, while analytics actor-key
+cleanup remains explicitly asserted.
+
 ## 14. Workstream 10: Live Game Systems
 
 Begin only after the vertical slice is stable:

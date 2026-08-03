@@ -1273,6 +1273,10 @@ Last updated: 2026-08-03
   identity marker. Announcement claims now use an account-scoped Hive box and
   migrate from the guest namespace during account upgrade; focused cleanup and
   migration tests pass without deleting another account's device data.
+  `test/delete_account_coverage_source_test.dart` now derives user-owned table
+  names from every migration and fails if the deletion Edge Function omits a
+  newly added `user_id` table; analytics actor-key cleanup remains an explicit
+  separate assertion.
   A local unsigned x64 proof built an AAB (`74.2 MiB`) and APK (`93.7 MiB`),
   each with a `3.99 MiB` `app.android-x64.symbols` file. These are artifact
   contract proofs only; protected signing is still required for Play upload.

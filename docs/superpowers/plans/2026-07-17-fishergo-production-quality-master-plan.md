@@ -1149,6 +1149,14 @@ published after the protected Edge Function deployment and disposable-account
   notification tokens, and hashed analytics rows, before deleting the Auth user.
   The hosted deployment and smoke remain owner-controlled.
 
+The local deletion boundary now also removes account-scoped announcement
+state, the legacy user-keyed fish collection cache entry, and the legacy
+tutorial identity marker without touching another account's device data.
+Announcement claim state is stored in an account-scoped Hive box and is moved
+from the guest namespace during guest-to-account upgrade. Focused cleanup and
+guest-migration tests pass; hosted Edge Function deployment and deletion smoke
+remain owner-controlled.
+
 ## 14. Workstream 10: Live Game Systems
 
 Begin only after the vertical slice is stable:

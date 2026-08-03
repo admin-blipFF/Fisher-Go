@@ -6,7 +6,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 /// For cloud-first data (coins, fish collection, profile):
 /// → use PlayerProfileSyncService / FishCollectionSyncService
 /// For local/non-critical state (announcements, tutorial):
-/// → use Hive via this service with Supabase user_id prefix.
+/// → use Hive via this service with an account-scoped namespace.
 class LocalAccountService {
   static const _boxName = 'local_accounts';
   static const _keyCurrent = 'current_account_id';
@@ -18,6 +18,7 @@ class LocalAccountService {
     'boat_vendor',
     'catch_queue',
     'notification_preferences',
+    'announcement_box',
   ];
 
   /// In-memory cache of the current account ID.
@@ -88,6 +89,21 @@ class LocalAccountService {
       await Hive.deleteBoxFromDisk(boxName);
     }
 
+    // These legacy caches predate account-scoped Hive boxes. Remove only the
+    // deleted user's entry while preserving other accounts on this device.
+    try {
+      final fishCache = Hive.isBoxOpen('fish_collection_cloud')
+          ? Hive.box<dynamic>('fish_collection_cloud')
+          : await Hive.openBox<dynamic>('fish_collection_cloud');
+      await fishCache.delete(id);
+    } catch (_) {}
+    try {
+      final tutorial = Hive.isBoxOpen('tutorial_box')
+          ? Hive.box<dynamic>('tutorial_box')
+          : await Hive.openBox<dynamic>('tutorial_box');
+      await tutorial.delete('tutorial_completed:$id');
+    } catch (_) {}
+
     _currentAccountId = guestAccountId;
     try {
       final accountBox = await _box;
@@ -139,6 +155,10 @@ class LocalAccountService {
     await _mergeBox(
       boxNameFor('boat_vendor', guestAccountId),
       boxNameFor('boat_vendor', targetId),
+    );
+    await _mergeBox(
+      boxNameFor('announcement_box', guestAccountId),
+      boxNameFor('announcement_box', targetId),
     );
     await _mergeBox(
       boxNameFor('catch_queue', guestAccountId),

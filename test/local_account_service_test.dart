@@ -26,6 +26,9 @@ void main() {
       'user-123.fish_collection',
       'user-123.catch_queue',
       'user-123.boat_vendor',
+      'user-123.announcement_box',
+      'fish_collection_cloud',
+      'tutorial_box',
       'user-first.profile_customization',
       'user-first.fish_collection',
       'user-first.catch_queue',
@@ -153,6 +156,28 @@ void main() {
     );
     expect(
       File('${tempDir.path}/user-123.catch_queue.hive').existsSync(),
+      isFalse,
+    );
+  });
+
+  test('clearAccountDataFor removes account-keyed caches and legacy markers',
+      () async {
+    final cloudCache = await Hive.openBox<dynamic>('fish_collection_cloud');
+    await cloudCache.put('user-123', ['fish-010']);
+    await cloudCache.put('user-456', ['fish-011']);
+    final tutorial = await Hive.openBox<dynamic>('tutorial_box');
+    await tutorial.put('tutorial_completed:user-123', true);
+    final announcement =
+        await Hive.openBox<dynamic>('user-123.announcement_box');
+    await announcement.put('announcement_claimed_date', '2026-08-03');
+
+    await LocalAccountService.clearAccountDataFor('user-123');
+
+    expect(cloudCache.get('user-123'), isNull);
+    expect(cloudCache.get('user-456'), ['fish-011']);
+    expect(tutorial.get('tutorial_completed:user-123'), isNull);
+    expect(
+      File('${tempDir.path}/user-123.announcement_box.hive').existsSync(),
       isFalse,
     );
   });

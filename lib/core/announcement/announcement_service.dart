@@ -1,20 +1,34 @@
 import 'package:hive/hive.dart';
 
+import '../auth/local_account_service.dart';
+
 /// Tracks whether today's announcement has been seen and coins claimed.
 class AnnouncementService {
-  static const String _boxName = 'announcement_box';
+  static const String _boxBaseName = 'announcement_box';
   static const String _keyLastSeen =
       'last_announcement_seen_date'; // YYYY-MM-DD
   static const String _keyClaimedDate =
       'announcement_claimed_date'; // YYYY-MM-DD
 
-  static Box? _openedBox;
+  static final Map<String, Box<dynamic>> _openedBoxes = {};
 
   static Future<Box> get _box async {
-    if (_openedBox != null && _openedBox!.isOpen) return _openedBox!;
-    _openedBox = await Hive.openBox(_boxName);
-    return _openedBox!;
+    final accountId = LocalAccountService.currentAccountId ??
+        LocalAccountService.guestAccountId;
+    final boxName = boxNameForAccount(accountId);
+    final opened = _openedBoxes[boxName];
+    if (opened != null && opened.isOpen) return opened;
+    final box = await Hive.openBox<dynamic>(boxName);
+    _openedBoxes[boxName] = box;
+    return box;
   }
+
+  /// Returns the Hive box used for an account's announcement state.
+  ///
+  /// Keeping this deterministic lets account deletion remove only the
+  /// deleted player's claim state when multiple accounts share a device.
+  static String boxNameForAccount(String accountId) =>
+      LocalAccountService.boxNameFor(_boxBaseName, accountId);
 
   /// Returns true if user has NOT yet seen today's announcement.
   static Future<bool> hasUnseen() async {

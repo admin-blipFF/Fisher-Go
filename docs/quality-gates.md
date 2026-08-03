@@ -1268,6 +1268,11 @@ Last updated: 2026-08-03
   propagate an explicit `true`/`false` value and reject invalid values. The
   flag should only be enabled after the hosted function deployment and
   disposable-account smoke pass.
+  The local deletion boundary also removes account-scoped announcement state,
+  the legacy user-keyed fish collection cache entry, and the legacy tutorial
+  identity marker. Announcement claims now use an account-scoped Hive box and
+  migrate from the guest namespace during account upgrade; focused cleanup and
+  migration tests pass without deleting another account's device data.
   A local unsigned x64 proof built an AAB (`74.2 MiB`) and APK (`93.7 MiB`),
   each with a `3.99 MiB` `app.android-x64.symbols` file. These are artifact
   contract proofs only; protected signing is still required for Play upload.

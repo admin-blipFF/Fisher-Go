@@ -2700,6 +2700,14 @@ or forbidden client token therefore blocks artifact publication.
    tile checks, and bootstrap budgets passed, so the candidate flag and source
    wiring were removed. The remaining Web bottleneck is MapLibre canvas
    composition, not the Flutter marker labels.
+   A separate platform-composition candidate was measured on the same runner:
+   `?fishergo_platform_contain=1` applies `contain: layout paint` and an
+   isolated stacking context to the full-size MapLibre container. Across two
+   matched pairs it kept visual goldens, OpenFreeMap tile responses, and the
+   bootstrap budget green. Mobile moved from `52.94/53.30 FPS` control to
+   `53.67/55.65 FPS` candidate; desktop p95 stayed `66.7 ms` and jank moved
+   only from `22.46%` to `21.93%` on the repeat. The candidate remains
+   query-only because it does not close the desktop 30 FPS gate.
    The 2026-08-03 `road-main` expression cleanup removed dead `minor/service`
    branches that were unreachable under its major-road filter. Two matched
    API 35 host-GPU pairs kept p95 at `32/38 ms` control versus `32/32 ms`

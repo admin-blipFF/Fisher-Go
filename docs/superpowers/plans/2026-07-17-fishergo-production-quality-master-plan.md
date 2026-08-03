@@ -621,6 +621,19 @@ MapLibre canvas composition. Evidence is
 `tmp/web-map-benchmark-marker-control-390-1440.json` and
 `tmp/web-map-benchmark-marker-candidate-390-1440.json`.
 
+The follow-up platform-composition candidate now lives behind the diagnostic
+query `?fishergo_platform_contain=1`. It applies CSS paint/layout containment
+and an isolated stacking context to the MapLibre container without changing
+geometry or camera behavior. Two matched pairs kept visual/tile/bootstrap
+proof green and showed a small mobile improvement (`52.94/53.30 FPS` control
+to `53.67/55.65 FPS` candidate), while desktop p95 stayed `66.7 ms` and
+repeat jank was `22.46%` versus `21.93%`. Keep it query-only until a future
+renderer change closes the desktop Web motion gate. Evidence is
+`tmp/web-map-benchmark-platform-contain-control-390-1440.json`,
+`tmp/web-map-benchmark-platform-contain-candidate-390-1440.json`,
+`tmp/web-map-benchmark-platform-contain-control-repeat-390-1440.json`, and
+`tmp/web-map-benchmark-platform-contain-candidate-repeat-390-1440.json`.
+
 The 2026-08-03 Android merged-landcover diagnostic was also rejected after a
 matched API 35 host-GPU run on `emulator-5554`. Merging the OSM grass, wood,
 and farmland classes into one filtered fill kept map readiness and geography

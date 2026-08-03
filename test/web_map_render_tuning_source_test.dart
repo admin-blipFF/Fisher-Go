@@ -20,6 +20,9 @@ void main() {
     expect(source, contains('road-path'));
     expect(source, contains('fishergo_web_no_extrusion'));
     expect(source, contains("layer.id !== 'building-3d'"));
+    expect(source, contains('fishergo_platform_contain'));
+    expect(source, contains("container.style.contain = 'layout paint'"));
+    expect(source, contains("container.style.isolation = 'isolate'"));
     expect(source, contains('fishergo_pixel_ratio'));
     expect(source, contains('requestedPixelRatioRaw === null'));
     expect(source, contains('options.pixelRatio'));

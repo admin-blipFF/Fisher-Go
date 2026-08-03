@@ -99,6 +99,16 @@
           // Keep the accepted style if a future MapLibre binding changes shape.
         }
       }
+      if (query.get('fishergo_platform_contain') === '1') {
+        const container = options.container;
+        if (container && container.style) {
+          // Isolate the full-size MapLibre platform view from Flutter's
+          // surrounding HUD compositing without changing map geometry.
+          container.style.contain = 'layout paint';
+          container.style.isolation = 'isolate';
+          window.__FISHERGO_PLATFORM_CONTAIN__ = true;
+        }
+      }
       return Reflect.construct(target, [options], newTarget);
     },
   });

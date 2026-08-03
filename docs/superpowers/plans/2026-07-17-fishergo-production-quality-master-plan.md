@@ -369,6 +369,13 @@ nodes. Focused source contracts and `flutter analyze --no-pub` passed; the
 broader Android/iOS/Web device accessibility matrix and Traditional Chinese
 font confirmation remain open.
 
+The same API 35 flow now scrolls Profile to the action panel, activates both
+`裝備商店` and `釣魚道具商城`, verifies their stable content, and returns to
+Profile before returning to GameHome. The clean-install run passed on
+`emulator-5554`; API 23 serial `0123456789ABCDEF` remained excluded. This
+extends secondary-screen navigation evidence but does not close the full
+cross-platform accessibility matrix.
+
 ## 7. Workstream 3: Auth and Onboarding State Machine
 
 **Create**

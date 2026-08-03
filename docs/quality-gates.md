@@ -124,6 +124,13 @@ Last updated: 2026-08-03
   secondary-screen navigation smoke, while the broader Android/iOS/Web device
   accessibility matrix and Traditional Chinese font confirmation remain open.
 
+- The same API 35 secondary-screen smoke now scrolls the Profile list to its
+  action panel and activates both `裝備商店` and `釣魚道具商城`, verifying their
+  stable content and returning to Profile before returning to GameHome. The
+  clean-install run passed on `emulator-5554`; the API 23 photo-frame was
+  explicitly skipped. This extends navigation evidence without claiming the
+  full Android/iOS/Web accessibility matrix is closed.
+
 - Notification permission opt-in now has a real token-registration boundary:
   migration `0027_notification_device_tokens.sql` stores tokens behind
   authenticated RPCs, denies raw token reads to clients, and covers

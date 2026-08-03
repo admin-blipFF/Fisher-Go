@@ -1,5 +1,6 @@
 import 'package:integration_test/integration_test.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter/widgets.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 import 'package:fishergo/main.dart' as app;
@@ -107,6 +108,46 @@ void main() {
         );
         expect(screen.stableContent, findsOneWidget,
             reason: 'Missing stable content on ${screen.entryLabel}');
+
+        if (screen.entryLabel == '帳戶') {
+          await tester.scrollUntilVisible(
+            find.text('裝備商店'),
+            420,
+            scrollable: find.byType(Scrollable).last,
+          );
+          final equipmentShop = find.bySemanticsLabel('裝備商店');
+          expect(equipmentShop, findsOneWidget);
+          await tester.tap(equipmentShop);
+          await _pumpUntil(
+            tester,
+            find.text('可購買並裝備到外圍裝備槽：魚竿、釣箱、冰箱、上衣、褲、鞋、帽、防曬面罩'),
+            timeout: const Duration(seconds: 15),
+          );
+          expect(find.text('裝備商店'), findsWidgets);
+          await tester.pageBack();
+          await _pumpUntil(
+            tester,
+            find.text('個人資料'),
+            timeout: const Duration(seconds: 15),
+          );
+
+          final gameItemShop = find.bySemanticsLabel('釣魚道具商城');
+          expect(gameItemShop, findsOneWidget);
+          await tester.tap(gameItemShop);
+          await _pumpUntil(
+            tester,
+            find.text('魚餌、誘餌、探測器與掃描券用於釣點刷魚、解鎖灰章及相片驗證活動。'),
+            timeout: const Duration(seconds: 15),
+          );
+          expect(find.text('釣魚道具商城'), findsWidgets);
+          await tester.pageBack();
+          await _pumpUntil(
+            tester,
+            find.text('個人資料'),
+            timeout: const Duration(seconds: 15),
+          );
+        }
+
         await _returnToMap(tester);
       }
     },

@@ -68,14 +68,35 @@ void main() {
     expect(source, contains('name: fishergo-android-release'));
     expect(
         source, contains('build/app/outputs/bundle/release/app-release.aab'));
-    expect(
-      source,
-      contains('build/app/outputs/flutter-apk/app-release.apk'),
-    );
+    expect(source, contains('build/release/app-release-arm64.apk'));
     expect(source, contains('build/app/symbols/'));
     expect(source, contains('build/web/release-manifest.json'));
     expect(source, contains('if-no-files-found: error'));
     expect(source, contains('retention-days: 14'));
     expect(source, isNot(contains('continue-on-error: true')));
+  });
+
+  test('Android release smoke exercises the signed configuration on API 35',
+      () {
+    final source = File(
+      '.github/workflows/android-release.yml',
+    ).readAsStringSync();
+
+    expect(source, contains('Build signed Android x64 smoke APK'));
+    expect(source, contains('--target-platform android-x64'));
+    expect(source, contains('build/release/app-release-arm64.apk'));
+    expect(source, contains('build/release/app-release-x64-smoke.apk'));
+    expect(source, contains('reactivecircus/android-emulator-runner@v2'));
+    expect(source, contains('api-level: 35'));
+    expect(source, contains('tool/android_map_benchmark.ps1'));
+    expect(
+      source,
+      contains('-ApkPath build/release/app-release-x64-smoke.apk'),
+    );
+    expect(source, contains('-Variant signed-release-api35'));
+    expect(source, contains('tmp/android-release-smoke-api35.json'));
+    expect(source, contains('android-release-smoke-api35'));
+    expect(source, contains('name: API 35 signed release APK smoke'));
+    expect(source, contains('build/web build/app/outputs build/release'));
   });
 }

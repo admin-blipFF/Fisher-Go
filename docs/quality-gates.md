@@ -1018,6 +1018,11 @@ Last updated: 2026-08-03
   the expected protected-signing error. No distributable artifact was claimed.
 - The Android release workflow now produces separate Dart symbol directories
   for the AAB and APK and fails closed if both symbol files are not present.
+  It now preserves the signed arm64 APK, builds a separately signed x86_64
+  smoke APK for the API 35 emulator, verifies all three Android signatures,
+  and uploads the minimum-60-frame release smoke JSON. The workflow source
+  contract passes; the protected signing environment and actual CI dispatch
+  remain owner-controlled.
 - The self-service account-deletion source boundary is now protected by an
   explicit `[functions.delete-account] verify_jwt = true` entry in
   `supabase/config.toml`. The local function source and cleanup contract are

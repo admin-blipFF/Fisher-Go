@@ -808,8 +808,12 @@ protected preview and does not change either production alias.
 The protected Android release workflow now writes a Web companion manifest,
 compares `release_id`, `app_version`, and `git_sha` with the Android manifest
 before artifact scanning/upload, and retains both manifests in the signed
-release artifact. The shared identity contract is locally tested; signing and
-Play distribution remain owner-controlled.
+release artifact. It now preserves the signed arm64 APK, creates a separately
+signed x86_64 APK for an API 35 release-config smoke, verifies all three
+Android signatures, and uploads the minimum-60-frame map trace alongside the
+release artifacts. The shared identity and workflow contracts are locally
+tested; protected signing, the actual CI emulator run, and Play distribution
+remain owner-controlled.
 
 The restored production source was rebuilt for both release targets after the
 rejected fill-AA experiment: Web package `89.6 MiB` and arm64 AAB `75.7 MiB`.

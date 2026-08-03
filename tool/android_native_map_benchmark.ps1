@@ -39,11 +39,26 @@ if ($null -ne $adbCommand) {
 }
 
 $preflight = Join-Path $PSScriptRoot 'android_smoke_preflight.ps1'
-$preflightArgs = @('-ExecutionPolicy', 'Bypass', '-File', $preflight, '-MinimumApi', $MinimumApi)
+$powerShell = Get-Command pwsh -ErrorAction SilentlyContinue
+if ($null -eq $powerShell) {
+  $powerShell = Get-Command powershell -ErrorAction SilentlyContinue
+}
+if ($null -eq $powerShell) {
+  throw 'A PowerShell launcher (pwsh or powershell) is required for Android preflight.'
+}
+$preflightArgs = @(
+  '-NoProfile',
+  '-ExecutionPolicy',
+  'Bypass',
+  '-File',
+  $preflight,
+  '-MinimumApi',
+  $MinimumApi
+)
 if ($DeviceSerial) {
   $preflightArgs += @('-DeviceSerial', $DeviceSerial)
 }
-$preflightOutput = & powershell @preflightArgs
+$preflightOutput = & $powerShell.Source @preflightArgs
 $selectedLine = $preflightOutput | Where-Object { $_ -match '^ANDROID_SMOKE_DEVICE=' } | Select-Object -First 1
 if (-not $selectedLine) {
   throw 'Android preflight did not select a device.'

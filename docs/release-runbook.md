@@ -116,6 +116,12 @@ keystore and four `FISHERGO_ANDROID_*` signing values. Run the manual Android
 release workflow. It must produce and verify a signed arm64 AAB, matching APK,
 Dart symbols, asset budget, secret scan, and release manifest.
 
+The workflow also creates a separately signed x86_64 release APK only for the
+API 35 emulator smoke. That smoke launches the signed release configuration,
+reaches GameHome, triggers the explicit GPS action, and records a minimum
+60-frame map trace. The x86_64 APK is test evidence; the arm64 APK and AAB
+remain the distributable artifacts.
+
 Use only the API 35 emulator for local smoke checks. The API 23 photo-frame
 device is intentionally excluded.
 

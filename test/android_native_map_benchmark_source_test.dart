@@ -11,6 +11,11 @@ void main() {
     ).readAsStringSync();
 
     expect(source, contains('.NativeMapProofActivity'));
+    expect(source, contains(r'$powerShell = Get-Command pwsh'));
+    expect(source,
+        contains(r'$preflightOutput = & $powerShell.Source @preflightArgs'));
+    expect(source, contains('A PowerShell launcher (pwsh or powershell)'));
+    expect(source, isNot(contains('& powershell @preflightArgs')));
     expect(
         source, contains('dumpsys SurfaceFlinger --timestats -clear -enable'));
     expect(source, contains('dumpsys SurfaceFlinger --timestats -dump'));

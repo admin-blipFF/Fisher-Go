@@ -7,6 +7,11 @@ void main() {
     final source = File('tool/android_map_benchmark.ps1').readAsStringSync();
 
     expect(source, contains('android_smoke_preflight.ps1'));
+    expect(source, contains(r'$powerShell = Get-Command pwsh'));
+    expect(source,
+        contains(r'$preflightOutput = & $powerShell.Source @preflightArgs'));
+    expect(source, contains('A PowerShell launcher (pwsh or powershell)'));
+    expect(source, isNot(contains('& powershell @preflightArgs')));
     expect(source, contains(r'[int]$MinimumApi = 35'));
     expect(source, contains('build/app/outputs/flutter-apk/app-profile.apk'));
     expect(source, contains('uninstall com.fishergo.app'));

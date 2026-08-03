@@ -10,6 +10,7 @@ void main() {
 
     expect(spots, isNotEmpty);
     expect(spots.every((spot) => spot.isActiveVerified), isTrue);
+    expect(spots.every((spot) => spot.isPubliclyEligible), isTrue);
     expect(
       spots.every(
         (spot) =>

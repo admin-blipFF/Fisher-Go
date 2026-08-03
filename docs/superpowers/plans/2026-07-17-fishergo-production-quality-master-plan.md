@@ -493,6 +493,14 @@ The habitat verifier itself now uses the shared canonical Supabase URL helper,
 so standalone invocations also fail closed on non-HTTPS, proxy, port, and
 lookalike-host targets.
 
+The client-side fishing-spot boundary now adds a second fail-closed check
+after the remote `active`/`verified`/`public_access` filter. A spot must have
+finite in-range coordinates, positive coordinate precision, and a non-empty
+source, source reference, reviewer, and review date; otherwise it cannot be
+projected into GameHome or opened for fishing. Focused audit, repository,
+registry, and kill-switch tests pass. This protects the verified-spot gate
+from malformed or unaudited content without changing the hosted database.
+
 An API 35 current-source vertical-slice rerun passed on `emulator-5554` for
 startup/auth, map rotation, GPS-centered verified-spot selection, the
 bite-first minigame, Daily Task reward claim, offline reconnect,

@@ -65,6 +65,29 @@ class FishingSpot {
   bool get isActiveVerified =>
       active && status == FishingSpotVerificationStatus.verified;
 
+  /// A public marker must be traceable and geometrically safe to project.
+  ///
+  /// The database policy filters status and access, but the client also
+  /// rejects malformed or unaudited rows so a bad content release fails
+  /// closed instead of placing an unusable spot on the game map.
+  bool get isPubliclyEligible =>
+      isActiveVerified &&
+      publicAccess &&
+      latitude.isFinite &&
+      latitude >= -90 &&
+      latitude <= 90 &&
+      longitude.isFinite &&
+      longitude >= -180 &&
+      longitude <= 180 &&
+      coordinatePrecisionMeters.isFinite &&
+      coordinatePrecisionMeters > 0 &&
+      source.trim().isNotEmpty &&
+      sourceReference.trim().isNotEmpty &&
+      reviewer.trim().isNotEmpty &&
+      reviewedAt.toUtc().isAfter(
+            DateTime.fromMillisecondsSinceEpoch(0, isUtc: true),
+          );
+
   bool isWithinRadius({
     required double centerLatitude,
     required double centerLongitude,

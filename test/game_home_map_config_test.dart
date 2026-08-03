@@ -30,6 +30,16 @@ void main() {
     expect(source, contains('onOpenPanorama: _openPanoramaMap'));
   });
 
+  test('GameHome rejects unaudited or malformed spots at the game boundary',
+      () {
+    final source = File(
+      'lib/features/game_home/presentation/game_home_screen.dart',
+    ).readAsStringSync();
+
+    expect(source, contains('if (!spot.isPubliclyEligible)'));
+    expect(source, contains('audited verified spots'));
+  });
+
   test(
       'HUD composition diagnostic is opt-in and leaves the map surface mounted',
       () {

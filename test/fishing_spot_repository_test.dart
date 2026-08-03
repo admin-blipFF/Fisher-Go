@@ -24,7 +24,7 @@ void main() {
     ).readAsStringSync();
 
     expect(source, contains(".eq('public_access', true)"));
-    expect(source, contains('spot.isActiveVerified && spot.publicAccess'));
+    expect(source, contains('spot.isPubliclyEligible'));
   });
 
   test('configured remote registry failure does not resurrect bundled spots',

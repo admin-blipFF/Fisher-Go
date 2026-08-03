@@ -30,7 +30,7 @@ class FishingSpotRepository {
             .eq('public_access', true);
         final remote = rows
             .map((row) => FishingSpot.fromMap(Map<String, dynamic>.from(row)))
-            .where((spot) => spot.isActiveVerified && spot.publicAccess)
+            .where((spot) => spot.isPubliclyEligible)
             .toList(growable: false);
         // An empty remote registry is meaningful: do not repopulate it with
         // local points that may have been suspended remotely.
@@ -43,7 +43,7 @@ class FishingSpotRepository {
     }
 
     return loadBundledFishingSpotRegistry()
-        .where((spot) => spot.isActiveVerified && spot.publicAccess)
+        .where((spot) => spot.isPubliclyEligible)
         .toList(growable: false);
   }
 }

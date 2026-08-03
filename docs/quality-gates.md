@@ -133,6 +133,14 @@ Last updated: 2026-08-03
   database password and legacy-history decision before it can reconcile and
   apply the pending content migrations.
 
+- The fishing-spot client boundary now requires more than the database's
+  `active`, `verified`, and `public_access` flags: coordinates and precision
+  must be finite and in range, and every row must carry a non-empty source,
+  source reference, reviewer, and post-epoch review date. The repository and
+  final GameHome spot adapter both fail closed for malformed or unaudited
+  rows. Focused audit, repository, registry, and kill-switch tests pass; this
+  strengthens the verified-spot gate without changing hosted content.
+
 - Local guest-auth configuration was aligned with the hosted guest path on
   2026-08-03. `supabase/config.toml` now enables anonymous sign-ins and keeps
   the bounded anonymous rate limit; `test/supabase_local_auth_config_source_test.dart`

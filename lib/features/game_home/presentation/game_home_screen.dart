@@ -3646,8 +3646,10 @@ class _SpotDemo {
   }) : isIsland = rarity >= 4;
 
   factory _SpotDemo.fromFishingSpot(FishingSpot spot) {
-    if (!spot.isActiveVerified) {
-      throw StateError('Only active verified spots may enter the game map.');
+    if (!spot.isPubliclyEligible) {
+      throw StateError(
+        'Only active, public, audited verified spots may enter the game map.',
+      );
     }
     final isIsland = spot.kind == FishingSpotKind.island ||
         spot.kind == FishingSpotKind.rock;

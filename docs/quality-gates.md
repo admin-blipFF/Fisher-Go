@@ -41,6 +41,15 @@ Last updated: 2026-08-03
   the alias and visual gates pass, while the desktop motion gate remains open.
   Evidence: `tmp/web-map-benchmark-production-masterplan-20260803.json`.
 
+- The Web benchmark runner now executes the cache-disabled bootstrap capture
+  and enforces the Workstream 7 `15 MiB` budget when the release workflows
+  pass `--enforce-bootstrap-budget`. A current local release run measured
+  `4.13 MiB` at `390x844` and `4.32 MiB` at `1440x900`, with `0` lazy fish
+  media bytes in both first-two-second windows. The populated map golden and
+  OpenFreeMap tile checks passed. The desktop motion budget remains a
+  separate failure (`66.7 ms` p95 / `20.0%` jank). Evidence:
+  `tmp/web-map-benchmark-bootstrap-gate-20260803.json`.
+
 - On 2026-08-03, the real-catch photo boundary was tightened end to end.
   `CatchPhotoStorage` now rejects video and unknown explicit extensions before
   reading or uploading a file, while retaining JPEG/PNG/WebP/HEIC/HEIF photo
@@ -2249,8 +2258,8 @@ Latest artifact evidence:
   MapLibre plugin upgrade remains a dependency follow-up rather than a release
   failure.
 - The full Web build is `89.5 MiB` across 571 files. This package inventory is
-  separate from runtime transfer size and still needs a dedicated bootstrap
-  budget decision.
+  separate from runtime transfer size; the release runner now enforces the
+  separate bootstrap transfer budget with the cache-disabled capture.
 - The 2026-08-03 current-source rebuild now uses an explicit map asset
   allowlist instead of recursively bundling `assets/maps/`. The retired
   `fishergo_overworld_imagegen_v3.png` is absent from the manifest; the Web
@@ -2258,6 +2267,11 @@ Latest artifact evidence:
   measured `13.07 MiB`. `dart run tool/check_asset_budget.dart` passed with
   the arm64 AAB at `75.7 MiB`. The manifest contract is covered by
   `test/asset_budget_source_test.dart`.
+- The bootstrap budget contract is covered by
+  `test/web_bootstrap_capture_source_test.dart`,
+  `test/web_map_benchmark_runner_source_test.dart`, and the Web workflow
+  source tests. The 15 MiB gate is now executable rather than a documentation-
+  only target.
 - The production-aligned `scripts/vercel-build.sh` run on 2026-07-19 emitted
   `build/web/version.json` with build id `20260719044210` and passed the client
   artifact scan. `AppShell` now checks this manifest after the first frame;

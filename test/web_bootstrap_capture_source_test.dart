@@ -13,6 +13,7 @@ void main() {
     expect(source, contains('encodedDataLength'));
     expect(source, contains('initial_2s_in_flight_bytes'));
     expect(source, contains('initial_2s_completed_bytes'));
+    expect(source, contains('initial_2s_fish_media_bytes'));
     expect(source, contains('capture_url'));
     expect(source, contains('targetOrigin'));
     expect(source, contains('fishMediaPath'));

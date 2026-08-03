@@ -144,6 +144,10 @@ async (page) => {
         (item) => item.in_flight_at_2s,
       ).length,
       total_request_count: capturedRequests.length,
+      initial_2s_fish_media_bytes: sum(
+        startedByTwoSeconds.filter(fishMediaPath),
+        'bytes_received_at_2s',
+      ),
       fish_media_bytes: sum(capturedRequests.filter(fishMediaPath), 'bytes'),
       deferred_bytes: Math.max(0, totalBytes - initialBytes),
       requests: capturedRequests,

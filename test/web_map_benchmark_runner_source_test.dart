@@ -20,6 +20,11 @@ void main() {
     expect(source, contains('p95_frame_ms'));
     expect(source, contains('janky_rate'));
     expect(source, contains('--enforce-frame-budget'));
+    expect(source, contains('--enforce-bootstrap-budget'));
+    expect(source, contains('--bootstrap-budget-mib'));
+    expect(source, contains('web_bootstrap_capture.js'));
+    expect(source, contains('FisherGO_WEB_BOOTSTRAP:'));
+    expect(source, contains('bootstrap_budget_passed'));
     expect(source, contains('frame_budget_passed'));
     expect(source, contains('inspectMapScreenshot'));
     expect(source, contains('map_visual_proof'));

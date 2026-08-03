@@ -18,7 +18,9 @@ void main() {
     expect(workflow, contains('playwright install --with-deps chromium'));
     expect(workflow, contains('python3 -m http.server 4173'));
     expect(workflow, contains('tool/run_web_map_benchmark.js'));
-    expect(workflow, contains('--golden-manifest=test/goldens/game_map/manifest.json'));
+    expect(workflow, contains('--enforce-bootstrap-budget'));
+    expect(workflow,
+        contains('--golden-manifest=test/goldens/game_map/manifest.json'));
     expect(workflow, contains('tmp/web-map-benchmark-ci.json'));
     expect(workflow, contains('output/playwright/web-map-proof-390x844.png'));
     expect(workflow, contains('output/playwright/web-map-proof-1440x900.png'));

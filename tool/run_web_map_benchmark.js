@@ -3,6 +3,8 @@ const path = require('node:path');
 const zlib = require('node:zlib');
 const { chromium } = require('playwright');
 
+const defaultBootstrapBudgetBytes = 15 * 1024 * 1024;
+
 function paethPredictor(left, above, upperLeft) {
   const estimate = left + above - upperLeft;
   const leftDistance = Math.abs(estimate - left);
@@ -186,6 +188,9 @@ function readArgs(argv) {
     minFps: 30,
     maxP95FrameMs: 33.333,
     maxJankyRate: 0.05,
+    bootstrapScript: 'tool/web_bootstrap_capture.js',
+    bootstrapBudgetBytes: defaultBootstrapBudgetBytes,
+    enforceBootstrapBudget: false,
     enforce: false,
     viewports: ['390x844', '1440x900'],
     goldenManifest: 'test/goldens/game_map/manifest.json',
@@ -196,12 +201,20 @@ function readArgs(argv) {
       values.enforce = true;
       continue;
     }
+    if (arg === '--enforce-bootstrap-budget') {
+      values.enforceBootstrapBudget = true;
+      continue;
+    }
     const separator = arg.indexOf('=');
     if (separator === -1) continue;
     const key = arg.slice(0, separator);
     const value = arg.slice(separator + 1);
     if (key === '--url') values.url = value;
     if (key === '--script') values.script = value;
+    if (key === '--bootstrap-script') values.bootstrapScript = value;
+    if (key === '--bootstrap-budget-mib') {
+      values.bootstrapBudgetBytes = Number(value) * 1024 * 1024;
+    }
     if (key === '--output') values.output = value;
     if (key === '--min-fps') values.minFps = Number(value);
     if (key === '--max-p95-frame-ms') values.maxP95FrameMs = Number(value);
@@ -225,6 +238,36 @@ function benchmarkFunction(scriptPath) {
     throw new Error(`${scriptPath} must evaluate to an async page function`);
   }
   return run;
+}
+
+function bootstrapMetricsFromTitle(title) {
+  const prefix = 'FisherGO_WEB_BOOTSTRAP:';
+  if (!title.startsWith(prefix)) {
+    throw new Error(`Bootstrap page did not publish ${prefix}`);
+  }
+  return JSON.parse(title.slice(prefix.length));
+}
+
+function bootstrapBudgetForCapture(capture, options) {
+  const initialBytes = Number(capture.initial_2s_bytes) || 0;
+  const lazyFishBytes = Number(capture.initial_2s_fish_media_bytes) || 0;
+  const measuredBytes = Math.max(0, initialBytes - lazyFishBytes);
+  const violations = [];
+  if (measuredBytes > options.bootstrapBudgetBytes) {
+    violations.push(
+      `initial transfer excluding lazy fish media ${(
+        measuredBytes / (1024 * 1024)
+      ).toFixed(2)} MiB > ${(options.bootstrapBudgetBytes / (1024 * 1024)).toFixed(2)} MiB`,
+    );
+  }
+  return {
+    initial_2s_bytes: initialBytes,
+    initial_2s_fish_media_bytes: lazyFishBytes,
+    measured_bytes_excluding_lazy_fish: measuredBytes,
+    budget_bytes: options.bootstrapBudgetBytes,
+    violations,
+    passed: violations.length === 0,
+  };
 }
 
 function metricsFromTitle(title) {
@@ -256,6 +299,7 @@ function violationsFor(metrics, options) {
 async function main() {
   const options = readArgs(process.argv.slice(2));
   const runBenchmark = benchmarkFunction(options.script);
+  const runBootstrapCapture = benchmarkFunction(options.bootstrapScript);
   const outputPath = path.resolve(options.output);
   const goldenManifest = readGoldenManifest(path.resolve(options.goldenManifest));
   fs.mkdirSync(path.dirname(outputPath), {recursive: true});
@@ -264,9 +308,50 @@ async function main() {
   const browser = await chromium.launch({headless: true});
   const results = [];
   const failures = [];
+  const bootstrapBudgets = new Map();
   try {
+    const bootstrapViewport = parseViewport(options.viewports[0]);
+    const bootstrapContext = await browser.newContext({
+      viewport: bootstrapViewport,
+      geolocation: {
+        latitude: 22.3819,
+        longitude: 114.1874,
+        accuracy: 15,
+      },
+      permissions: ['geolocation'],
+    });
+    const bootstrapPage = await bootstrapContext.newPage();
+    try {
+      await bootstrapPage.goto(options.url, {
+        waitUntil: 'domcontentloaded',
+        timeout: 60000,
+      });
+      await runBootstrapCapture(bootstrapPage);
+      const bootstrap = bootstrapMetricsFromTitle(await bootstrapPage.title());
+      for (const capture of bootstrap.captures ?? []) {
+        if (options.viewports.includes(capture.viewport)) {
+          bootstrapBudgets.set(
+            capture.viewport,
+            bootstrapBudgetForCapture(capture, options),
+          );
+        }
+      }
+    } finally {
+      await bootstrapContext.close();
+    }
+
     for (const viewportValue of options.viewports) {
       const viewport = parseViewport(viewportValue);
+      const bootstrapBudget = bootstrapBudgets.get(viewportValue);
+      if (!bootstrapBudget) {
+        throw new Error(`Bootstrap capture missing viewport ${viewportValue}`);
+      }
+      if (options.enforceBootstrapBudget && !bootstrapBudget.passed) {
+        failures.push(
+          `${viewportValue}: ${bootstrapBudget.violations.join('; ')}`,
+        );
+      }
+
       const context = await browser.newContext({
         viewport,
         // Keep the map proof deterministic and avoid racing browser location
@@ -306,6 +391,8 @@ async function main() {
         );
         metrics.golden_visual_proof = goldenVisualProof;
         const violations = violationsFor(metrics, options);
+        metrics.bootstrap_budget = bootstrapBudget;
+        metrics.bootstrap_budget_passed = bootstrapBudget.passed;
         if (!mapVisualProof.populated) {
           violations.push('map visual proof is not populated');
         }
@@ -343,10 +430,15 @@ async function main() {
       min_fps: options.minFps,
       max_p95_frame_ms: options.maxP95FrameMs,
       max_janky_rate: options.maxJankyRate,
+      bootstrap_budget_enabled: options.enforceBootstrapBudget,
+      bootstrap_budget_bytes: options.bootstrapBudgetBytes,
     },
     results,
     frame_budget_passed: results.every(
       (result) => result.frame_budget_violations.length === 0,
+    ),
+    bootstrap_budget_passed: results.every(
+      (result) => result.bootstrap_budget_passed,
     ),
   };
   fs.writeFileSync(outputPath, `${JSON.stringify(report, null, 2)}\n`);

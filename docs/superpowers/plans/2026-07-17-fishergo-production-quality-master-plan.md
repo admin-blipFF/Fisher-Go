@@ -650,6 +650,13 @@ allowlist rather than recursively bundling `assets/maps/`. The retired
 measured `86.9 MiB`, a `2.75 MiB` reduction, while the arm64 AAB remained
 `75.7 MiB`. The asset budget command passed and
 `test/asset_budget_source_test.dart` now guards the allowlist.
+The Web benchmark runner now runs the cache-disabled bootstrap capture and
+enforces the `15 MiB` startup-transfer budget in the Web map benchmark and
+canonical production-smoke workflows. The current release build measured
+`4.13 MiB` at `390x844` and `4.32 MiB` at `1440x900`, with no lazy fish media
+in the first two seconds; the visual golden and tile checks passed. This
+closes the Web bootstrap-budget sub-gate while the separate Web desktop and
+Android motion budgets remain open.
 
 ## 12. Workstream 8: Android Vertical Slice
 

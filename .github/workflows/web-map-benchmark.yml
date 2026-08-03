@@ -74,6 +74,7 @@ jobs:
             --url=http://127.0.0.1:4173/ \
             --output=tmp/web-map-benchmark-ci.json \
             --golden-manifest=test/goldens/game_map/manifest.json \
+            --enforce-bootstrap-budget \
             "${args[@]}"
 
       - name: Upload Web map evidence

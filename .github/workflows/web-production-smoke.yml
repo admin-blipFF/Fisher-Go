@@ -80,6 +80,7 @@ jobs:
             "--url=$TARGET_URL"
             "--output=tmp/web-map-benchmark-production.json"
             "--golden-manifest=test/goldens/game_map/manifest.json"
+            "--enforce-bootstrap-budget"
           )
           if [[ "$ENFORCE_FRAME_BUDGET" == "true" ]]; then
             args+=(--enforce-frame-budget)

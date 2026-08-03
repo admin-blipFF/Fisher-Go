@@ -561,6 +561,17 @@ is `tmp/web-map-benchmark-native-player-control-390-1440.json`,
 `tmp/web-map-benchmark-native-player-control-repeat-390-1440.json`, and
 `tmp/web-map-benchmark-native-player-candidate-repeat-390-1440.json`.
 
+The next Web motion-only pixel-ratio candidate was rejected. The new
+query-gated `?fishergo_motion_pixel_ratio=0.5` path attempted to lower WebGL
+resolution only during camera motion and restore the adaptive baseline at
+rest. The first implementation triggered a MapLibre near/far matrix error and
+an `idle`/`setPixelRatio` recursion. A load-gated correction removed the
+recursion, but the formal runner still timed out waiting for `flutter-view`
+and produced no admissible candidate frame trace. The query hook was removed;
+the accepted adaptive `0.75` idle preset remains unchanged. Evidence is
+`tmp/web-map-benchmark-motion-pixel-control-390-1440-20260803.json` and
+`tmp/web-map-benchmark-motion-pixel-candidate-diagnostic-20260803.json`.
+
 **Migration**
 
 1. Put the new map behind a feature flag.

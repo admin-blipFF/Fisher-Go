@@ -17,6 +17,31 @@ void main() {
     expect(source, contains('build/web/release-manifest.json'));
     expect(source, contains('tool/verify_release_manifests.dart'));
     expect(source, contains('Verify cross-platform release identity'));
+    final preflightStep = source.indexOf(
+      'name: Verify protected Android release inputs before assembly',
+    );
+    final resolveStep = source.indexOf('name: Resolve release id');
+    expect(preflightStep, greaterThanOrEqualTo(0));
+    expect(resolveStep, greaterThanOrEqualTo(0));
+    expect(preflightStep, lessThan(resolveStep));
+    final preflightSource = source.substring(preflightStep, resolveStep);
+    for (final secret in [
+      'SUPABASE_URL',
+      'SUPABASE_ANON_KEY',
+      'SUPABASE_PROJECT_REF',
+      'FISHERGO_PRIVACY_URL',
+      'FISHERGO_SUPPORT_EMAIL',
+      'FISHERGO_ANDROID_KEYSTORE_BASE64',
+      'FISHERGO_ANDROID_KEYSTORE_PASSWORD',
+      'FISHERGO_ANDROID_KEY_PASSWORD',
+      'FISHERGO_ANDROID_KEY_ALIAS',
+    ]) {
+      expect(
+        preflightSource,
+        contains('test -n "\$$secret"'),
+        reason: 'Android release must require $secret before assembly',
+      );
+    }
     expect(source, contains('Resolve release id'));
     expect(source, contains('FISHERGO_RELEASE_ID'));
     expect(

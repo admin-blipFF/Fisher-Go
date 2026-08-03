@@ -172,6 +172,12 @@ Last updated: 2026-08-03
   Function. Both fail-closed boundaries are covered by source contracts; no
   hosted mutation is claimed from this workspace.
 
+- The Android release workflow now validates all public Supabase values,
+  privacy/support metadata, and four protected signing inputs before resolving
+  the release id or writing a release manifest. Its source contract keeps this
+  preflight ahead of artifact assembly; protected keystore signing and Play
+  distribution remain owner-controlled.
+
 - The fishing-spot client boundary now requires more than the database's
   `active`, `verified`, and `public_access` flags: coordinates and precision
   must be finite and in range, and every row must carry a non-empty source,

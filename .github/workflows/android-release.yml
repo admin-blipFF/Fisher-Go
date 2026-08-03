@@ -32,6 +32,30 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
+      - name: Verify protected Android release inputs before assembly
+        env:
+          FISHERGO_PRIVACY_URL: ${{ secrets.FISHERGO_PRIVACY_URL }}
+          FISHERGO_SUPPORT_EMAIL: ${{ secrets.FISHERGO_SUPPORT_EMAIL }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+          FISHERGO_ANDROID_KEYSTORE_BASE64: ${{ secrets.FISHERGO_ANDROID_KEYSTORE_BASE64 }}
+          FISHERGO_ANDROID_KEYSTORE_PASSWORD: ${{ secrets.FISHERGO_ANDROID_KEYSTORE_PASSWORD }}
+          FISHERGO_ANDROID_KEY_PASSWORD: ${{ secrets.FISHERGO_ANDROID_KEY_PASSWORD }}
+          FISHERGO_ANDROID_KEY_ALIAS: ${{ secrets.FISHERGO_ANDROID_KEY_ALIAS }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$FISHERGO_PRIVACY_URL"
+          test -n "$FISHERGO_SUPPORT_EMAIL"
+          test -n "$SUPABASE_URL"
+          test -n "$SUPABASE_ANON_KEY"
+          test -n "$SUPABASE_PROJECT_REF"
+          test -n "$FISHERGO_ANDROID_KEYSTORE_BASE64"
+          test -n "$FISHERGO_ANDROID_KEYSTORE_PASSWORD"
+          test -n "$FISHERGO_ANDROID_KEY_PASSWORD"
+          test -n "$FISHERGO_ANDROID_KEY_ALIAS"
+
       - name: Resolve release id
         shell: bash
         run: |

@@ -353,6 +353,17 @@ Last updated: 2026-08-03
   `tmp/android-native-map-fill-aa-control-binary.png`, and
   `tmp/android-native-map-fill-aa-disabled-binary.png`.
 
+- A second water-outline diagnostic was rejected after a matched API 35
+  repeat on `emulator-5554` using the Intel UHD host renderer. Removing only
+  the Game 3D water fill outline measured p95 `53 ms` / `46.49%` jank versus
+  `48 ms` / `46.85%` for the restored control; Flutter total p95 also rose to
+  `89 ms` versus `62 ms`. Slow draw commands and bitmap uploads were lower,
+  but the frame-time result was worse and both variants missed the `20 ms`
+  gate. The diagnostic flag and style helper were removed, leaving the full
+  OSM water/road/pier/building layer family as the production default. Evidence:
+  `tmp/android-map-benchmark-water-outline-control-20260803-repeat.json` and
+  `tmp/android-map-benchmark-water-outline-candidate-20260803-repeat.json`.
+
 - A static 36 m building-height diagnostic was also rejected on API 35
   `emulator-5554` with the Intel UHD 630 host renderer. The first dynamic
   control measured gfx p95/p99 `32/44 ms` and `30.4%` jank; the static-height

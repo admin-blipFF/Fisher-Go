@@ -2217,6 +2217,13 @@ Latest artifact evidence:
 - The full Web build is `89.5 MiB` across 571 files. This package inventory is
   separate from runtime transfer size and still needs a dedicated bootstrap
   budget decision.
+- The 2026-08-03 current-source rebuild now uses an explicit map asset
+  allowlist instead of recursively bundling `assets/maps/`. The retired
+  `fishergo_overworld_imagegen_v3.png` is absent from the manifest; the Web
+  package measured `86.9 MiB`, a `2.75 MiB` reduction, and the map asset group
+  measured `13.07 MiB`. `dart run tool/check_asset_budget.dart` passed with
+  the arm64 AAB at `75.7 MiB`. The manifest contract is covered by
+  `test/asset_budget_source_test.dart`.
 - The production-aligned `scripts/vercel-build.sh` run on 2026-07-19 emitted
   `build/web/version.json` with build id `20260719044210` and passed the client
   artifact scan. `AppShell` now checks this manifest after the first frame;

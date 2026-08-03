@@ -3,6 +3,16 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  test('asset manifest excludes the retired fixed-map background', () {
+    final pubspec = File('pubspec.yaml').readAsStringSync();
+
+    expect(pubspec, contains('    - assets/maps/hk_terrain_mvp.json'));
+    expect(pubspec, contains('    - assets/maps/hk_overworld_overlay.png'));
+    expect(pubspec, contains('    - assets/maps/textures/'));
+    expect(pubspec, isNot(contains('    - assets/maps/\n')));
+    expect(pubspec, isNot(contains('fishergo_overworld_imagegen_v3.png')));
+  });
+
   test('Flutter quality workflow builds and budgets Android release output',
       () {
     final workflow =

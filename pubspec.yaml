@@ -46,7 +46,8 @@ flutter:
     - assets/fish/mobile_webp/
     - assets/fish/icons/silhouettes/
     - assets/avatar/layers/
-    - assets/maps/
+    - assets/maps/hk_terrain_mvp.json
+    - assets/maps/hk_overworld_overlay.png
     - assets/maps/textures/
     - assets/fishing/
     - assets/fishing/map_markers/

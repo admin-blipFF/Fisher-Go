@@ -625,6 +625,13 @@ canvas antialiasing is not the primary release-gate bottleneck. Evidence is
 - Uncached first usable map: at most 5 seconds on a normal Hong Kong mobile connection.
 - Normal Android map motion: p95 frame time at most 20 ms.
 
+The 2026-08-03 current-source Web release now uses an explicit map asset
+allowlist rather than recursively bundling `assets/maps/`. The retired
+`fishergo_overworld_imagegen_v3.png` is absent from the manifest; the package
+measured `86.9 MiB`, a `2.75 MiB` reduction, while the arm64 AAB remained
+`75.7 MiB`. The asset budget command passed and
+`test/asset_budget_source_test.dart` now guards the allowlist.
+
 ## 12. Workstream 8: Android Vertical Slice
 
 The release-candidate flow must pass end to end:

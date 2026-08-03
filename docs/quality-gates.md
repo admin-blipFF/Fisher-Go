@@ -22,9 +22,10 @@ Last updated: 2026-08-03
   check remains anon-key-only and never exposes provider credentials.
 
 - Supabase project identity validation now uses one shared canonical URL rule
-  across live smoke and Android release: HTTPS, `<project-ref>.supabase.co`,
-  default port, and no proxy path/query/fragment. Lookalike hosts are covered
-  by behavior tests and fail before any authenticated request.
+  across live smoke, habitat smoke, and Android release: HTTPS,
+  `<project-ref>.supabase.co`, default port, and no proxy path/query/fragment.
+  Lookalike hosts are covered by behavior tests and fail before any
+  authenticated request.
 
 - The shared Flutter theme now supplies a regional Traditional Chinese platform
   fallback list (`Noto Sans CJK TC`, `Noto Sans TC`, `PingFang TC`, and

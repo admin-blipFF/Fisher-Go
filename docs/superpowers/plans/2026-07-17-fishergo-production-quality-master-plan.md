@@ -486,6 +486,9 @@ habitat migration, rather than one representative row per habitat group. This
 is recorded as content drift; the migration was not applied locally because
 the protected release still requires the owner-controlled database password
 and legacy-history decision.
+The habitat verifier itself now uses the shared canonical Supabase URL helper,
+so standalone invocations also fail closed on non-HTTPS, proxy, port, and
+lookalike-host targets.
 
 An API 35 current-source vertical-slice rerun passed on `emulator-5554` for
 startup/auth, map rotation, GPS-centered verified-spot selection, the

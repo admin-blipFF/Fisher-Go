@@ -17,6 +17,7 @@ void main() {
     expect(source, contains('SUPABASE_ANON_KEY'));
     expect(source, contains('SUPABASE_PROJECT_REF'));
     expect(source, contains('SUPABASE_EXPECTED_PROJECT_REF'));
+    expect(source, contains('isTrustedSupabaseUrl'));
     expect(source, contains('/rest/v1/fishing_spots'));
     expect(source, contains('P017'));
     for (final spotId in [

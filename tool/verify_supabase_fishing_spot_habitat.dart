@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:fishergo/core/config/supabase_project_identity.dart';
 import 'package:http/http.dart' as http;
 
 const _operationTimeout = Duration(seconds: 20);
@@ -186,10 +187,11 @@ Future<void> main() async {
   }
 
   try {
-    final hostProjectRef = Uri.parse(url).host.split('.').first;
-    if (projectRef.isNotEmpty && hostProjectRef != projectRef) {
+    final parsedUrl = Uri.parse(url);
+    if (projectRef.isNotEmpty && !isTrustedSupabaseUrl(parsedUrl, projectRef)) {
       throw StateError(
-          'Supabase URL project ref does not match configured ref');
+        'Supabase URL must be the canonical HTTPS host for project ref',
+      );
     }
     if (expectedProjectRef.isNotEmpty && projectRef != expectedProjectRef) {
       throw StateError(

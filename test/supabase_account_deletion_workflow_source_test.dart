@@ -20,6 +20,11 @@ void main() {
             r'SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}'));
     expect(workflow,
         contains(r'SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}'));
+    expect(workflow,
+        contains(r'SUPABASE_URL: ${{ secrets.SUPABASE_URL }}'));
+    expect(workflow,
+        contains(r'SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}'));
+    expect(workflow, contains('verify_supabase_project_identity.dart'));
     expect(workflow, contains('supabase functions deploy delete-account'));
     expect(workflow, contains('tool/verify_supabase_account_deletion.dart'));
     expect(

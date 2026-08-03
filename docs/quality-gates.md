@@ -1228,7 +1228,9 @@ Last updated: 2026-08-03
   `.github/workflows/supabase-account-deletion-release.yml` deploys the
   JWT-protected function with `SUPABASE_ACCESS_TOKEN` and runs the bounded
   disposable-account smoke in `tool/verify_supabase_account_deletion.dart`.
-  Its first step runs the deletion source contracts before deployment. The
+  Before deployment it applies the same canonical Supabase URL/project-ref
+  identity preflight used by the other hosted release workflows. Its first
+  step runs the deletion source contracts before deployment. The
   workflow is source-verified and fail-closed, but has not run because the
   required protected environment secrets are not present in this workspace.
   The Profile action now remains hidden by default through

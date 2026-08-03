@@ -831,8 +831,13 @@ Last updated: 2026-08-03
   `SUPABASE_ACCESS_TOKEN`, `SUPABASE_PROJECT_REF`, and
   `SUPABASE_DB_PASSWORD`, runs the content source contracts, applies linked
   migrations with `supabase db push --linked --include-all --yes`, then runs
-  linked pgTAP and public-schema lint. It is manual-only and has not run
-  against the linked production project in this workspace.
+  the remote RLS behavior suite plus the current read-only or
+  transaction-rollback schema shape suites for analytics, retention,
+  catch-photo storage, fishing-spot content/moderation, reward tickets,
+  gameplay sessions, real-catch moderation, wallet operations, and event
+  configuration before public-schema lint. The workflow source contract and
+  local suite pass; it is manual-only and has not run against the linked
+  production project in this workspace.
 - On 2026-07-31, the app gained a privacy-safe telemetry contract with a
   bounded local buffer and an optional sink. Bootstrap, MapLibre readiness and
   fallback, catch synchronization, and reward claims now emit structured

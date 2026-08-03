@@ -907,8 +907,13 @@ Flutter upload boundary rejects video and unknown explicit extensions before
 reading a file, and failed catch-row inserts clean up a newly uploaded object
 without hiding the original retry error. Focused client/source tests are
 green, and `supabase/tests/catch_photo_bucket_shape_test.sql` adds the CI
-pgTAP shape proof. Applying and linting the migration in the linked project
-remains part of the owner-controlled hosted release.
+pgTAP shape proof. The protected content-release workflow now also runs the
+linked RLS behavior test plus the current read-only or rollback-safe shape
+suites for analytics, retention, catch-photo storage, fishing-spot content and
+moderation, reward tickets, gameplay sessions, real-catch moderation, wallet
+operations, and event configuration after applying migrations. The workflow
+source contract passes, but applying and linting the migration bundle and
+producing hosted evidence in the linked project remain owner-controlled.
 
 ## 15. Extraction Order
 

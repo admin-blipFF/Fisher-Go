@@ -66,6 +66,24 @@ void main() {
       contains(r'''supabase test db --linked supabase/tests/remote_player_rls_shape_test.sql \
             supabase/tests/remote_player_rls_behavior_test.sql'''),
     );
+    for (final path in [
+      'supabase/tests/analytics_events_shape_test.sql',
+      'supabase/tests/analytics_retention_shape_test.sql',
+      'supabase/tests/catch_photo_bucket_shape_test.sql',
+      'supabase/tests/fishing_spot_content_shape_test.sql',
+      'supabase/tests/fishing_spot_moderation_shape_test.sql',
+      'supabase/tests/gameplay_reward_ticket_shape_test.sql',
+      'supabase/tests/gameplay_session_shape_test.sql',
+      'supabase/tests/real_catch_moderation_shape_test.sql',
+      'supabase/tests/server_authoritative_rewards_shape_test.sql',
+      'supabase/tests/server_event_config_shape_test.sql',
+    ]) {
+      expect(
+        workflow,
+        contains(path),
+        reason: 'hosted content release must verify $path',
+      );
+    }
     expect(
       workflow,
       contains('supabase db lint --linked --schema public --fail-on error'),

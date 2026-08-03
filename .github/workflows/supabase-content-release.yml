@@ -107,7 +107,17 @@ jobs:
         run: |
           set -euo pipefail
           supabase test db --linked supabase/tests/remote_player_rls_shape_test.sql \
-            supabase/tests/remote_player_rls_behavior_test.sql
+            supabase/tests/remote_player_rls_behavior_test.sql \
+            supabase/tests/analytics_events_shape_test.sql \
+            supabase/tests/analytics_retention_shape_test.sql \
+            supabase/tests/catch_photo_bucket_shape_test.sql \
+            supabase/tests/fishing_spot_content_shape_test.sql \
+            supabase/tests/fishing_spot_moderation_shape_test.sql \
+            supabase/tests/gameplay_reward_ticket_shape_test.sql \
+            supabase/tests/gameplay_session_shape_test.sql \
+            supabase/tests/real_catch_moderation_shape_test.sql \
+            supabase/tests/server_authoritative_rewards_shape_test.sql \
+            supabase/tests/server_event_config_shape_test.sql
           supabase db lint --linked --schema public --fail-on error
 
       - name: Prepare legacy Auth-backed RLS fixture

@@ -151,6 +151,13 @@ player-progress regression, full `503`-test Flutter suite, and analyzer passed.
 Remaining secondary-screen semantics and the full device accessibility matrix
 are still open.
 
+Daily announcement semantics mitigation added on 2026-08-03: the reward panel
+now announces its coin amount and claim state, and the claim control exposes a
+loading-safe action label naming the reward. The helper and source-wiring
+contracts passed; the existing wallet claim path and visible modal controls are
+unchanged. Remaining secondary-screen semantics and the full device
+accessibility matrix are still open.
+
 ### P1: Assets and binaries are oversized
 
 Measured baseline:

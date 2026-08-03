@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../core/announcement/announcement_data.dart';
 import '../../../core/announcement/announcement_service.dart';
 import '../../profile/data/profile_wallet_service.dart';
+import 'announcement_semantics.dart';
 
 /// Modal dialog showing the daily announcement.
 class AnnouncementModal extends StatefulWidget {
@@ -87,25 +88,33 @@ class _AnnouncementModalState extends State<AnnouncementModal> {
                 color: _claimed ? Colors.grey.shade300 : Colors.amber.shade200,
               ),
             ),
-            child: Row(
-              children: [
-                Text(_claimed ? '✅' : '💰',
-                    style: TextStyle(
-                        fontSize: 24, color: _claimed ? Colors.grey : null)),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    _claimed ? '今日獎勵已領取' : '今日獎勵：${data.coinReward} 金幣',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: _claimed
-                          ? Colors.grey.shade600
-                          : Colors.amber.shade800,
+            child: Semantics(
+              container: true,
+              excludeSemantics: true,
+              label: announcementRewardSemanticsLabel(
+                claimed: _claimed,
+                rewardCoins: data.coinReward,
+              ),
+              child: Row(
+                children: [
+                  Text(_claimed ? '✅' : '💰',
+                      style: TextStyle(
+                          fontSize: 24, color: _claimed ? Colors.grey : null)),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      _claimed ? '今日獎勵已領取' : '今日獎勵：${data.coinReward} 金幣',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: _claimed
+                            ? Colors.grey.shade600
+                            : Colors.amber.shade800,
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ],
@@ -116,24 +125,40 @@ class _AnnouncementModalState extends State<AnnouncementModal> {
           child: const Text('關閉'),
         ),
         if (!_claimed)
-          FilledButton(
-            onPressed: _loading ? null : () => _claim(context, data),
-            child: _loading
-                ? const SizedBox(
-                    width: 16,
-                    height: 16,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : const Text('領取'),
+          Semantics(
+            container: true,
+            button: true,
+            enabled: !_loading,
+            label: announcementClaimSemanticsLabel(data.coinReward),
+            onTap: _loading ? null : () => _claim(context, data),
+            child: ExcludeSemantics(
+              child: FilledButton(
+                onPressed: _loading ? null : () => _claim(context, data),
+                child: _loading
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Text('領取'),
+              ),
+            ),
           ),
         if (_claimed)
-          FilledButton(
-            onPressed: null,
-            style: FilledButton.styleFrom(
-              backgroundColor: Colors.grey.shade300,
-              foregroundColor: Colors.grey.shade600,
+          Semantics(
+            container: true,
+            button: true,
+            enabled: false,
+            excludeSemantics: true,
+            label: announcementClaimedSemanticsLabel(data.coinReward),
+            child: FilledButton(
+              onPressed: null,
+              style: FilledButton.styleFrom(
+                backgroundColor: Colors.grey.shade300,
+                foregroundColor: Colors.grey.shade600,
+              ),
+              child: const Text('已領取'),
             ),
-            child: const Text('已領取'),
           ),
       ],
     );

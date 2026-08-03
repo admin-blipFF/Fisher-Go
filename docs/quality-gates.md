@@ -70,6 +70,14 @@ Last updated: 2026-08-03
   reports no issues. The API 23 photo-frame remains excluded; the remaining
   secondary-screen audit and full device accessibility matrix are still open.
 
+- The daily announcement reward modal now exposes the coin amount and whether
+  today's reward is still claimable or already claimed. The claim control keeps
+  its existing visible label while adding an explicit reward label and a
+  loading-safe accessibility action. The helper and source-wiring contracts
+  passed, and the implementation does not change the existing wallet claim
+  path. The API 23 photo-frame remains excluded; the remaining secondary-screen
+  audit and full device accessibility matrix are still open.
+
 - Notification permission opt-in now has a real token-registration boundary:
   migration `0027_notification_device_tokens.sql` stores tokens behind
   authenticated RPCs, denies raw token reads to clients, and covers

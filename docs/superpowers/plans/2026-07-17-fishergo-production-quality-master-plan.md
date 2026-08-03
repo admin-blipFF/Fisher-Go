@@ -520,6 +520,18 @@ production style and the 20 ms motion gate stays open. Evidence is
 `tmp/android-map-benchmark-building-base-control-api35-repeat.json`, and
 `tmp/android-map-benchmark-building-base-candidate-api35-repeat.json`.
 
+The 2026-08-03 Web road-layer merge diagnostic was also rejected. A valid
+query-gated style merged `road-medium` and `road-major` into one `road-main`
+layer while preserving OpenFreeMap responses and both visual goldens, but
+desktop p95 stayed `66.7 ms` in both control/candidate pairs. Candidate FPS
+was `35.60/35.08` versus control `36.03/36.06`; the query and source contract
+were removed after the matched repeats. The initial nested zoom-expression
+shape was rejected by MapLibre before the valid A/B and is not production
+code. Evidence is `tmp/web-map-benchmark-road-merge-control-390-1440.json`,
+`tmp/web-map-benchmark-road-merge-candidate-390-1440.json`,
+`tmp/web-map-benchmark-road-merge-control-repeat-390-1440.json`, and
+`tmp/web-map-benchmark-road-merge-candidate-repeat-390-1440.json`.
+
 **Migration**
 
 1. Put the new map behind a feature flag.

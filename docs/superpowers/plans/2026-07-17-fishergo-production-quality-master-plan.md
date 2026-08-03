@@ -514,6 +514,9 @@ immediately after checkout, before Flutter/CLI setup, and the dependent hosted
 gameplay smoke performs a separate URL/anon-key/project-ref preflight before
 its own setup. Both paths remain owner-controlled and have not been dispatched
 against the hosted project from this workspace.
+The separate read-only hosted audit now performs the same checkout-first
+URL/anon-key/project-ref preflight before Flutter setup while retaining its
+explicit no-password/no-token/no-mutation boundary.
 The non-destructive hosted audit now confirms the target project is reachable
 and has Google plus anonymous providers enabled, but the public habitat
 verifier fails because hosted spot `P017` lacks the expected

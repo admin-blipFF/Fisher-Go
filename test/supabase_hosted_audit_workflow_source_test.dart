@@ -13,6 +13,26 @@ void main() {
     expect(workflow, contains('environment: fishergo-live-smoke'));
     expect(workflow, contains('concurrency:'));
     expect(workflow, contains('group: fishergo-hosted-audit'));
+    final preflightStep = workflow.indexOf(
+      'name: Verify protected hosted audit inputs before setup',
+    );
+    final setupFlutterStep = workflow.indexOf('name: Set up Flutter');
+    final identityStep = workflow.indexOf('name: Verify canonical project identity');
+    expect(preflightStep, greaterThanOrEqualTo(0));
+    expect(setupFlutterStep, greaterThan(preflightStep));
+    expect(identityStep, greaterThan(setupFlutterStep));
+    final preflightSource = workflow.substring(preflightStep, setupFlutterStep);
+    for (final secret in [
+      'SUPABASE_URL',
+      'SUPABASE_ANON_KEY',
+      'SUPABASE_PROJECT_REF',
+    ]) {
+      expect(
+        preflightSource,
+        contains('test -n "\$$secret"'),
+        reason: 'hosted audit must require $secret before setup',
+      );
+    }
     expect(workflow,
         contains('dart run tool/verify_supabase_project_identity.dart'));
     expect(workflow,

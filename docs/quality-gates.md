@@ -159,7 +159,9 @@ Last updated: 2026-08-03
   A new manual `.github/workflows/supabase-hosted-audit.yml` workflow now
   exposes the same identity, provider, and habitat checks without requesting
   a database password, access token, or migration command; its read-only scope
-  is locked by `test/supabase_hosted_audit_workflow_source_test.dart`.
+  is locked by `test/supabase_hosted_audit_workflow_source_test.dart`. Its
+  protected URL/anon-key/project-ref preflight now runs immediately after
+  checkout, before Flutter setup.
   The protected content-release workflow still requires the owner-controlled
   database password and legacy-history decision before it can reconcile and
   apply the pending content migrations. The exact owner sequence is recorded

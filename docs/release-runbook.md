@@ -125,6 +125,13 @@ removed.
 
 ## 2. Other Live Gates
 
+The manual **Supabase hosted audit** is read-only and checks canonical project
+identity, Auth provider flags, and fishing-spot habitat content. It verifies
+its URL, anon key, and project ref immediately after checkout, before Flutter
+setup, and never requests a database password, access token, service-role key,
+or migration command. Treat a habitat failure as hosted content drift; use
+the protected content-release workflow for an approved fix.
+
 After the content release succeeds, run the manual **Supabase live smoke**
 workflow. Its first step verifies that `SUPABASE_URL` is an HTTPS Supabase host
 whose project ref matches `SUPABASE_PROJECT_REF`; only then does it fail closed

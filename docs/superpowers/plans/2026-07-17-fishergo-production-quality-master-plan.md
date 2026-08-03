@@ -502,6 +502,18 @@ removed as well. Evidence is `tmp/android-map-benchmark-hc-textureless-current-
 20260803.json`, and `tmp/android-native-map-benchmark-building-motion-toggle-
 20260803.json`.
 
+The 2026-08-03 building-base diagnostic was rejected after two matched API 35
+host-GPU pairs on `emulator-5554`. Keeping real per-building heights while
+replacing the `render_min_height` lookup with a constant zero preserved map
+readiness and geography, but gfx p95 moved from `34` to `38 ms` on the first
+pair and from `42` to `40 ms` on the repeat. The minor repeat improvement was
+not stable enough to promote, so the dynamic extrusion base remains in the
+production style and the 20 ms motion gate stays open. Evidence is
+`tmp/android-map-benchmark-building-base-control-api35.json`,
+`tmp/android-map-benchmark-building-base-candidate-api35.json`,
+`tmp/android-map-benchmark-building-base-control-api35-repeat.json`, and
+`tmp/android-map-benchmark-building-base-candidate-api35-repeat.json`.
+
 **Migration**
 
 1. Put the new map behind a feature flag.

@@ -478,6 +478,9 @@ The dependent hosted-gameplay smoke repeats the identity check against the
 migration job's exported project ref before reading or mutating any smoke
 boundary, so its separate protected environment cannot silently target a
 different project.
+The migration job also uploads before/after history and the verified dry-run
+plan for 14 days, including failure paths, so owner review has durable evidence
+beyond transient workflow logs.
 The non-destructive hosted audit now confirms the target project is reachable
 and has Google plus anonymous providers enabled, but the public habitat
 verifier fails because hosted spot `P017` lacks the expected

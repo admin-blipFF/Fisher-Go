@@ -38,8 +38,11 @@ anything. The verifier allows only local four-digit migration IDs at or above
 `0012` after legacy marker files are removed, rejects unexpected IDs, revert
 actions, and unrecognizable output, and accepts an explicit no-op plan. Review
 the verified plan in the workflow log when migration history contains legacy
-entries or local/remote drift. The migration target ref is passed to the
-dependent `hosted-gameplay-smoke` job. Configure the protected
+entries or local/remote drift. The job also uploads the before/after migration
+history and dry-run plan as `fishergo-supabase-migration-evidence-<run-id>`;
+download that artifact from the workflow run when a migration fails or needs
+audit review. The migration target ref is passed to the dependent
+`hosted-gameplay-smoke` job. Configure the protected
 `fishergo-live-smoke` environment with:
 
 - `SUPABASE_URL`

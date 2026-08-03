@@ -13,6 +13,8 @@ Last updated: 2026-08-03
   canonical `SUPABASE_URL` is reachable and matches `SUPABASE_PROJECT_REF`.
   The dependent hosted-gameplay smoke repeats that identity check against the
   migration job's exported project ref before any anon-key verifier runs. The
+  job preserves before/after migration history plus the verified dry-run plan
+  as a 14-day workflow artifact, including when the migration step fails. The
   hosted application run remains owner-controlled and has not been executed
   from this workspace.
 

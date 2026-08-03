@@ -42,6 +42,12 @@ void main() {
     final linkCommand = migrationSource.indexOf('supabase link --project-ref');
     expect(identityCheck, greaterThanOrEqualTo(0));
     expect(linkCommand, greaterThan(identityCheck));
+    expect(workflow, contains('name: Upload Supabase migration evidence'));
+    expect(workflow, contains('if: always()'));
+    expect(workflow, contains('actions/upload-artifact@v4'));
+    expect(workflow, contains('fishergo-migration-history-before.txt'));
+    expect(workflow, contains('fishergo-migration-plan.txt'));
+    expect(workflow, contains('fishergo-migration-history-after.txt'));
     expect(workflow, contains('test/analytics_ingestion_source_test.dart'));
     expect(workflow,
         contains('test/supabase_analytics_ingestion_source_test.dart'));

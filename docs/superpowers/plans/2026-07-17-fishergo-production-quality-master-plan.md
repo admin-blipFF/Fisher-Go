@@ -1136,6 +1136,9 @@ mutates Supabase. The 2026-08-03 current workspace audit recorded 4 PASS,
 unsigned local Android artifact, and 1 SKIP because the Android release
 manifest was not present locally. This improves local evidence without
 closing the protected signing, hosted Supabase, or motion-budget gates.
+The protected Android release workflow now invokes the same audit with
+`--strict` immediately before artifact upload, so its assembled signed
+release cannot bypass the consolidated checks.
 
 **Operations**
 

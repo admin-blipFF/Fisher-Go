@@ -83,6 +83,8 @@ void main() {
     expect(source, contains('app-release.apk'));
     expect(source, contains('tool/check_client_artifacts_for_secrets.dart'));
     expect(source, contains('tool/check_asset_budget.dart'));
+    expect(source, contains('name: Verify assembled release readiness'));
+    expect(source, contains('tool/verify_release_readiness.dart --strict'));
     expect(source, contains('actions/upload-artifact@v4'));
     expect(source, contains('name: fishergo-android-release'));
     expect(

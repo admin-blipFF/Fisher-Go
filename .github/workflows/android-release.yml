@@ -238,6 +238,9 @@ jobs:
           --android-output-root=build/app/outputs
           --packaged-asset-root=build/web/assets
 
+      - name: Verify assembled release readiness
+        run: dart run tool/verify_release_readiness.dart --strict
+
       - name: Upload signed Android artifact
         uses: actions/upload-artifact@v4
         with:

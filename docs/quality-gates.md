@@ -2683,6 +2683,12 @@ SKIP (Android manifest pair not present locally). The Web package measured
 asset budget passed. This is a clearer readiness report, not a replacement for
 the protected signed-release workflow or hosted Supabase evidence.
 
+The protected Android release workflow now runs the same audit with
+`--strict` after the signed AAB/APKs, Web companion manifest, symbol files,
+secret scan, and asset-budget checks are assembled, but before the release
+artifact is uploaded. A missing manifest, unsigned artifact, owner metadata,
+or forbidden client token therefore blocks artifact publication.
+
 1. Reduce slow UI-thread and MapLibre draw-command/composition frames without
    weakening geography; the Android game 3D style is visually accepted but
    still measures p95 near 30 ms rather than the 20 ms target.

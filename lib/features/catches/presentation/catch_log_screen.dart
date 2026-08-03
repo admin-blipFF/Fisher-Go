@@ -308,9 +308,13 @@ class _CatchLogScreenState extends State<CatchLogScreen> {
         children: [
           // Photo section - tap to pick
           Semantics(
+            container: true,
             button: true,
+            excludeSemantics: true,
             label: '選擇魚獲相片',
+            onTap: _pickPhoto,
             child: InkWell(
+              excludeFromSemantics: true,
               onTap: _pickPhoto,
               child: Container(
                 height: 180,

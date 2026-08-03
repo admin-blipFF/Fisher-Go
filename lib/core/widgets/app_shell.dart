@@ -164,6 +164,7 @@ class _GameFloatingMapButton extends StatelessWidget {
     return Semantics(
       key: const ValueKey('return-map-control'),
       button: true,
+      excludeSemantics: true,
       label: '返回地圖',
       child: IconButton.filled(
         tooltip: '返回地圖',

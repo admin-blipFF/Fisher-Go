@@ -116,8 +116,8 @@ equipment, catch-log, leaderboard, and admin buttons. The source contract
 passes and assistive activation follows the same navigation path as a pointer
 tap. MapLibre fishing-spot markers now also promote their selection callback,
 so assistive activation opens the same spot detail as a pointer tap. The
-remaining secondary-screen audit and full device accessibility matrix are
-still open.
+secondary-screen navigation smoke is now covered below; the full device
+accessibility matrix remains open.
 
 CatchLog control mitigation added on 2026-08-03: the real-photo form, fishing
 spot markers, radar toggle, and custom navigation HUD controls now expose
@@ -353,10 +353,21 @@ time budget remain open gates and are not claimed closed by this consistency
 change.
 
 The API 35 CI smoke workflow now fails fast with `set -euo pipefail` and its
-source contract covers all 13 startup, map, minigame, offline, reward,
-permission, photo, and notification profiles. The latest local suite has `418` passing
-tests; this strengthens release evidence without claiming the still-open
-Android or wide-screen Web motion budgets.
+source contract covers all 14 startup, map, minigame, offline, reward,
+permission, photo, notification, and secondary-screen profiles. The batched
+current suite has `536` passing tests; this strengthens release evidence without
+claiming the still-open Android or wide-screen Web motion budgets.
+
+The API 35 `secondary_screen_accessibility_flow_test.dart` passed on
+`emulator-5554` after a clean install. It activated Account, Encyclopedia,
+Catch Log, and Leaderboard through their semantics labels, waited for each
+screen's stable content, and returned to GameHome through the shared
+`返回地圖` semantics control. The run explicitly skipped API 23 serial
+`0123456789ABCDEF`. The HUD and CatchLog photo controls now expose one
+explicit semantics container each, avoiding duplicate or hidden activation
+nodes. Focused source contracts and `flutter analyze --no-pub` passed; the
+broader Android/iOS/Web device accessibility matrix and Traditional Chinese
+font confirmation remain open.
 
 ## 7. Workstream 3: Auth and Onboarding State Machine
 

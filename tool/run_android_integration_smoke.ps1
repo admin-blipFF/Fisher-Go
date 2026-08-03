@@ -12,7 +12,8 @@ param(
     'location_permission_denied_flow_test.dart',
     'location_service_disabled_flow_test.dart',
     'limited_photo_permission_flow_test.dart',
-    'notification_opt_in_flow_test.dart'
+    'notification_opt_in_flow_test.dart',
+    'secondary_screen_accessibility_flow_test.dart'
   )]
   [string]$TestFile = 'startup_auth_flow_test.dart',
   [string]$DeviceSerial,

@@ -94,3 +94,4 @@ jobs:
              pwsh -NoProfile -File tool/run_android_integration_smoke.ps1 -TestFile location_service_disabled_flow_test.dart -DeviceSerial emulator-5554 -ClearAppData -PermissionProfile location-disabled -TimeoutSeconds 240
              pwsh -NoProfile -File tool/run_android_integration_smoke.ps1 -TestFile limited_photo_permission_flow_test.dart -DeviceSerial emulator-5554 -ClearAppData -PermissionProfile limited-photo -TimeoutSeconds 240
              pwsh -NoProfile -File tool/run_android_integration_smoke.ps1 -TestFile notification_opt_in_flow_test.dart -DeviceSerial emulator-5554 -ClearAppData -TimeoutSeconds 240
+             pwsh -NoProfile -File tool/run_android_integration_smoke.ps1 -TestFile secondary_screen_accessibility_flow_test.dart -DeviceSerial emulator-5554 -ClearAppData -TimeoutSeconds 300

@@ -5452,10 +5452,13 @@ class _HudBtn extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Semantics(
+      container: true,
       button: true,
+      excludeSemantics: true,
       label: label,
       onTap: onTap,
       child: GestureDetector(
+        excludeFromSemantics: true,
         onTap: onTap,
         child: Column(mainAxisSize: MainAxisSize.min, children: [
           Container(

@@ -3,8 +3,7 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  test('API 35 CI smoke workflow fails fast and covers the vertical slice',
-      () {
+  test('API 35 CI smoke workflow fails fast and covers the vertical slice', () {
     final workflow =
         File('.github/workflows/flutter-quality.yml').readAsStringSync();
 
@@ -32,6 +31,8 @@ void main() {
       'location_permission_denied_flow_test.dart',
       'location_service_disabled_flow_test.dart',
       'limited_photo_permission_flow_test.dart',
+      'notification_opt_in_flow_test.dart',
+      'secondary_screen_accessibility_flow_test.dart',
     ];
 
     for (final flow in requiredFlows) {

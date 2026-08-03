@@ -24,6 +24,8 @@ void main() {
 
   test('custom catch-log controls expose explicit semantics', () {
     expect(source, contains("label: '選擇魚獲相片'"));
+    expect(source, contains('container: true'));
+    expect(source, contains('excludeFromSemantics: true'));
     expect(source, contains('class _GameSideHudButton'));
     expect(source, contains('class _GameHudButton'));
     expect(source, contains('excludeSemantics: true'));

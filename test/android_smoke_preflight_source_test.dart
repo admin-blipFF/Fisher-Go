@@ -27,6 +27,7 @@ void main() {
     expect(source, contains('app_resume_flow_test.dart'));
     expect(source, contains('panorama_map_flow_test.dart'));
     expect(source, contains('notification_opt_in_flow_test.dart'));
+    expect(source, contains('secondary_screen_accessibility_flow_test.dart'));
     expect(source, contains('test --no-pub'));
     expect(source, contains('map_rotation_flow_test.dart'));
     expect(source, contains('map_spot_selection_flow_test.dart'));

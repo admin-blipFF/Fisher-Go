@@ -112,6 +112,17 @@ Last updated: 2026-08-03
   pass; the remaining secondary-screen audit and full device accessibility
   matrix are still open.
 
+- On 2026-08-03, the API 35 `secondary_screen_accessibility_flow_test.dart`
+  passed on `emulator-5554` after a clean install. It activated the Account,
+  Encyclopedia, Catch Log, and Leaderboard entries through their semantics
+  labels, waited for each screen's stable content, and returned to the map via
+  the shared `返回地圖` semantics control. The run explicitly skipped API 23
+  serial `0123456789ABCDEF`. The HUD and CatchLog photo controls now use one
+  explicit semantics container instead of duplicating or hiding the action;
+  focused source tests and `flutter analyze --no-pub` passed. This closes the
+  secondary-screen navigation smoke, while the broader Android/iOS/Web device
+  accessibility matrix and Traditional Chinese font confirmation remain open.
+
 - Notification permission opt-in now has a real token-registration boundary:
   migration `0027_notification_device_tokens.sql` stores tokens behind
   authenticated RPCs, denies raw token reads to clients, and covers
@@ -457,9 +468,10 @@ Last updated: 2026-08-03
   `tmp/web-map-benchmark-masterplan-no-fill-outlines-20260801.json`.
 
 - The API 35 CI smoke workflow now uses `set -euo pipefail` and has a source
-  contract covering all 12 integration flows, the fixed API 35 emulator,
+  contract covering all 14 integration flows, the fixed API 35 emulator,
   GPS-centered spot coordinates, offline network toggle, and permission
-  profiles. The new contract and the full `418`-test suite passed locally;
+  profiles. The new contract and the batched full `536`-test suite passed
+  locally;
   YAML parsing and diff hygiene also passed. This hardens failure reporting;
   it does not claim the still-open Android motion budget.
 

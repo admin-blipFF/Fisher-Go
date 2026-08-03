@@ -36,5 +36,6 @@ void main() {
       source,
       contains('label: label,\n      onTap: onTap,'),
     );
+    expect(source, contains('excludeFromSemantics: true'));
   });
 }

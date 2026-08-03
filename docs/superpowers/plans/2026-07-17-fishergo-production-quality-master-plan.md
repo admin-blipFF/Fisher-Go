@@ -1207,6 +1207,13 @@ The protected Android release workflow now invokes the same audit with
 `--strict` immediately before artifact upload, so its assembled signed
 release cannot bypass the consolidated checks.
 
+The local read-only readiness audit was rerun on 2026-08-04 and remains at
+`4 PASS`, `0 FAIL`, `2 OWNER_GATE` (privacy/support metadata and protected
+Android signing), and `1 SKIP` (no locally assembled cross-platform manifest
+pair). The API 35 current-source map recheck also remains above the 20 ms
+native motion target, so neither result is treated as a production-release
+pass.
+
 **Operations**
 
 - Add crash reporting with release/environment tags. The bounded local

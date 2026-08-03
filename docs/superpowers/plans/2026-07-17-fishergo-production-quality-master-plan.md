@@ -468,6 +468,16 @@ raised jank to `40.13%`. Both visual goldens passed, but the combined motion
 budget did not, so the production camera remains at zoom `16.0` and future
 work must target renderer/composition cost rather than hiding geography.
 
+The 2026-08-03 Android merged-landcover diagnostic was also rejected after a
+matched API 35 host-GPU run on `emulator-5554`. Merging the OSM grass, wood,
+and farmland classes into one filtered fill kept map readiness and geography
+intact, but gfx p95 stayed at `32 ms` while slow draw commands increased from
+`88` to `110`; jank was `29.39%` versus `28.16%`, with no ANR in either run.
+The opt-in style transformer and flag were removed, so the production Android
+renderer remains unchanged and the 20 ms motion gate stays open. Evidence is
+`tmp/android-map-benchmark-landcover-control-20260803.json` and
+`tmp/android-map-benchmark-landcover-candidate-20260803.json`.
+
 **Migration**
 
 1. Put the new map behind a feature flag.

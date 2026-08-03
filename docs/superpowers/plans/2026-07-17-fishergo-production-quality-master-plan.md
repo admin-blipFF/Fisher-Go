@@ -170,6 +170,12 @@ contracts passed; the existing wallet claim path and visible modal controls are
 unchanged. Remaining secondary-screen semantics and the full device
 accessibility matrix are still open.
 
+Leaderboard secondary-screen semantics mitigation added on 2026-08-03:
+loading, error, and empty states are live announcements, while each verified
+catch row exposes one coherent summary for rank, fish, length, rarity, and
+verification date. Helper and source contracts pass; the remaining secondary
+screen audit and full device accessibility matrix are still open.
+
 ### P1: Assets and binaries are oversized
 
 Measured baseline:

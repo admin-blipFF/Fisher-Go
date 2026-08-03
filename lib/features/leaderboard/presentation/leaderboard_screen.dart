@@ -5,6 +5,7 @@ import '../../fish/domain/fish_collection_copy.dart';
 import '../../fish/domain/fish_collection_service.dart';
 import '../../fish/domain/fish_collection_status.dart';
 import '../data/public_leaderboard_service.dart';
+import 'leaderboard_semantics.dart';
 
 class LeaderboardScreen extends StatefulWidget {
   const LeaderboardScreen({super.key});
@@ -101,11 +102,21 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting &&
               !snapshot.hasData) {
-            return const Center(child: CircularProgressIndicator());
+            return Semantics(
+              container: true,
+              liveRegion: true,
+              label: leaderboardLoadingSemanticsLabel(),
+              child: const Center(child: CircularProgressIndicator()),
+            );
           }
 
           if (snapshot.hasError) {
-            return _ErrorState(onRetry: _refresh);
+            return Semantics(
+              container: true,
+              liveRegion: true,
+              label: leaderboardErrorSemanticsLabel(),
+              child: _ErrorState(onRetry: _refresh),
+            );
           }
 
           final data = snapshot.data ?? _CompetitionSnapshot.empty();
@@ -223,35 +234,55 @@ class _VerifiedLeaderboard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('真實捕獲排行榜', style: Theme.of(context).textTheme.titleLarge),
-            const SizedBox(height: 8),
-            if (rows.isEmpty)
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 16),
-                child: Center(child: Text('暫無已驗證魚獲')),
-              )
-            else
-              ...rows.asMap().entries.map((entry) {
-                final rank = entry.key + 1;
-                final row = entry.value;
-                return ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  leading: CircleAvatar(child: Text('$rank')),
-                  title: Text(row.fishName,
-                      maxLines: 1, overflow: TextOverflow.ellipsis),
-                  subtitle: Text(
-                    '${row.bestLengthCm == null ? '未填長度' : '${row.bestLengthCm!.toStringAsFixed(1)} cm'}｜稀有度 ${row.rarityRank}\n${_formatDate(row.verifiedAt)}',
+    return Semantics(
+      container: true,
+      label: leaderboardSectionSemanticsLabel(rows.length),
+      child: Card(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('真實捕獲排行榜', style: Theme.of(context).textTheme.titleLarge),
+              const SizedBox(height: 8),
+              if (rows.isEmpty)
+                Semantics(
+                  container: true,
+                  liveRegion: true,
+                  label: leaderboardEmptySemanticsLabel(),
+                  child: const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 16),
+                    child: Center(child: Text('暫無已驗證魚獲')),
                   ),
-                  trailing: const Icon(Icons.verified, color: Colors.amber),
-                );
-              }),
-          ],
+                )
+              else
+                ...rows.asMap().entries.map((entry) {
+                  final rank = entry.key + 1;
+                  final row = entry.value;
+                  return Semantics(
+                    container: true,
+                    excludeSemantics: true,
+                    label: leaderboardRowSemanticsLabel(
+                      rank: rank,
+                      fishName: row.fishName,
+                      lengthCm: row.bestLengthCm,
+                      rarityRank: row.rarityRank,
+                      verifiedDate: _formatDate(row.verifiedAt),
+                    ),
+                    child: ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: CircleAvatar(child: Text('$rank')),
+                      title: Text(row.fishName,
+                          maxLines: 1, overflow: TextOverflow.ellipsis),
+                      subtitle: Text(
+                        '${row.bestLengthCm == null ? '未填長度' : '${row.bestLengthCm!.toStringAsFixed(1)} cm'}｜稀有度 ${row.rarityRank}\n${_formatDate(row.verifiedAt)}',
+                      ),
+                      trailing: const Icon(Icons.verified, color: Colors.amber),
+                    ),
+                  );
+                }),
+            ],
+          ),
         ),
       ),
     );

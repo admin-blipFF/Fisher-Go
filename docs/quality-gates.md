@@ -97,6 +97,13 @@ Last updated: 2026-08-03
   path. The API 23 photo-frame remains excluded; the remaining secondary-screen
   audit and full device accessibility matrix are still open.
 
+- The leaderboard secondary-screen audit now announces loading, error, and
+  empty states as live regions. Each verified-catch row exposes one coherent
+  summary containing rank, fish, length, rarity, and verification date instead
+  of relying on a fragmented visual `ListTile`. Helper and source contracts
+  pass; the remaining secondary-screen audit and full device accessibility
+  matrix are still open.
+
 - Notification permission opt-in now has a real token-registration boundary:
   migration `0027_notification_device_tokens.sql` stores tokens behind
   authenticated RPCs, denies raw token reads to clients, and covers

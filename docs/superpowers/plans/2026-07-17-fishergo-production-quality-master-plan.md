@@ -461,6 +461,13 @@ OpenFreeMap tile checks, with `55.52 FPS` / p95 `33.3 ms` on 390x844 and
 `42.13 FPS` / p95 `66.6 ms` on 1440x900. This closes the current visual
 rebaseline but leaves the wide-screen motion budget open.
 
+The 2026-08-03 wide-screen zoom experiment was rejected after matched local
+Web runs. Zoom `17.0` produced about `36 FPS` with p95 `66.6 ms` and
+`26.11-28.57%` jank at 1440x900; zoom `17.75` reduced p95 to `50.1 ms` but
+raised jank to `40.13%`. Both visual goldens passed, but the combined motion
+budget did not, so the production camera remains at zoom `16.0` and future
+work must target renderer/composition cost rather than hiding geography.
+
 **Migration**
 
 1. Put the new map behind a feature flag.

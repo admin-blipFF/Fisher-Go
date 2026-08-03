@@ -60,6 +60,34 @@ jobs:
           test/supabase_legacy_rls_smoke_source_test.dart
           test/supabase_content_release_workflow_source_test.dart
 
+      - name: Verify protected release inputs before mutation
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          SUPABASE_LEGACY_HISTORY_REPAIR_CONFIRMATION: ${{ secrets.SUPABASE_LEGACY_HISTORY_REPAIR_CONFIRMATION }}
+          FISHERGO_RLS_USER_A_EMAIL: ${{ secrets.FISHERGO_RLS_USER_A_EMAIL }}
+          FISHERGO_RLS_USER_A_PASSWORD: ${{ secrets.FISHERGO_RLS_USER_A_PASSWORD }}
+          FISHERGO_RLS_USER_B_EMAIL: ${{ secrets.FISHERGO_RLS_USER_B_EMAIL }}
+          FISHERGO_RLS_USER_B_PASSWORD: ${{ secrets.FISHERGO_RLS_USER_B_PASSWORD }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$SUPABASE_ACCESS_TOKEN"
+          test -n "$SUPABASE_PROJECT_REF"
+          test -n "$SUPABASE_URL"
+          test -n "$SUPABASE_ANON_KEY"
+          test -n "$SUPABASE_DB_PASSWORD"
+          test -n "$FISHERGO_RLS_USER_A_EMAIL"
+          test -n "$FISHERGO_RLS_USER_A_PASSWORD"
+          test -n "$FISHERGO_RLS_USER_B_EMAIL"
+          test -n "$FISHERGO_RLS_USER_B_PASSWORD"
+          if [ "${{ inputs.reconcile_legacy_history }}" = "true" ]; then
+            test "$SUPABASE_LEGACY_HISTORY_REPAIR_CONFIRMATION" = "FISHERGO_REPAIR_001_002"
+          fi
+
       - name: Link and apply migrations
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}

@@ -18,10 +18,45 @@ void main() {
     expect(workflow, contains('environment: fishergo-content-release'));
     expect(workflow, contains('supabase/setup-cli@v1'));
     expect(workflow, contains('flutter test --no-pub'));
+    final preflightStep = workflow.indexOf(
+      'name: Verify protected release inputs before mutation',
+    );
     final migrationStep = workflow.indexOf(
       'name: Link and apply migrations',
     );
+    expect(preflightStep, greaterThanOrEqualTo(0));
     expect(migrationStep, greaterThanOrEqualTo(0));
+    expect(preflightStep, lessThan(migrationStep));
+    final preflightEnd = workflow.indexOf('name: Link and apply migrations',
+        preflightStep);
+    final preflightSource = workflow.substring(preflightStep, preflightEnd);
+    for (final secret in [
+      'SUPABASE_ACCESS_TOKEN',
+      'SUPABASE_PROJECT_REF',
+      'SUPABASE_URL',
+      'SUPABASE_ANON_KEY',
+      'SUPABASE_DB_PASSWORD',
+      'FISHERGO_RLS_USER_A_EMAIL',
+      'FISHERGO_RLS_USER_A_PASSWORD',
+      'FISHERGO_RLS_USER_B_EMAIL',
+      'FISHERGO_RLS_USER_B_PASSWORD',
+    ]) {
+      expect(
+        preflightSource,
+        contains('test -n "\$$secret"'),
+        reason: 'migration mutation must require $secret first',
+      );
+    }
+    expect(
+      preflightSource,
+      contains('SUPABASE_LEGACY_HISTORY_REPAIR_CONFIRMATION'),
+    );
+    expect(
+      preflightSource,
+      contains('FISHERGO_REPAIR_001_002'),
+    );
+    expect(preflightSource, isNot(contains('supabase link')));
+    expect(preflightSource, isNot(contains('supabase db push')));
     final migrationStepEnd = workflow.indexOf(
       'name: Export linked project ref',
       migrationStep,

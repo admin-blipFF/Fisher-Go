@@ -36,6 +36,11 @@ that the remote legacy `001`/`002` history rows must be repaired. If repair is
 approved, also set the protected confirmation secret to
 `FISHERGO_REPAIR_001_002`.
 
+Before any link, migration-history repair, or `db push`, the workflow now
+fails closed if any migration, disposable-RLS-user, or approved-repair input is
+missing. This prevents a partially applied release from reaching a later
+verification step with an incomplete protected environment.
+
 The workflow verifies project identity before linking, validates the dry-run
 plan against the local migration IDs, applies migrations, captures before/plan/
 after history artifacts, runs linked pgTAP and lint checks, and then starts the

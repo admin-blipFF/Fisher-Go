@@ -114,8 +114,10 @@ The primary map-control follow-up now promotes the shared right-side HUD
 navigation callbacks to the semantics nodes for account, encyclopedia,
 equipment, catch-log, leaderboard, and admin buttons. The source contract
 passes and assistive activation follows the same navigation path as a pointer
-tap; the remaining secondary-screen audit and full device accessibility matrix
-are still open.
+tap. MapLibre fishing-spot markers now also promote their selection callback,
+so assistive activation opens the same spot detail as a pointer tap. The
+remaining secondary-screen audit and full device accessibility matrix are
+still open.
 
 CatchLog control mitigation added on 2026-08-03: the real-photo form, fishing
 spot markers, radar toggle, and custom navigation HUD controls now expose

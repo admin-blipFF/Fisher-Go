@@ -291,4 +291,18 @@ void main() {
     expect(normalizeMapBearing(-45), 315);
     expect(normalizeMapBearing(725), 5);
   });
+
+  test('fishing spot markers promote their selection callback to semantics',
+      () {
+    final source = File('lib/features/map/presentation/game_map_libre.dart')
+        .readAsStringSync();
+
+    expect(
+      source,
+      contains(
+        r'''label: '釣點 ${spot.displayLabel}',
+              onTap: () => widget.onSpotSelected(spot),''',
+      ),
+    );
+  });
 }

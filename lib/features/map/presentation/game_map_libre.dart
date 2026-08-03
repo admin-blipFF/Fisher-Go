@@ -450,6 +450,7 @@ class _GameMapLibreState extends State<GameMapLibre> {
             child: Semantics(
               button: true,
               label: '釣點 ${spot.displayLabel}',
+              onTap: () => widget.onSpotSelected(spot),
               child: GestureDetector(
                 behavior: HitTestBehavior.opaque,
                 onTap: () => widget.onSpotSelected(spot),

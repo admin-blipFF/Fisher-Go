@@ -30,7 +30,9 @@ Last updated: 2026-08-03
   their navigation callbacks to the semantics nodes, so assistive activation
   performs the same route change as a pointer tap. Secondary screens still
   need a full semantics audit before the broader accessibility action can be
-  closed.
+  closed. MapLibre fishing-spot markers now likewise promote their selection
+  callback, so assistive activation opens the same spot detail as a pointer
+  tap.
 
 - CatchLog's real-photo form, fishing-spot map marker, radar toggle, and custom
   navigation HUD controls now expose explicit semantics. The focused source

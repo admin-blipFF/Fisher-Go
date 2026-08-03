@@ -69,27 +69,41 @@ class _TutorialOverlayState extends State<TutorialOverlay> {
             top: MediaQuery.of(context).padding.top + 16,
             left: 0,
             right: 0,
-            child: _StepIndicator(
-              current: _currentStep,
-              total: _totalSteps,
+            child: Semantics(
+              container: true,
+              liveRegion: true,
+              label: '教學第 ${_currentStep + 1} 頁，共 $_totalSteps 頁',
+              child: ExcludeSemantics(
+                child: _StepIndicator(
+                  current: _currentStep,
+                  total: _totalSteps,
+                ),
+              ),
             ),
           ),
           Positioned(
             top: MediaQuery.of(context).padding.top + 8,
             right: 16,
-            child: TextButton(
-              onPressed: _isCompleting ? null : _onSkip,
-              style: TextButton.styleFrom(
-                foregroundColor: Colors.white70,
-                backgroundColor: Colors.white.withValues(alpha: 0.08),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(999),
-                  side: BorderSide(color: Colors.white.withValues(alpha: 0.18)),
+            child: Semantics(
+              button: true,
+              label: '略過教學',
+              hint: '跳過教學並開始遊戲',
+              child: TextButton(
+                onPressed: _isCompleting ? null : _onSkip,
+                style: TextButton.styleFrom(
+                  foregroundColor: Colors.white70,
+                  backgroundColor: Colors.white.withValues(alpha: 0.08),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(999),
+                    side: BorderSide(
+                      color: Colors.white.withValues(alpha: 0.18),
+                    ),
+                  ),
                 ),
+                child: const Text('略過'),
               ),
-              child: const Text('略過'),
             ),
           ),
           // Content card

@@ -4,6 +4,17 @@ Last updated: 2026-08-03
 
 ## Current verification snapshot (2026-08-03; production evidence through 2026-08-03)
 
+- On 2026-08-03, the GitHub-connected Vercel project auto-deployed commit
+  `5692b7b` to both canonical production aliases. The live verifier returned
+  HTTP 200 for both roots, HTTP 404 for both `/assets/.env` paths, matching
+  release ID `0.1.1+2-5692b7bb9aaa`, and the required revalidation/immutable
+  cache headers. The current production browser smoke loaded successful
+  OpenFreeMap tiles and passed the populated visual golden at both `390x844`
+  and `1440x900`. Motion measured `56.68 FPS` / p95 `33.3 ms` / `2.47%`
+  jank on mobile and `40.56 FPS` / p95 `66.5 ms` / `20.79%` jank on desktop;
+  the alias and visual gates pass, while the desktop motion gate remains open.
+  Evidence: `tmp/web-map-benchmark-production-masterplan-20260803.json`.
+
 - On 2026-08-03, the real-catch photo boundary was tightened end to end.
   `CatchPhotoStorage` now rejects video and unknown explicit extensions before
   reading or uploading a file, while retaining JPEG/PNG/WebP/HEIC/HEIF photo

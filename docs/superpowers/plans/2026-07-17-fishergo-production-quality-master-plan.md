@@ -258,7 +258,13 @@ ceiling, and a successful OpenFreeMap response while allowing live OSM tile
 pixels to change. The visual golden is independent from the still-open Web
 motion budget. On 2026-08-01, the current Web release also passed the client
 artifact secret scan and Web asset budget at a generated package size of
-`89.6 MiB`; Vercel production promotion remains an owner-controlled action.
+`89.6 MiB`. On 2026-08-03, the GitHub-connected Vercel project auto-deployed
+commit `5692b7b` to both canonical production aliases. The deployed verifier
+passed both roots, exact release ID `0.1.1+2-5692b7bb9aaa`, secret-asset
+rejection, matching manifests, and cache headers. The live two-viewport smoke
+also passed OpenFreeMap tile and visual-golden checks; motion remains open at
+`33.3 ms` p95 / `2.47%` jank on `390x844` and `66.5 ms` p95 / `20.79%` jank
+on `1440x900`.
 The full-map/panorama modal now uses the same `GameMapLibre` vector surface as
 the GameHome map instead of a second raster `FlutterMap` implementation. This
 keeps camera gestures, GPS coordinates, OSM water/roads/buildings, selected
@@ -819,9 +825,10 @@ short one-day cache with stale-while-revalidate.
 
 The deployed-Web verifier now checks those effective headers on each canonical
 alias, including the root page, Flutter bootstrap, versioned Dart payload, and
-release manifest. The source and stale-header regression tests pass; the
-canonical production aliases still need a new owner-controlled promotion and
-smoke run to produce live evidence.
+release manifest. The source and stale-header regression tests pass. The
+2026-08-03 live promotion and two-viewport smoke now provide current evidence
+for the canonical aliases; only the desktop Web motion budget remains open in
+this release boundary.
 
 A preview-only Vercel deployment of the current source reached `READY` and was
 checked through authenticated Vercel curl: root/bootstrap/release manifest

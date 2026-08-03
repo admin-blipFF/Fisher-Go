@@ -11,6 +11,15 @@ Last updated: 2026-08-03
   verifier and workflow source tests pass; the hosted application run remains
   owner-controlled and has not been executed from this workspace.
 
+- The shared Flutter theme now supplies a regional Traditional Chinese platform
+  fallback list (`Noto Sans CJK TC`, `Noto Sans TC`, `PingFang TC`, and
+  `Microsoft JhengHei`, then `sans-serif`) to every production text theme,
+  including the bootstrap loading screen. No font binary was added to the
+  bundle. Focused theme tests, `flutter analyze`, the Web release build, the
+  client secret scan, and the asset-budget check passed on 2026-08-03. This is
+  a platform-fallback mitigation; device-specific font coverage still needs
+  Android/iOS/Web visual confirmation before the glyph action can be closed.
+
 - Notification permission opt-in now has a real token-registration boundary:
   migration `0027_notification_device_tokens.sql` stores tokens behind
   authenticated RPCs, denies raw token reads to clients, and covers

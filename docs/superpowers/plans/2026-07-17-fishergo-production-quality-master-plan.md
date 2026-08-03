@@ -98,6 +98,12 @@ There is no auditable source, safety status, access status, review date, or envi
 - Production logs report missing Noto glyph coverage for Traditional Chinese.
 - Flutter semantics expose almost no useful controls to accessibility or browser automation.
 
+Mitigation added on 2026-08-03: the shared Flutter theme now supplies regional
+Traditional Chinese platform fallbacks without bundling an unreviewed font
+binary. The focused theme test, analyzer, Web release build, client artifact
+secret scan, and asset budget pass. This remains a mitigation until a device
+matrix confirms the required glyph coverage on Android, iOS, and Web.
+
 ### P1: Assets and binaries are oversized
 
 Measured baseline:

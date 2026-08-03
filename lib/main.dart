@@ -10,6 +10,7 @@ import 'core/config/supabase_config.dart';
 import 'core/auth/local_account_service.dart';
 import 'core/telemetry/app_telemetry.dart';
 import 'core/telemetry/supabase_analytics_sink.dart';
+import 'core/theme/fishergo_theme.dart';
 import 'core/web_session_clear.dart';
 import 'core/widgets/app_shell.dart';
 import 'features/fish/data/local_fish_species_data_source.dart';
@@ -117,7 +118,10 @@ class _FisherGoBootstrapState extends State<FisherGoBootstrap> {
         if (snapshot.connectionState == ConnectionState.done) {
           return const FisherGoApp();
         }
-        return const MaterialApp(home: _FisherGoLoadingScreen());
+        return MaterialApp(
+          theme: fisherGoTheme(),
+          home: const _FisherGoLoadingScreen(),
+        );
       },
     );
   }
@@ -169,7 +173,7 @@ class FisherGoApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'FisherGO',
-      theme: ThemeData(colorSchemeSeed: Colors.teal, useMaterial3: true),
+      theme: fisherGoTheme(),
       home: AppShell(fishSpeciesRepository: _buildFishRepository()),
     );
   }

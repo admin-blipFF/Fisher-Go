@@ -170,16 +170,18 @@ accidental invocation cannot change production. Both production scripts also
 require a clean Git worktree before reading credentials; use the direct Vercel
 preview command for uncommitted diagnostic builds instead of promoting them.
 For CI, configure the protected `fishergo-web-release` environment with
-`VERCEL_TOKEN`, `SUPABASE_URL`, `SUPABASE_ANON_KEY`, and the owner-configured
-privacy/support values, then run **Actions -> Web release -> Run workflow**.
-The workflow passes the resolved release ID and public build values into the
-remote Vercel build, so the post-deploy manifest check covers the deployment
-that Vercel actually built rather than only the runner's local build. The
-remote build uses the dedicated `FISHERGO_DEPLOY_RELEASE_ID` channel so a
-stale project-level `FISHERGO_RELEASE_ID` cannot replace the selected release.
+`VERCEL_TOKEN`, `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_PROJECT_REF`,
+and the owner-configured privacy/support values, then run **Actions -> Web
+release -> Run workflow**. The workflow passes the resolved release ID,
+public build values, and protected project ref into the remote Vercel build,
+so the post-deploy manifest check covers the deployment that Vercel actually
+built rather than only the runner's local build. The remote build uses the
+dedicated `FISHERGO_DEPLOY_RELEASE_ID` channel so a stale project-level
+`FISHERGO_RELEASE_ID` cannot replace the selected release.
 The Vercel build script also fails closed when `VERCEL_ENV=production` (or
-`FISHERGO_REQUIRE_SUPABASE=true`) and either public Supabase build value is
-missing; preview/local diagnostics may still run without Supabase.
+`FISHERGO_REQUIRE_SUPABASE=true`) and either public Supabase build value or
+project ref is missing; preview/local diagnostics may still run without
+Supabase.
 
 After a promotion, run **Actions -> Web production smoke -> Run workflow**.
 It checks both canonical release manifests, then runs the Chromium guest,

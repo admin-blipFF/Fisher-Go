@@ -155,4 +155,15 @@ void main() {
     expect(windowsScript.indexOf('git status --porcelain'),
         lessThan(windowsScript.indexOf('function Import-DotEnv')));
   });
+
+  test('Web release runbook lists the protected project identity secret', () {
+    final runbook = File('docs/release-runbook.md').readAsStringSync();
+    final webReleaseStart = runbook.indexOf('## 4. Web Release');
+    expect(webReleaseStart, isNonNegative);
+
+    final webRelease = runbook.substring(webReleaseStart);
+    expect(webRelease, contains('`SUPABASE_PROJECT_REF`'));
+    expect(webRelease, contains('public Supabase build value or'));
+    expect(webRelease, contains('project ref is missing'));
+  });
 }

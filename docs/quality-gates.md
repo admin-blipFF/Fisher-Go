@@ -832,6 +832,14 @@ Last updated: 2026-08-03
   with constrained emulator memory because an earlier host-memory-starved
   attempt timed out before the test process attached; that attempt is not
   treated as product evidence.
+- On 2026-08-03, a fresh current-source API 35 rerun on `emulator-5554`
+  passed `startup_auth_flow_test.dart`, `fishing_minigame_flow_test.dart`,
+  `daily_task_reward_flow_test.dart`, and the real
+  `offline_network_toggle_flow_test.dart`. Each run cleared app data before
+  installation; the runner explicitly skipped API 23 serial
+  `0123456789ABCDEF`. The only repeated build diagnostic was the existing
+  `maplibre_android` Kotlin Gradle Plugin warning; no gameplay, persistence,
+  or reconnect failure occurred.
 - The Android location boundary is now explicit and unit-tested: a disabled
   location service, a denied permission, and a permanently denied permission
   each produce a distinct state without blocking the GPS-free map fallback.

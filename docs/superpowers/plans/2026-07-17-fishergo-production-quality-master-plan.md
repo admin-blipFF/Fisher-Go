@@ -834,6 +834,12 @@ fallback when identity cleanup fails. Its source contract and the full `518`
 test suite pass. Hosted execution still requires the protected Supabase
 environment and has not been run from this workspace.
 
+On 2026-08-03, a fresh current-source API 35 rerun on `emulator-5554` passed
+startup/auth/tutorial, bite-first fishing, daily-task reward persistence, and
+the real network-toggle offline/reconnect flow after clearing app data before
+each installation. The runner explicitly skipped the API 23 photo-frame; the
+only repeated build diagnostic was the existing MapLibre Android KGP warning.
+
 The Android smoke path now has a repeatable API 35 preflight and runner. The
 known API 23 photo-frame device remains excluded, and GameHome defers the
 location permission prompt until the player taps the locate control so the

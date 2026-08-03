@@ -1762,12 +1762,15 @@ Open owner actions:
 
 ## Gate 1: Database Isolation
 
-Status: **PARTIAL - linked behavior and protected legacy-auth proof are ready; hosted legacy run remains owner-controlled**
+Status: **PARTIAL - local UUID ownership is proven; hosted migration and Auth-backed run remain owner-controlled**
 
 The local Supabase stack applied the current migration bundle from a clean
-database. The pgTAP suite now runs 66 assertions across the three `player_*`
-tables, legacy `public.profiles` and `public.catches`, the remote-safe behavior
-fixture, and the remote policy-shape fixture used by the current app:
+database. Additive migration `0028_uuid_player_ownership.sql` now promotes the
+six remaining player-owned `user_id` columns from text to UUID and adds
+`auth.users(id) on delete cascade` foreign keys. It fails closed before the
+type change when malformed or orphaned ownership rows exist. The pgTAP suite
+now runs 299 assertions across 25 files, including UUID shape and cascade
+behavior:
 
 - authenticated users can write their own rows;
 - User A cannot insert, update, or delete User B rows;
@@ -1778,8 +1781,9 @@ fixture, and the remote policy-shape fixture used by the current app:
 
 Evidence from this run:
 
-- `npx supabase test db --local`: 66 tests passed across the local full fixture,
-  the linked-safe player behavior fixture, and the remote policy-shape fixture;
+- `npx supabase test db --local`: 299 tests passed across 25 files, including
+  the UUID ownership shape/cascade fixtures and the linked-safe player behavior
+  fixture;
 - `npx supabase db lint --local --schema public --fail-on error`: exit 0 with
   `No schema errors found`. The CI command is scoped to FisherGO's public
   schema and fails closed on public errors; the installed `extensions`/pgTAP
@@ -1800,15 +1804,12 @@ Evidence from this run:
   functions.
 - Linked `npx supabase test db --linked supabase/tests/remote_player_rls_shape_test.sql`:
   15 assertions passed. This is a read-only remote policy-shape check.
-- Linked `npx supabase test db --linked
-  supabase/tests/remote_player_rls_shape_test.sql
-  supabase/tests/remote_player_rls_behavior_test.sql`: 39 assertions passed.
-  The behavior fixture creates random text ownership IDs inside a transaction,
-  sets User A/B JWT claims, exercises own writes and cross-user reads/mutations,
-  and rolls back without touching `auth.users` or persistent production rows.
-  This remote suite was rerun on 2026-07-22 after starting the local Docker
-  engine: both fixtures completed successfully with 39 tests, and the linked
-  public-schema lint again returned `No schema errors found`.
+- Historical linked `remote_player_rls_*` evidence covered the pre-0028 text
+  ownership schema. The content-release workflow now includes
+  `player_uuid_ownership_shape_test.sql` after applying the new migration, so
+  hosted UUID types, Auth cascade constraints, and direct UUID policy
+  comparisons are checked before hosted gameplay smoke. A post-0028 linked run
+  has not been dispatched from this workspace.
 - The legacy `public.profiles` and `public.catches` portions of the full fixture
   cannot insert synthetic `auth.users` rows in the hosted pgTAP runner because
   the managed `auth` schema is protected. The new protected workflow boundary
@@ -1826,11 +1827,12 @@ Evidence from this run:
   smoke has a separate URL/anon-key/project-ref preflight before its own setup.
   The hosted execution remains owner-controlled until those two disposable
   accounts are configured and the content-release workflow is dispatched.
-- A fresh local reset on 2026-08-03 reapplied migrations through `0027` from
-  zero; `npx supabase test db` passed all `23` files and `285` assertions, and
-  `npx supabase db lint --local --schema public --fail-on error` returned no
-  schema errors. This refreshes local evidence only and does not close the
-  hosted migration gate.
+- A fresh local reset on 2026-08-04 reapplied migrations through `0028` from
+  zero; `npx supabase test db --local` passed all `25` files and `299`
+  assertions, and `npx supabase db lint --local --schema public --fail-on
+  error` returned no schema errors. This refreshes local evidence only and
+  does not close the hosted migration gate; production rows must first pass the
+  new malformed/orphaned UUID preflight.
 
 ## Gate 2: MapLibre Engine Decision
 

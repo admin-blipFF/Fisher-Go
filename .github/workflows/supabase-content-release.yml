@@ -169,6 +169,7 @@ jobs:
           set -euo pipefail
           supabase test db --linked supabase/tests/remote_player_rls_shape_test.sql \
             supabase/tests/remote_player_rls_behavior_test.sql \
+            supabase/tests/player_uuid_ownership_shape_test.sql \
             supabase/tests/analytics_events_shape_test.sql \
             supabase/tests/analytics_retention_shape_test.sql \
             supabase/tests/catch_photo_bucket_shape_test.sql \

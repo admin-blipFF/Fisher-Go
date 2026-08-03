@@ -30,8 +30,8 @@ void main() {
     expect(preflightStep, lessThan(setupFlutterStep));
     expect(migrationStep, greaterThanOrEqualTo(0));
     expect(preflightStep, lessThan(migrationStep));
-    final preflightEnd = workflow.indexOf('name: Link and apply migrations',
-        preflightStep);
+    final preflightEnd =
+        workflow.indexOf('name: Link and apply migrations', preflightStep);
     final preflightSource = workflow.substring(preflightStep, preflightEnd);
     for (final secret in [
       'SUPABASE_ACCESS_TOKEN',
@@ -147,9 +147,11 @@ void main() {
       workflow,
       contains(
           r'''supabase test db --linked supabase/tests/remote_player_rls_shape_test.sql \
-            supabase/tests/remote_player_rls_behavior_test.sql'''),
+            supabase/tests/remote_player_rls_behavior_test.sql \
+            supabase/tests/player_uuid_ownership_shape_test.sql'''),
     );
     for (final path in [
+      'supabase/tests/player_uuid_ownership_shape_test.sql',
       'supabase/tests/analytics_events_shape_test.sql',
       'supabase/tests/analytics_retention_shape_test.sql',
       'supabase/tests/catch_photo_bucket_shape_test.sql',
@@ -228,7 +230,8 @@ void main() {
     }
     expect(
       smokePreflightSource,
-      contains(r'test "$SUPABASE_PROJECT_REF" = "${{ needs.apply-and-verify.outputs.project_ref }}"'),
+      contains(
+          r'test "$SUPABASE_PROJECT_REF" = "${{ needs.apply-and-verify.outputs.project_ref }}"'),
     );
     final smokeIdentity = workflow.indexOf(
       'name: Verify Supabase project identity',

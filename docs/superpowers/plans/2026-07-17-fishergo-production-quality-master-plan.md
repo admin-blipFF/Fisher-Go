@@ -295,6 +295,15 @@ assertions; `.github/workflows/supabase-content-release.yml` runs it after
 linked migrations and lint when the owner supplies the protected test-user
 secrets. Gate 1 remains partial until that hosted run produces evidence.
 
+On 2026-08-04, additive migration `0028_uuid_player_ownership.sql` promoted
+the six remaining player-owned `user_id` columns to UUIDs with
+`auth.users(id) on delete cascade` foreign keys. It fails closed on malformed
+or orphaned ownership rows before changing types and rewrites the installed
+reward/session RPC actor variables to UUIDs. Local reset, 25 pgTAP files with
+299 assertions, and public-schema lint pass. The linked workflow now checks the
+new UUID shape after applying migrations; hosted application and the protected
+post-migration behavior run remain owner-controlled, so Gate 1 is still partial.
+
 ## 6. Workstream 2: Quality Guardrails
 
 **Create**

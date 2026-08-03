@@ -2,7 +2,7 @@ set search_path = extensions, public;
 
 begin;
 
-select extensions.plan(25);
+select extensions.plan(26);
 
 select extensions.ok(
   to_regclass('public.player_profiles') is not null,
@@ -35,11 +35,86 @@ select extensions.ok(
   'remote player_catches has RLS enabled'
 );
 
--- The player_* tables keep text ownership for app compatibility and do not
--- require auth.users rows. This lets the linked check exercise real RLS
--- behavior with JWT claims without mutating managed authentication data.
+-- Use disposable local Auth rows when the test runner permits it. Managed
+-- Supabase runners may reject synthetic auth inserts, so the exception block
+-- falls back to two existing non-anonymous users supplied by the protected
+-- hosted smoke environment. Public rows remain transaction-local either way.
+do $$
+begin
+  insert into auth.users (
+    id,
+    aud,
+    role,
+    email,
+    email_confirmed_at,
+    raw_app_meta_data,
+    raw_user_meta_data,
+    created_at,
+    updated_at,
+    is_anonymous
+  )
+  values
+    (
+      '00000000-0000-0000-0000-000000000021',
+      'authenticated',
+      'authenticated',
+      'remote-rls-user-a@example.test',
+      now(),
+      '{}'::jsonb,
+      '{}'::jsonb,
+      now(),
+      now(),
+      false
+    ),
+    (
+      '00000000-0000-0000-0000-000000000022',
+      'authenticated',
+      'authenticated',
+      'remote-rls-user-b@example.test',
+      now(),
+      '{}'::jsonb,
+      '{}'::jsonb,
+      now(),
+      now(),
+      false
+    )
+  on conflict (id) do nothing;
+exception when others then
+  null;
+end;
+$$;
+
 create temp table rls_test_ids as
-select gen_random_uuid()::text as user_a, gen_random_uuid()::text as user_b;
+select
+  '00000000-0000-0000-0000-000000000021'::uuid as user_a,
+  '00000000-0000-0000-0000-000000000022'::uuid as user_b
+ where exists (
+   select 1 from auth.users
+    where id = '00000000-0000-0000-0000-000000000021'::uuid
+ )
+   and exists (
+     select 1 from auth.users
+      where id = '00000000-0000-0000-0000-000000000022'::uuid
+   );
+insert into rls_test_ids (user_a, user_b)
+select candidate_a.id, candidate_b.id
+  from (
+    select id, row_number() over (order by created_at, id) as row_number
+      from auth.users
+     where coalesce(is_anonymous, false) = false
+  ) candidate_a
+  cross join (
+    select id, row_number() over (order by created_at, id) as row_number
+      from auth.users
+     where coalesce(is_anonymous, false) = false
+  ) candidate_b
+ where candidate_a.row_number = 1
+   and candidate_b.row_number = 2
+   and not exists (select 1 from rls_test_ids);
+select extensions.ok(
+  (select count(*)::integer from rls_test_ids) = 1,
+  'RLS behavior has two Auth users'
+);
 grant select on rls_test_ids to authenticated;
 
 set local role postgres;
@@ -56,7 +131,7 @@ select user_b, 'fish-remote-b', 'Remote Fish B'
 set local role authenticated;
 select set_config(
   'request.jwt.claim.sub',
-  (select user_a from rls_test_ids),
+  (select user_a::text from rls_test_ids),
   true
 );
 
@@ -156,7 +231,7 @@ select extensions.is(
 set local role authenticated;
 select set_config(
   'request.jwt.claim.sub',
-  (select user_a from rls_test_ids),
+  (select user_a::text from rls_test_ids),
   true
 );
 select extensions.throws_ok(
@@ -191,7 +266,7 @@ select extensions.ok(
 set local role authenticated;
 select set_config(
   'request.jwt.claim.sub',
-  (select user_b from rls_test_ids),
+  (select user_b::text from rls_test_ids),
   true
 );
 select extensions.is(

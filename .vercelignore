@@ -16,3 +16,9 @@ assets/fish/icons/renumbered_*/
 .env.*
 !.env.example
 vectorengine.env
+android/
+ios/
+linux/
+macos/
+windows/
+integration_test/

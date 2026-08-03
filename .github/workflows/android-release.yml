@@ -16,6 +16,7 @@ jobs:
       FISHERGO_SUPPORT_EMAIL: ${{ secrets.FISHERGO_SUPPORT_EMAIL }}
       SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
       SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+      SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
       FISHERGO_ANALYTICS_ENABLED: 'true'
     steps:
       - name: Checkout
@@ -44,6 +45,10 @@ jobs:
           set -euo pipefail
           test -n "$SUPABASE_URL"
           test -n "$SUPABASE_ANON_KEY"
+          test -n "$SUPABASE_PROJECT_REF"
+
+      - name: Verify Supabase project identity
+        run: dart run tool/verify_supabase_project_identity.dart
 
       - name: Write release manifest
         env:

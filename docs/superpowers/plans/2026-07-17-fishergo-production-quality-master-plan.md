@@ -1051,8 +1051,10 @@ remain owner-controlled.
 
 The Android release workflow now also fails closed before packaging when
 either public Supabase build value is missing, preventing a signed release
-from silently shipping the offline fixture path. Protected signing, the CI
-emulator run, and Play distribution remain owner-controlled.
+from silently shipping the offline fixture path. It also verifies the HTTPS
+Supabase URL host against the protected project ref before packaging, so the
+signed artifact cannot silently target a different project. Protected signing,
+the CI emulator run, and Play distribution remain owner-controlled.
 
 The restored production source was rebuilt for both release targets after the
 rejected fill-AA experiment: Web package `89.6 MiB` and arm64 AAB `75.7 MiB`.

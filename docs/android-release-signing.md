@@ -35,6 +35,9 @@ FISHERGO_ANDROID_KEYSTORE_BASE64
 FISHERGO_ANDROID_KEYSTORE_PASSWORD
 FISHERGO_ANDROID_KEY_ALIAS
 FISHERGO_ANDROID_KEY_PASSWORD
+SUPABASE_URL
+SUPABASE_ANON_KEY
+SUPABASE_PROJECT_REF
 ```
 
 The workflow decodes the keystore only into the runner temporary directory,
@@ -44,7 +47,8 @@ keeps separate Dart symbol directories for the AAB and APK builds,
 validates the keystore password, key password, and alias before `keytool`,
 verifies both JAR signatures, fails if both symbol files were not produced,
 fails before packaging when the protected production build is missing either
-public Supabase build value,
+public Supabase build value or project identity,
+and verifies that the public URL host matches `SUPABASE_PROJECT_REF`,
 and then runs the
 client-secret and asset-budget checks for the Android and companion Web
 artifacts. Only after all checks pass does it upload `app-release.aab`,

@@ -826,6 +826,11 @@ private photo paths into short-lived signed URLs. Focused coverage is in
 `test/catch_history_service_test.dart`; the remaining photo gate is the
 configured-project upload/read-back smoke in
 `tool/verify_supabase_catch_photo_storage.dart`.
+The hosted catch-photo smoke now deletes its uploaded object before deleting
+the disposable Auth identity through `/auth/v1/user`; sign-out is only a
+fallback when identity cleanup fails. Its source contract and the full `518`
+test suite pass. Hosted execution still requires the protected Supabase
+environment and has not been run from this workspace.
 
 The Android smoke path now has a repeatable API 35 preflight and runner. The
 known API 23 photo-frame device remains excluded, and GameHome defers the

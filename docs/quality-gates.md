@@ -94,8 +94,10 @@ Last updated: 2026-08-03
   identity check and confirmed `google_enabled=true` plus
   `anonymous_enabled=true`. The public habitat verifier then failed on the
   configured project because fishing spot `P017` is missing the expected
-  `tung-chung-runway` habitat tag. This confirms hosted content drift rather
-  than a client fallback issue; no migration was applied from the workspace.
+  `tung-chung-runway` habitat tag. The verifier now checks all 13 rows touched
+  by the habitat migration, rather than one representative row per habitat
+  group. This confirms hosted content drift rather than a client fallback
+  issue; no migration was applied from the workspace.
   The protected content-release workflow still requires the owner-controlled
   database password and legacy-history decision before it can reconcile and
   apply the pending content migrations.

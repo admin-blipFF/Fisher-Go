@@ -61,7 +61,23 @@ class _ExpectedHabitat {
 const _expectedHabitats = <_ExpectedHabitat>[
   _ExpectedHabitat(
       'P017', ['tung-chung-runway'], {'fish-103': 4, 'fish-109': 4}),
+  _ExpectedHabitat(
+      'P018', ['tung-chung-runway'], {'fish-103': 4, 'fish-109': 4}),
   _ExpectedHabitat('P035', [
+    'east-water'
+  ], {
+    'fish-101': 4,
+    'fish-103': 4,
+    'fish-140': 4,
+  }),
+  _ExpectedHabitat('P036', [
+    'east-water'
+  ], {
+    'fish-101': 4,
+    'fish-103': 4,
+    'fish-140': 4,
+  }),
+  _ExpectedHabitat('P043', [
     'east-water'
   ], {
     'fish-101': 4,
@@ -74,7 +90,43 @@ const _expectedHabitats = <_ExpectedHabitat>[
     'fish-063': 4,
     'fish-067': 4,
   }),
+  _ExpectedHabitat('P046', [
+    'sam-mun-tsai-tai-po-inner'
+  ], {
+    'fish-063': 4,
+    'fish-067': 4,
+  }),
+  _ExpectedHabitat('P047', [
+    'sam-mun-tsai-tai-po-inner'
+  ], {
+    'fish-063': 4,
+    'fish-067': 4,
+  }),
+  _ExpectedHabitat('P050', [
+    'sam-mun-tsai-tai-po-inner'
+  ], {
+    'fish-063': 4,
+    'fish-067': 4,
+  }),
   _ExpectedHabitat('P051', [
+    'tsing-ma-waters'
+  ], {
+    'fish-069': 4,
+    'fish-073': 4,
+  }),
+  _ExpectedHabitat('P052', [
+    'tsing-ma-waters'
+  ], {
+    'fish-069': 4,
+    'fish-073': 4,
+  }),
+  _ExpectedHabitat('P053', [
+    'tsing-ma-waters'
+  ], {
+    'fish-069': 4,
+    'fish-073': 4,
+  }),
+  _ExpectedHabitat('P054', [
     'tsing-ma-waters'
   ], {
     'fish-069': 4,

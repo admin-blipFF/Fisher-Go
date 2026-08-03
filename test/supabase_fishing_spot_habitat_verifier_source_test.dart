@@ -19,6 +19,23 @@ void main() {
     expect(source, contains('SUPABASE_EXPECTED_PROJECT_REF'));
     expect(source, contains('/rest/v1/fishing_spots'));
     expect(source, contains('P017'));
+    for (final spotId in [
+      'P018',
+      'P036',
+      'P043',
+      'P046',
+      'P047',
+      'P050',
+      'P052',
+      'P053',
+      'P054',
+    ]) {
+      expect(
+        source,
+        contains("'$spotId'"),
+        reason: 'hosted habitat verifier must cover $spotId',
+      );
+    }
     expect(source, contains('P035'));
     expect(source, contains('P045'));
     expect(source, contains('P051'));

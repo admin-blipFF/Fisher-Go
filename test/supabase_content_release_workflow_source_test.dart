@@ -59,6 +59,20 @@ void main() {
       workflow,
       contains('supabase db push --linked --include-all --dry-run'),
     );
+    expect(
+      workflow,
+      contains(r'plan_file="$RUNNER_TEMP/fishergo-migration-plan.txt"'),
+    );
+    expect(
+      workflow,
+      contains(r'2>&1 | tee "$plan_file"'),
+    );
+    expect(
+      workflow,
+      contains('dart run tool/verify_supabase_migration_plan.dart'),
+    );
+    expect(workflow, contains(r'--plan-file="$plan_file"'));
+    expect(workflow, contains(r'--allowed="$allowed_ids"'));
     expect(workflow, contains('supabase db push --linked --include-all'));
     expect(workflow, contains('supabase test db --linked'));
     expect(

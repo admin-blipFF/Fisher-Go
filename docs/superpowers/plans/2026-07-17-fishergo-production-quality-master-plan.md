@@ -1038,8 +1038,13 @@ linked RLS behavior test plus the current read-only or rollback-safe shape
 suites for analytics, retention, catch-photo storage, fishing-spot content and
 moderation, reward tickets, gameplay sessions, real-catch moderation, wallet
 operations, and event configuration after applying migrations. The workflow
-source contract passes, but applying and linting the migration bundle and
-producing hosted evidence in the linked project remain owner-controlled.
+source contract passes. Before applying, it captures the linked dry-run and
+passes it through `tool/verify_supabase_migration_plan.dart`; only local
+four-digit migration IDs at or above `0012` are allowed after legacy markers
+are removed, while unexpected IDs, revert actions, and unrecognized output
+fail closed and an explicit no-op is accepted. Applying and linting the
+migration bundle and producing hosted evidence in the linked project remain
+owner-controlled.
 
 ## 15. Extraction Order
 

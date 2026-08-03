@@ -4,6 +4,13 @@ Last updated: 2026-08-03
 
 ## Current verification snapshot (2026-08-03; production evidence through 2026-08-03)
 
+- The protected Supabase content-release workflow now captures the linked
+  migration dry-run and validates its plan before applying it. The guard allows
+  only the current local migration range, rejects legacy or unexpected IDs,
+  revert actions, and unknown output, and accepts an explicit no-op. The
+  verifier and workflow source tests pass; the hosted application run remains
+  owner-controlled and has not been executed from this workspace.
+
 - A fresh current-source Android vertical-slice rerun passed on API 35
   `emulator-5554`: startup/auth, map rotation, GPS-centered verified-spot
   selection, bite-first fishing minigame, Daily Task reward claim, offline

@@ -27,11 +27,15 @@ branch. The `apply-and-verify` job will link the project, apply all versioned
 migrations, run linked pgTAP, and run public-schema lint.
 
 The job first prints a read-only `supabase db push --linked --include-all
---dry-run` migration plan, then applies the same migration set. Review that
-plan in the workflow log when migration history contains legacy entries or
-local/remote drift. The migration target ref is passed to the dependent
-`hosted-gameplay-smoke` job. Configure the protected `fishergo-live-smoke`
-environment with:
+--dry-run` migration plan, captures it in the runner temporary directory, and
+passes it through `tool/verify_supabase_migration_plan.dart` before applying
+anything. The verifier allows only local four-digit migration IDs at or above
+`0012` after legacy marker files are removed, rejects unexpected IDs, revert
+actions, and unrecognizable output, and accepts an explicit no-op plan. Review
+the verified plan in the workflow log when migration history contains legacy
+entries or local/remote drift. The migration target ref is passed to the
+dependent `hosted-gameplay-smoke` job. Configure the protected
+`fishergo-live-smoke` environment with:
 
 - `SUPABASE_URL`
 - `SUPABASE_ANON_KEY`

@@ -1120,7 +1120,10 @@ action and client invocation require
 `FISHERGO_ACCOUNT_DELETION_ENABLED=true`, which defaults to false. The Web
 release scripts propagate and validate this value, so the action can only be
 published after the protected Edge Function deployment and disposable-account
-smoke are complete. The hosted deployment and smoke remain owner-controlled.
+  smoke are complete. The local function boundary now removes all current
+  player-owned tables, including reward transactions, fishing sessions,
+  notification tokens, and hashed analytics rows, before deleting the Auth user.
+  The hosted deployment and smoke remain owner-controlled.
 
 ## 14. Workstream 10: Live Game Systems
 

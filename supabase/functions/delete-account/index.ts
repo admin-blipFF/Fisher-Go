@@ -42,6 +42,7 @@ async function removeCatchPhotos(
 async function deleteOwnedRows(
   admin: ReturnType<typeof createClient>,
   userId: string,
+  actorKey: string,
 ) {
   const ownedTables = [
     { table: "profiles", column: "id" },
@@ -51,11 +52,31 @@ async function deleteOwnedRows(
     { table: "player_profiles", column: "user_id" },
     { table: "player_fish_collections", column: "user_id" },
     { table: "player_catches", column: "user_id" },
+    { table: "player_coin_transactions", column: "user_id" },
+    { table: "player_gameplay_reward_claims", column: "user_id" },
+    { table: "player_fishing_sessions", column: "user_id" },
+    { table: "player_notification_tokens", column: "user_id" },
   ] as const;
   for (const { table, column } of ownedTables) {
     const { error } = await admin.from(table).delete().eq(column, userId);
     if (error) throw error;
   }
+
+  // Analytics deliberately stores a project-local SHA-256 actor key instead
+  // of the auth UUID; remove those rows with the same privacy-preserving key.
+  const { error: analyticsError } = await admin
+    .from("analytics_events")
+    .delete()
+    .eq("actor_key", actorKey);
+  if (analyticsError) throw analyticsError;
+}
+
+async function analyticsActorKey(userId: string) {
+  const bytes = new TextEncoder().encode(userId);
+  const digest = await crypto.subtle.digest("SHA-256", bytes);
+  return Array.from(new Uint8Array(digest), (byte) =>
+    byte.toString(16).padStart(2, "0"),
+  ).join("");
 }
 
 Deno.serve(async (request) => {
@@ -81,8 +102,9 @@ Deno.serve(async (request) => {
   const userId = userData.user.id;
   const admin = createClient(supabaseUrl, serviceRoleKey);
   try {
+    const actorKey = await analyticsActorKey(userId);
     await removeCatchPhotos(admin, userId);
-    await deleteOwnedRows(admin, userId);
+    await deleteOwnedRows(admin, userId, actorKey);
     const { error } = await admin.auth.admin.deleteUser(userId);
     if (error) throw error;
     return json({ deleted: true });

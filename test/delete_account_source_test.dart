@@ -14,10 +14,17 @@ void main() {
     expect(source, contains('"player_profiles"'));
     expect(source, contains('"player_fish_collections"'));
     expect(source, contains('"player_catches"'));
+    expect(source, contains('"player_coin_transactions"'));
+    expect(source, contains('"player_gameplay_reward_claims"'));
+    expect(source, contains('"player_fishing_sessions"'));
+    expect(source, contains('"player_notification_tokens"'));
     expect(source, contains('"profiles"'));
     expect(source, contains('"catches"'));
     expect(source, contains('"daily_leaderboard"'));
     expect(source, contains('"coin_grant_claims"'));
+    expect(source, contains('"analytics_events"'));
+    expect(source, contains('actor_key'));
+    expect(source, contains('crypto.subtle.digest'));
     expect(source, contains('column: "id"'));
     expect(source, contains('column: "user_id"'));
     expect(source, contains('"catch-photos"'));

@@ -1251,9 +1251,10 @@ Last updated: 2026-08-03
   disposable owner-provided email/password pair.
 - Account deletion is now source-ready: the Profile confirmation flow clears
   the local account namespace only after a successful `delete-account` Edge
-  Function response. The function removes current `profiles`, `catches`,
-  `daily_leaderboard`, and `coin_grant_claims` rows, legacy player rows,
-  private catch photos, and the Auth user. The hosted Edge Function
+   Function response. The function removes current `profiles`, `catches`,
+   `daily_leaderboard`, and `coin_grant_claims` rows, legacy player rows,
+   reward transactions, fishing sessions, notification tokens, privacy-safe
+   analytics rows, private catch photos, and the Auth user. The hosted Edge Function
   deployment, live deletion smoke, privacy-policy URL, and Play Data Safety
   owner review remain open. Inventory: `docs/store-release-data-safety.md`.
 - The Android GameHome and direct native benchmark runners now reject traces

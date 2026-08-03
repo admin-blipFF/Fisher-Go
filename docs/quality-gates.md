@@ -799,6 +799,13 @@ Last updated: 2026-08-03
   backup icon sources are excluded from both Flutter assets and Vercel input.
   The Web figure is the complete package size, not the much smaller first-use
   transfer measured by the bootstrap capture.
+- On 2026-08-03, the avatar manifest was narrowed from a recursive directory
+  entry to the 66 runtime PNG layers. The APK and AAB were rebuilt from the
+  current source: `91.0 MiB` APK and `73.0 MiB` AAB. Both archives contained
+  no avatar backup/SVG or `.env` entries; the Web package remained `86.9 MiB`,
+  and the asset budget plus client secret scans passed. The new regression is
+  covered by `test/mobile_fish_assets_test.dart`; this improves bundle hygiene
+  but does not close either motion-performance gate.
 - After the asset manifest change, the API 35 emulator smoke was rerun on
   `emulator-5554`; the complete Android vertical slice passed:
   `startup_auth_flow_test.dart`, `fishing_minigame_flow_test.dart`,

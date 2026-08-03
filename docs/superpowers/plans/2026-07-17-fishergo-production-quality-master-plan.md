@@ -773,12 +773,14 @@ canvas antialiasing is not the primary release-gate bottleneck. Evidence is
 - Uncached first usable map: at most 5 seconds on a normal Hong Kong mobile connection.
 - Normal Android map motion: p95 frame time at most 20 ms.
 
-The 2026-08-03 current-source Web release now uses an explicit map asset
-allowlist rather than recursively bundling `assets/maps/`. The retired
-`fishergo_overworld_imagegen_v3.png` is absent from the manifest; the package
-measured `86.9 MiB`, a `2.75 MiB` reduction, while the arm64 AAB remained
-`75.7 MiB`. The asset budget command passed and
-`test/asset_budget_source_test.dart` now guards the allowlist.
+The 2026-08-03 current-source Web release now uses explicit map and avatar
+asset allowlists rather than recursively bundling generated or backup files.
+The retired `fishergo_overworld_imagegen_v3.png` and avatar `_opaque_backup`
+layers are absent from the manifests. The current package measured `86.9 MiB`,
+the arm64 APK `91.0 MiB`, and the arm64 AAB `73.0 MiB`; all remain below the
+release budgets. The asset budget command and client secret scan passed, and
+`test/asset_budget_source_test.dart` plus
+`test/mobile_fish_assets_test.dart` guard the allowlists.
 The Web benchmark runner now runs the cache-disabled bootstrap capture and
 enforces the `15 MiB` startup-transfer budget in the Web map benchmark and
 canonical production-smoke workflows. The current release build measured

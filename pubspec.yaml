@@ -45,7 +45,72 @@ flutter:
     - assets/fish/icons/locked_silhouette.png
     - assets/fish/mobile_webp/
     - assets/fish/icons/silhouettes/
-    - assets/avatar/layers/
+    - assets/avatar/layers/body_base.png
+    - assets/avatar/layers/body_female_01.png
+    - assets/avatar/layers/body_female_02.png
+    - assets/avatar/layers/body_female_03.png
+    - assets/avatar/layers/body_female_04.png
+    - assets/avatar/layers/body_female_05.png
+    - assets/avatar/layers/body_female_map.png
+    - assets/avatar/layers/body_male_01.png
+    - assets/avatar/layers/body_male_02.png
+    - assets/avatar/layers/body_male_03.png
+    - assets/avatar/layers/body_male_04.png
+    - assets/avatar/layers/body_male_05.png
+    - assets/avatar/layers/body_male_map.png
+    - assets/avatar/layers/cooler_01.png
+    - assets/avatar/layers/cooler_02.png
+    - assets/avatar/layers/cooler_03.png
+    - assets/avatar/layers/cooler_04.png
+    - assets/avatar/layers/cooler_05.png
+    - assets/avatar/layers/cooler_06.png
+    - assets/avatar/layers/hair_buzz.png
+    - assets/avatar/layers/hair_curly.png
+    - assets/avatar/layers/hair_long.png
+    - assets/avatar/layers/hair_ponytail.png
+    - assets/avatar/layers/hair_short.png
+    - assets/avatar/layers/hat_01.png
+    - assets/avatar/layers/hat_02.png
+    - assets/avatar/layers/hat_03.png
+    - assets/avatar/layers/hat_04.png
+    - assets/avatar/layers/hat_05.png
+    - assets/avatar/layers/hat_06.png
+    - assets/avatar/layers/mask_01.png
+    - assets/avatar/layers/mask_02.png
+    - assets/avatar/layers/mask_03.png
+    - assets/avatar/layers/mask_04.png
+    - assets/avatar/layers/mask_05.png
+    - assets/avatar/layers/mask_06.png
+    - assets/avatar/layers/pants_01.png
+    - assets/avatar/layers/pants_02.png
+    - assets/avatar/layers/pants_03.png
+    - assets/avatar/layers/pants_04.png
+    - assets/avatar/layers/pants_05.png
+    - assets/avatar/layers/pants_06.png
+    - assets/avatar/layers/rod_01.png
+    - assets/avatar/layers/rod_02.png
+    - assets/avatar/layers/rod_03.png
+    - assets/avatar/layers/rod_04.png
+    - assets/avatar/layers/rod_05.png
+    - assets/avatar/layers/rod_06.png
+    - assets/avatar/layers/shirt_01.png
+    - assets/avatar/layers/shirt_02.png
+    - assets/avatar/layers/shirt_03.png
+    - assets/avatar/layers/shirt_04.png
+    - assets/avatar/layers/shirt_05.png
+    - assets/avatar/layers/shirt_06.png
+    - assets/avatar/layers/shoes_01.png
+    - assets/avatar/layers/shoes_02.png
+    - assets/avatar/layers/shoes_03.png
+    - assets/avatar/layers/shoes_04.png
+    - assets/avatar/layers/shoes_05.png
+    - assets/avatar/layers/shoes_06.png
+    - assets/avatar/layers/tackle_box_01.png
+    - assets/avatar/layers/tackle_box_02.png
+    - assets/avatar/layers/tackle_box_03.png
+    - assets/avatar/layers/tackle_box_04.png
+    - assets/avatar/layers/tackle_box_05.png
+    - assets/avatar/layers/tackle_box_06.png
     - assets/maps/hk_terrain_mvp.json
     - assets/maps/hk_overworld_overlay.png
     - assets/maps/textures/

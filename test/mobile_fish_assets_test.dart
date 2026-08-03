@@ -30,6 +30,23 @@ void main() {
     expect(vercelIgnore, contains('assets/fish/icons/backup_*/'));
   });
 
+  test('avatar asset manifest excludes backup layers and legacy SVGs', () {
+    final pubspec = File('pubspec.yaml').readAsStringSync();
+    expect(pubspec, isNot(contains('    - assets/avatar/layers/\n')));
+    expect(pubspec, isNot(contains('assets/avatar/layers/_opaque_backup')));
+
+    final pngs = Directory('assets/avatar/layers')
+        .listSync()
+        .whereType<File>()
+        .where((file) => file.path.toLowerCase().endsWith('.png'))
+        .map((file) => file.path.replaceAll('\\', '/'))
+        .toList(growable: false);
+    expect(pngs, isNotEmpty);
+    for (final path in pngs) {
+      expect(pubspec, contains('    - $path'));
+    }
+  });
+
   test('Flutter engine decodes the compressed fish assets', () async {
     final files = Directory('assets/fish/mobile_webp')
         .listSync()

@@ -28,6 +28,7 @@ jobs:
       VERCEL_PROJECT: fishergo
       SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
       SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+      SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
       FISHERGO_PRIVACY_URL: ${{ secrets.FISHERGO_PRIVACY_URL }}
       FISHERGO_SUPPORT_EMAIL: ${{ secrets.FISHERGO_SUPPORT_EMAIL }}
       FISHERGO_ANALYTICS_ENABLED: 'true'
@@ -74,6 +75,9 @@ jobs:
 
       - name: Verify public release configuration
         run: dart run tool/verify_public_release_config.dart
+
+      - name: Verify Supabase project identity
+        run: dart run tool/verify_supabase_project_identity.dart
 
       - name: Deploy, promote, and verify canonical aliases
         run: bash scripts/deploy.sh

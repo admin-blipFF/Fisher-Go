@@ -64,6 +64,12 @@ if (Test-Path -LiteralPath (Join-Path $projectRoot '.env') -PathType Leaf) {
 $vercelToken = Require-EnvironmentValue 'VERCEL_TOKEN'
 $supabaseUrl = Require-EnvironmentValue 'SUPABASE_URL'
 $supabaseAnonKey = Require-EnvironmentValue 'SUPABASE_ANON_KEY'
+$supabaseProjectRef = Require-EnvironmentValue 'SUPABASE_PROJECT_REF'
+
+$identityResult = & dart run tool/verify_supabase_project_identity.dart
+if ($LASTEXITCODE -ne 0) {
+    throw "Supabase project identity validation failed: $($identityResult -join ' ')"
+}
 
 $hkNow = [TimeZoneInfo]::ConvertTimeBySystemTimeZoneId([DateTime]::UtcNow, 'China Standard Time')
 $buildTime = $hkNow.ToString('yyyy-MM-dd HH:mm') + ' HKT'
@@ -178,6 +184,8 @@ $vercelDeployArgs = @(
     "SUPABASE_URL=$supabaseUrl",
     '--build-env',
     "SUPABASE_ANON_KEY=$supabaseAnonKey",
+    '--build-env',
+    "SUPABASE_PROJECT_REF=$supabaseProjectRef",
     '--build-env',
     "FISHERGO_PRIVACY_URL=$privacyUrl",
     '--build-env',

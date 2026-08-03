@@ -14,6 +14,7 @@ if [ "${VERCEL_ENV:-preview}" = "production" ] ||
   [ "${FISHERGO_REQUIRE_SUPABASE:-false}" = "true" ]; then
   : "${SUPABASE_URL:?SUPABASE_URL is required for production Vercel builds}"
   : "${SUPABASE_ANON_KEY:?SUPABASE_ANON_KEY is required for production Vercel builds}"
+  : "${SUPABASE_PROJECT_REF:?SUPABASE_PROJECT_REF is required for production Vercel builds}"
   : "${FISHERGO_PRIVACY_URL:?FISHERGO_PRIVACY_URL is required for production Vercel builds}"
   : "${FISHERGO_SUPPORT_EMAIL:?FISHERGO_SUPPORT_EMAIL is required for production Vercel builds}"
 fi
@@ -55,6 +56,7 @@ flutter config --enable-web
 flutter pub get
 if [ "${VERCEL_ENV:-preview}" = "production" ] ||
   [ "${FISHERGO_REQUIRE_SUPABASE:-false}" = "true" ]; then
+  dart run tool/verify_supabase_project_identity.dart
   dart run tool/verify_public_release_config.dart
 fi
 flutter build web --release \

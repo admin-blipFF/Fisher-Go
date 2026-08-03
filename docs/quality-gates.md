@@ -24,7 +24,8 @@ Last updated: 2026-08-03
   check remains anon-key-only and never exposes provider credentials.
 
 - Supabase project identity validation now uses one shared canonical URL rule
-  across live smoke, habitat smoke, and Android release: HTTPS,
+  across live smoke, habitat smoke, Android release, and Web production
+  deploy/build: HTTPS,
   `<project-ref>.supabase.co`, default port, and no proxy path/query/fragment.
   Lookalike hosts are covered by behavior tests and fail before any
   authenticated request.
@@ -634,10 +635,14 @@ Last updated: 2026-08-03
   `https://fishergo-26ejscz0a-klyeung-s-projects.vercel.app` (deployment
   `dpl_2H1kpYLFTMZXQ4nduqt3bTzN5ypG`). It remains a protected preview rather
   than a public-alias pass; no production alias promotion was performed.
-- The Vercel build boundary now fails closed for production when either public
-  Supabase build value is absent, while retaining the no-Supabase preview/local
-  diagnostic path. The source contract and shell syntax checks pass in
-  `test/deploy_script_source_test.dart` and `scripts/vercel-build.sh`.
+- The Vercel build boundary now fails closed for production when a public
+  Supabase build value or `SUPABASE_PROJECT_REF` is absent, and verifies that
+  the canonical URL belongs to that project ref before compiling. Linux and
+  Windows production deploy scripts pass the ref to the remote build, while
+  the protected Web release workflow runs the same identity check before
+  promotion. Preview/local diagnostics retain the no-Supabase path. The source
+  contract and shell syntax checks pass in `test/deploy_script_source_test.dart`
+  and `scripts/vercel-build.sh`.
 - Public release metadata now fails closed through
   `tool/verify_public_release_config.dart`: production requires an HTTPS
   privacy-policy URL and a valid support email. Android/Web workflows and both

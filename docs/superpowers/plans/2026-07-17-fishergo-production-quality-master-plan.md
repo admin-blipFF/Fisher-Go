@@ -1080,11 +1080,14 @@ startup/tutorial/map visual checks.
 
 The protected `.github/workflows/web-release.yml` manual workflow now owns the
 CI path as well. It resolves the shared release ID, supplies public Supabase
-build values and that identity to Vercel's remote build, then runs the
-canonical alias verifier. It is source-tested and YAML-validated but has not
-been dispatched; the manual remote deployment path has nevertheless completed
-the current Web production promotion. The wide-screen motion budget remains
-open after the production smoke (p95 `66.7 ms`, jank `20.94%`).
+build values and the protected project ref to Vercel's remote build, verifies
+that the canonical URL belongs to that project before promotion, then runs the
+canonical alias verifier. The Linux and Windows production deploy scripts and
+`scripts/vercel-build.sh` enforce the same project-ref boundary. The workflow
+is source-tested and YAML-validated but has not been dispatched; the manual
+remote deployment path has nevertheless completed the current Web production
+promotion. The wide-screen motion budget remains open after the production
+smoke (p95 `66.7 ms`, jank `20.94%`).
 
 The protected `.github/workflows/web-production-smoke.yml` workflow now binds
 the exact public release-manifest check to the Chromium guest/tutorial/map
@@ -1100,9 +1103,11 @@ The live populated-map runner measured `56.84 FPS` / p95 `33.3 ms` /
 remains open.
 
 The Vercel build boundary now also fails closed when `VERCEL_ENV=production`
-(or `FISHERGO_REQUIRE_SUPABASE=true`) and either public Supabase build value is
-missing. Preview/local diagnostics retain the deliberate no-Supabase path;
-the source contract and shell syntax checks pass.
+(or `FISHERGO_REQUIRE_SUPABASE=true`) and either public Supabase build value or
+`SUPABASE_PROJECT_REF` is missing. It verifies the canonical URL against that
+ref before compiling, so a production Web build cannot silently target another
+Supabase project. Preview/local diagnostics retain the deliberate no-Supabase
+path; the source contract and shell syntax checks pass.
 
 The Web cache policy is now enforced by `test/vercel_headers_source_test.dart`.
 Release entrypoints and unversioned map/runtime assets revalidate, while only

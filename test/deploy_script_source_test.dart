@@ -27,9 +27,12 @@ void main() {
     expect(script, contains(r': "${VERCEL_TOKEN:?'));
     expect(script, contains(r': "${SUPABASE_URL:?'));
     expect(script, contains(r': "${SUPABASE_ANON_KEY:?'));
+    expect(script, contains(r': "${SUPABASE_PROJECT_REF:?'));
+    expect(script, contains('tool/verify_supabase_project_identity.dart'));
     expect(script, contains('tool/verify_public_release_config.dart'));
     expect(script, contains('--build-env="SUPABASE_URL='));
     expect(script, contains('--build-env="SUPABASE_ANON_KEY='));
+    expect(script, contains('--build-env="SUPABASE_PROJECT_REF='));
     expect(script, contains('--build-env="FISHERGO_DEPLOY_RELEASE_ID='));
     expect(script, contains('--build-env="FISHERGO_RELEASE_ID='));
     expect(script, contains('--build-env="FISHERGO_GIT_SHA='));
@@ -53,6 +56,12 @@ void main() {
     expect(windowsScript, contains('tool/write_release_manifest.dart'));
     expect(windowsScript, contains("'--build-env'"));
     expect(windowsScript, contains(r'SUPABASE_URL=$supabaseUrl'));
+    expect(windowsScript,
+        contains("Require-EnvironmentValue 'SUPABASE_PROJECT_REF'"));
+    expect(
+        windowsScript, contains('tool/verify_supabase_project_identity.dart'));
+    expect(
+        windowsScript, contains(r'SUPABASE_PROJECT_REF=$supabaseProjectRef'));
     expect(windowsScript, contains(r'FISHERGO_DEPLOY_RELEASE_ID=$releaseId'));
     expect(windowsScript, contains(r'FISHERGO_RELEASE_ID=$releaseId'));
     expect(windowsScript, contains('.fishergo-deploy-release-id'));
@@ -62,6 +71,8 @@ void main() {
     expect(webWorkflow, contains('secrets.VERCEL_TOKEN'));
     expect(webWorkflow, contains('secrets.SUPABASE_URL'));
     expect(webWorkflow, contains('secrets.SUPABASE_ANON_KEY'));
+    expect(webWorkflow, contains('secrets.SUPABASE_PROJECT_REF'));
+    expect(webWorkflow, contains('tool/verify_supabase_project_identity.dart'));
     expect(webWorkflow, contains('FISHERGO_PUBLIC_URL: https://fisher-go.app'));
     expect(webWorkflow,
         contains('FISHERGO_PUBLIC_ALIAS_URL: https://www.fisher-go.app'));
@@ -70,6 +81,8 @@ void main() {
     expect(webWorkflow, contains('FISHERGO_SUPPORT_EMAIL'));
     expect(webWorkflow, contains('FISHERGO_RELEASE_ID'));
     expect(vercelBuild, contains('FISHERGO_RELEASE_ID'));
+    expect(vercelBuild, contains('SUPABASE_PROJECT_REF'));
+    expect(vercelBuild, contains('tool/verify_supabase_project_identity.dart'));
     expect(vercelBuild, contains('FISHERGO_DEPLOY_RELEASE_ID'));
     expect(vercelBuild, contains('.fishergo-deploy-release-id'));
     expect(gitIgnore, isNot(contains('.fishergo-deploy-release-id')));
@@ -120,6 +133,7 @@ void main() {
     expect(vercelBuild, contains('FISHERGO_REQUIRE_SUPABASE'));
     expect(vercelBuild, contains(r': "${SUPABASE_URL:?'));
     expect(vercelBuild, contains(r': "${SUPABASE_ANON_KEY:?'));
+    expect(vercelBuild, contains(r': "${SUPABASE_PROJECT_REF:?'));
     expect(vercelBuild, contains('production'));
     expect(vercelBuild, contains('FISHERGO_PRIVACY_URL'));
     expect(vercelBuild, contains('FISHERGO_SUPPORT_EMAIL'));

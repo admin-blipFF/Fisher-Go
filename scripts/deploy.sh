@@ -25,6 +25,8 @@ fi
 : "${VERCEL_TOKEN:?VERCEL_TOKEN is required for production deployment}"
 : "${SUPABASE_URL:?SUPABASE_URL is required for production deployment}"
 : "${SUPABASE_ANON_KEY:?SUPABASE_ANON_KEY is required for production deployment}"
+: "${SUPABASE_PROJECT_REF:?SUPABASE_PROJECT_REF is required for production deployment}"
+dart run tool/verify_supabase_project_identity.dart
 dart run tool/verify_public_release_config.dart
 
 ACCOUNT_DELETION_ENABLED="${FISHERGO_ACCOUNT_DELETION_ENABLED:-false}"
@@ -98,6 +100,7 @@ DEPLOY_OUTPUT="$(npx --yes vercel deploy . --prod \
   --token="$VERCEL_TOKEN" \
   --build-env="SUPABASE_URL=$SUPABASE_URL" \
   --build-env="SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY" \
+  --build-env="SUPABASE_PROJECT_REF=$SUPABASE_PROJECT_REF" \
   --build-env="FISHERGO_PRIVACY_URL=${FISHERGO_PRIVACY_URL:-}" \
   --build-env="FISHERGO_SUPPORT_EMAIL=${FISHERGO_SUPPORT_EMAIL:-}" \
   --build-env="FISHERGO_ANALYTICS_ENABLED=${FISHERGO_ANALYTICS_ENABLED:-false}" \

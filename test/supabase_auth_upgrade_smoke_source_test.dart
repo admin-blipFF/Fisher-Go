@@ -19,6 +19,10 @@ void main() {
     expect(source, contains("['is_anonymous']"));
     expect(source, contains('upgradedUserId'));
     expect(source, contains('upgradedIsAnonymous'));
+    expect(source, contains('.delete('));
+    expect(source, contains("'/auth/v1/user'"));
+    expect(source, contains('disposable account cleanup'));
+    expect(source, contains('deletionSucceeded'));
     expect(source, contains('_operationTimeout'));
     expect(source, contains('_cleanupTimeout'));
     expect(source, contains('client.close()'));

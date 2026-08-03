@@ -1250,7 +1250,10 @@ Last updated: 2026-08-03
   the initial `/auth/v1/signup` response must be `is_anonymous=true`, the
   upgraded response must preserve the same user ID, and it must no longer be
   anonymous. The source contract passes; live execution still requires a
-  disposable owner-provided email/password pair.
+  disposable owner-provided email/password pair. Its finally block now deletes
+  the disposable user through the authenticated `/auth/v1/user` endpoint and
+  falls back to sign-out only when cleanup fails, preventing successful smoke
+  runs from leaving test accounts behind.
 - Account deletion is now source-ready: the Profile confirmation flow clears
   the local account namespace only after a successful `delete-account` Edge
    Function response. The function removes current `profiles`, `catches`,

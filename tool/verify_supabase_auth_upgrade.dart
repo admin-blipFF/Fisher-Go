@@ -156,17 +156,35 @@ Future<void> main() async {
     exitCode = 1;
   } finally {
     if (accessToken != null) {
+      var deletionSucceeded = false;
       try {
-        stderr.writeln('SMOKE: signing out.');
+        stderr.writeln('SMOKE: deleting disposable account.');
         final response = await client
-            .post(
-              _endpoint(url, '/auth/v1/logout'),
+            .delete(
+              _endpoint(url, '/auth/v1/user'),
               headers: _headers(anonKey, accessToken),
             )
             .timeout(_cleanupTimeout);
-        await _expectSuccess(response, 'Supabase smoke sign-out');
+        await _expectSuccess(response, 'Supabase disposable account cleanup');
+        deletionSucceeded = true;
       } catch (error) {
-        stderr.writeln('WARN: Supabase smoke sign-out failed: $error');
+        stderr.writeln(
+          'WARN: Supabase disposable account cleanup failed: $error',
+        );
+      }
+      if (!deletionSucceeded) {
+        try {
+          stderr.writeln('SMOKE: signing out after cleanup failure.');
+          final response = await client
+              .post(
+                _endpoint(url, '/auth/v1/logout'),
+                headers: _headers(anonKey, accessToken),
+              )
+              .timeout(_cleanupTimeout);
+          await _expectSuccess(response, 'Supabase smoke sign-out');
+        } catch (error) {
+          stderr.writeln('WARN: Supabase smoke sign-out failed: $error');
+        }
       }
     }
     client.close();

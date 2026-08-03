@@ -127,6 +127,10 @@ workflow now performs the same canonical URL/project-ref identity check before
 deploying the Edge Function. Web deployment scripts propagate this flag and
 reject values other than `true`/`false`.
 
+The live Auth upgrade smoke also deletes its disposable account through the
+authenticated `/auth/v1/user` endpoint after the identity-preservation check;
+it falls back to sign-out only when deletion fails.
+
 ## 3. Android Release
 
 Configure the protected `fishergo-android-release` environment with the

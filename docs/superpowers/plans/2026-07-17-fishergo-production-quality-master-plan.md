@@ -405,7 +405,9 @@ Flutter `linkIdentity` launch path and the registered `fishergo://auth/callback`
 scheme, while Web keeps the production HTTPS callback. A provider-level
 identity smoke is available at
 `tool/verify_supabase_auth_upgrade.dart` and requires a disposable test
-account before it can produce live evidence.
+account before it can produce live evidence. The smoke now deletes that
+disposable user through the authenticated Auth endpoint after the identity
+check, falling back to sign-out only when deletion fails.
 
 Local guest-auth configuration was aligned with the same cloud-guest contract
 on 2026-08-03: `supabase/config.toml` enables anonymous sign-ins and a source

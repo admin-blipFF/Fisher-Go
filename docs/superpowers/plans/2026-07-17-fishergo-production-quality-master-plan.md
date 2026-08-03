@@ -516,6 +516,17 @@ removed as well. Evidence is `tmp/android-map-benchmark-hc-textureless-current-
 20260803.json`, and `tmp/android-native-map-benchmark-building-motion-toggle-
 20260803.json`.
 
+The follow-up Android fill-antialias candidate was rejected after matched
+API 35 host-GPU GameHome traces. It improved the isolated native proof from
+`62 ms` to `58 ms` p95, but complete GameHome moved from `40 ms` to `46 ms`
+and then `42 ms` on repeat, while Flutter p95 total moved from `53 ms` to
+`61 ms` and `56 ms`; the candidate was removed. A native player/spot layer
+candidate was also rejected: gfx p95 stayed at `40 ms`, slow draw commands
+increased from `105` to `128`, and the full marker composition did not produce
+a stable win. Both paths remain diagnostic-only or removed, and the 20 ms
+Android motion gate stays open. Evidence is recorded in
+`docs/quality-gates.md` and the referenced `tmp/` traces.
+
 The 2026-08-03 building-base diagnostic was rejected after two matched API 35
 host-GPU pairs on `emulator-5554`. Keeping real per-building heights while
 replacing the `render_min_height` lookup with a constant zero preserved map

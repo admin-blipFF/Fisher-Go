@@ -1254,6 +1254,11 @@ Last updated: 2026-08-03
   the disposable user through the authenticated `/auth/v1/user` endpoint and
   falls back to sign-out only when cleanup fails, preventing successful smoke
   runs from leaving test accounts behind.
+- The hosted gameplay-session, analytics-ingestion, and server-event
+  configuration smokes now use the same authenticated `/auth/v1/user` delete
+  boundary for their disposable identities. Sign-out is only a fallback when
+  deletion fails, and the warning is retained so a green functional check does
+  not masquerade as cleanup evidence.
 - Account deletion is now source-ready: the Profile confirmation flow clears
   the local account namespace only after a successful `delete-account` Edge
    Function response. The function removes current `profiles`, `catches`,

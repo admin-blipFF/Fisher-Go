@@ -21,6 +21,9 @@ void main() {
     expect(tool, contains("'durationMs': 1320"));
     expect(tool, contains('_postAnalyticsEvent'));
     expect(tool, contains('email'));
+    expect(tool, contains('.delete('));
+    expect(tool, contains('disposable account cleanup'));
+    expect(tool, contains('deletionSucceeded'));
     expect(tool, contains('exitCode = 2'));
     expect(workflow, contains('verify_supabase_analytics_ingestion.dart'));
     expect(workflow, contains('SUPABASE_EXPECTED_PROJECT_REF'));

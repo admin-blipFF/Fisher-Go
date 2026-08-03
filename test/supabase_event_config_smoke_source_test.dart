@@ -14,6 +14,9 @@ void main() {
     expect(source, contains('SUPABASE_EXPECTED_PROJECT_REF'));
     expect(source, contains('invalid multiplier'));
     expect(source, contains('/auth/v1/logout'));
+    expect(source, contains('.delete('));
+    expect(source, contains('disposable account cleanup'));
+    expect(source, contains('deletionSucceeded'));
     expect(source, isNot(contains('SERVICE_ROLE')));
     expect(workflowSource, contains('verify_supabase_event_config.dart'));
   });

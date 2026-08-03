@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 
 const _timeout = Duration(seconds: 20);
+const _cleanupTimeout = Duration(seconds: 10);
 
 Uri _endpoint(String baseUrl, String path) {
   final base = baseUrl.endsWith('/')
@@ -91,6 +92,7 @@ Future<void> main() async {
   }
 
   final client = http.Client();
+  String? accessToken;
   try {
     final signup = await _post(
       client,
@@ -107,8 +109,8 @@ Future<void> main() async {
       throw StateError('anonymous signup returned HTTP ${signup.statusCode}');
     }
     final auth = jsonDecode(signup.body) as Map<String, dynamic>;
-    final accessToken = auth['access_token']?.toString().trim() ?? '';
-    if (accessToken.isEmpty) {
+    accessToken = auth['access_token']?.toString().trim();
+    if (accessToken == null || accessToken.isEmpty) {
       throw StateError('anonymous signup returned no access token');
     }
 
@@ -152,6 +154,41 @@ Future<void> main() async {
     stderr.writeln('FAIL: Supabase analytics ingestion smoke failed: $error');
     exitCode = 1;
   } finally {
+    if (accessToken != null) {
+      var deletionSucceeded = false;
+      try {
+        stderr.writeln('SMOKE: deleting disposable account.');
+        final response = await client
+            .delete(
+              _endpoint(url, '/auth/v1/user'),
+              headers: _headers(anonKey, accessToken),
+            )
+            .timeout(_cleanupTimeout);
+        if (response.statusCode < 200 || response.statusCode >= 300) {
+          throw StateError(
+            'Supabase disposable account cleanup returned HTTP '
+            '${response.statusCode}',
+          );
+        }
+        deletionSucceeded = true;
+      } catch (error) {
+        stderr.writeln(
+          'WARN: Supabase disposable account cleanup failed: $error',
+        );
+      }
+      if (!deletionSucceeded) {
+        try {
+          await client
+              .post(
+                _endpoint(url, '/auth/v1/logout'),
+                headers: _headers(anonKey, accessToken),
+              )
+              .timeout(_cleanupTimeout);
+        } catch (error) {
+          stderr.writeln('WARN: analytics smoke sign-out failed: $error');
+        }
+      }
+    }
     client.close();
   }
 }

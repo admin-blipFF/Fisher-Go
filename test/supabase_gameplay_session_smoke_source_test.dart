@@ -36,6 +36,9 @@ void main() {
     expect(source, contains('resolved_miss'));
     expect(source, contains('already_resolved'));
     expect(source, contains('auth/v1/logout'));
+    expect(source, contains('.delete('));
+    expect(source, contains('disposable account cleanup'));
+    expect(source, contains('deletionSucceeded'));
     expect(source, contains('uri.path'));
     expect(source, isNot(contains('SERVICE_ROLE')));
     expect(source, contains('_operationTimeout'));

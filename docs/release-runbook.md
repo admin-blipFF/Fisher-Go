@@ -109,6 +109,12 @@ emitted by `apply-and-verify`. The smoke must report all of these checks:
 - server event configuration returns only valid active parent-event boosts and
   rejects anonymous access.
 
+Each authenticated gameplay, analytics, and event-configuration smoke deletes
+the disposable Auth identity in its `finally` block after the checks. If the
+authenticated delete fails, the tool falls back to sign-out and emits a
+warning; do not treat that fallback as proof that the disposable account was
+removed.
+
 ## 2. Other Live Gates
 
 After the content release succeeds, run the manual **Supabase live smoke**

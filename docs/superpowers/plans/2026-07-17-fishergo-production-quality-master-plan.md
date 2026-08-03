@@ -1174,8 +1174,10 @@ The Android release workflow now also fails closed before packaging when
 either public Supabase build value is missing, preventing a signed release
 from silently shipping the offline fixture path. It also verifies the HTTPS
 Supabase URL host against the protected project ref before packaging, so the
-signed artifact cannot silently target a different project. Protected signing,
-the CI emulator run, and Play distribution remain owner-controlled.
+signed artifact cannot silently target a different project. Its complete
+protected-input preflight now runs immediately after checkout, before Flutter
+setup or dependency installation. Protected signing, the CI emulator run, and
+Play distribution remain owner-controlled.
 
 Public release metadata is now fail-closed across the Android release
 workflow, Web release workflow, Linux/Windows production deploy scripts, and

@@ -2526,8 +2526,10 @@ Latest artifact evidence:
   production public Supabase build value or project identity is absent. It
   also verifies that the HTTPS Supabase URL host matches the protected project
   ref before packaging. This prevents a signed artifact from silently shipping
-  the offline fixture path or targeting the wrong project; protected keystore
-  provisioning and Play App Signing remain owner-controlled.
+  the offline fixture path or targeting the wrong project. Its complete
+  protected-input preflight now runs immediately after checkout, before Flutter
+  setup or dependency installation; protected keystore provisioning and Play
+  App Signing remain owner-controlled.
 - The signed x86_64 API 35 release smoke now enables `FISHERGO_MAP_PERF`, warms
   the map once, requires host-GPU rendering and map-readiness telemetry, and
   records a minimum-60-frame trace. The 20 ms budget remains reporting-only

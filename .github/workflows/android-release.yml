@@ -23,15 +23,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          channel: stable
-          cache: true
-
-      - name: Install dependencies
-        run: flutter pub get
-
       - name: Verify protected Android release inputs before assembly
         env:
           FISHERGO_PRIVACY_URL: ${{ secrets.FISHERGO_PRIVACY_URL }}
@@ -55,6 +46,15 @@ jobs:
           test -n "$FISHERGO_ANDROID_KEYSTORE_PASSWORD"
           test -n "$FISHERGO_ANDROID_KEY_PASSWORD"
           test -n "$FISHERGO_ANDROID_KEY_ALIAS"
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
 
       - name: Resolve release id
         shell: bash

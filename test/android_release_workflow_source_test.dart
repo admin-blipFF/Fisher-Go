@@ -20,8 +20,11 @@ void main() {
     final preflightStep = source.indexOf(
       'name: Verify protected Android release inputs before assembly',
     );
+    final setupFlutterStep = source.indexOf('name: Set up Flutter');
     final resolveStep = source.indexOf('name: Resolve release id');
     expect(preflightStep, greaterThanOrEqualTo(0));
+    expect(setupFlutterStep, greaterThanOrEqualTo(0));
+    expect(preflightStep, lessThan(setupFlutterStep));
     expect(resolveStep, greaterThanOrEqualTo(0));
     expect(preflightStep, lessThan(resolveStep));
     final preflightSource = source.substring(preflightStep, resolveStep);

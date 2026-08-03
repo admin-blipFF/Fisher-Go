@@ -171,9 +171,10 @@ Configure the protected `fishergo-android-release` environment with the
 keystore and four `FISHERGO_ANDROID_*` signing values. Run the manual Android
 release workflow. It must produce and verify a signed arm64 AAB, matching APK,
 Dart symbols, asset budget, secret scan, and release manifest.
-The workflow now checks all Supabase, privacy/support, and signing inputs before
-resolving the release id or writing any release manifest. Missing protected
-values therefore fail before artifact assembly.
+The workflow now checks all Supabase, privacy/support, and signing inputs
+immediately after checkout, before Flutter setup, resolving the release id, or
+writing any release manifest. Missing protected values therefore fail before
+dependencies and artifact assembly.
 
 The workflow also creates a separately signed x86_64 release APK only for the
 API 35 emulator smoke. That smoke launches the signed release configuration,

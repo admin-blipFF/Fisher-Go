@@ -87,6 +87,15 @@ jobs:
           fi
           node tool/run_web_map_benchmark.js "${args[@]}"
 
+      - name: Run secondary-screen browser smoke
+        shell: bash
+        env:
+          TARGET_URL: ${{ inputs.url }}
+        run: >-
+          node tool/web_secondary_screen_smoke.js
+          --url="$TARGET_URL"
+          --output=tmp/web-secondary-screen-smoke.json
+
       - name: Upload production smoke evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -96,5 +105,7 @@ jobs:
           if-no-files-found: warn
           path: |
             tmp/web-map-benchmark-production.json
+            tmp/web-secondary-screen-smoke.json
             output/playwright/web-map-proof-390x844.png
             output/playwright/web-map-proof-1440x900.png
+            output/playwright/web-secondary-*.png

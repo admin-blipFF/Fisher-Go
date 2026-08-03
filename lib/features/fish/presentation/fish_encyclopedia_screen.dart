@@ -8,6 +8,7 @@ import '../domain/fish_collection_service.dart';
 import '../domain/fish_collection_copy.dart';
 import '../domain/fish_collection_status.dart';
 import '../domain/fish_species.dart';
+import 'fish_encyclopedia_semantics.dart';
 
 class FishEncyclopediaScreen extends StatefulWidget {
   const FishEncyclopediaScreen({
@@ -104,7 +105,12 @@ class _FishEncyclopediaScreenState extends State<FishEncyclopediaScreen> {
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting &&
               !snapshot.hasData) {
-            return const Center(child: CircularProgressIndicator());
+            return Semantics(
+              container: true,
+              liveRegion: true,
+              label: '正在載入香港魚類圖鑑',
+              child: Center(child: CircularProgressIndicator()),
+            );
           }
 
           if (snapshot.hasError) {
@@ -132,9 +138,14 @@ class _FishEncyclopediaScreenState extends State<FishEncyclopediaScreen> {
                 ),
               ),
               if (visibleSpecies.isEmpty)
-                const SliverFillRemaining(
+                SliverFillRemaining(
                   hasScrollBody: false,
-                  child: Center(child: Text('這個分類暫時沒有魚種')),
+                  child: Semantics(
+                    container: true,
+                    liveRegion: true,
+                    label: fishEncyclopediaEmptyStateSemanticsLabel(_filter),
+                    child: const Center(child: Text('這個分類暫時沒有魚種')),
+                  ),
                 ),
               SliverPadding(
                 padding: const EdgeInsets.fromLTRB(12, 12, 12, 24),
@@ -222,11 +233,21 @@ class _CatalogProgressHeader extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 8),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: LinearProgressIndicator(
-              value: progress.clamp(0.0, 1.0),
-              minHeight: 8,
+          Semantics(
+            container: true,
+            excludeSemantics: true,
+            label: fishEncyclopediaProgressSemanticsLabel(
+              unlocked: unlocked,
+              total: total,
+              verified: verified,
+            ),
+            value: '$unlocked/$total',
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: LinearProgressIndicator(
+                value: progress.clamp(0.0, 1.0),
+                minHeight: 8,
+              ),
             ),
           ),
           const SizedBox(height: 10),

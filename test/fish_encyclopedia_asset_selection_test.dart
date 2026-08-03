@@ -1,7 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:fishergo/features/fish/domain/fish_catalog_view_model.dart';
 import 'package:fishergo/features/fish/domain/fish_collection_status.dart';
 import 'package:fishergo/features/fish/presentation/fish_encyclopedia_screen.dart';
+import 'package:fishergo/features/fish/presentation/fish_encyclopedia_semantics.dart';
 
 void main() {
   test('catalog artwork cache size follows the card display density', () {
@@ -91,6 +93,32 @@ void main() {
         hasPhotoProof: true,
       ),
       '魚種 #003，班類，真實釣獲 · 魚鈎認證，已附真實魚獲相片',
+    );
+  });
+
+  test('encyclopedia progress semantics expose counts and percentage', () {
+    expect(
+      fishEncyclopediaProgressSemanticsLabel(
+        unlocked: 3,
+        total: 12,
+        verified: 1,
+      ),
+      '圖鑑解鎖進度：3/12，25%，魚鈎認證 1 個',
+    );
+    expect(
+      fishEncyclopediaProgressSemanticsLabel(
+        unlocked: 0,
+        total: 0,
+        verified: 0,
+      ),
+      '圖鑑解鎖進度：0/0，0%，魚鈎認證 0 個',
+    );
+  });
+
+  test('encyclopedia empty-state semantics include the active filter', () {
+    expect(
+      fishEncyclopediaEmptyStateSemanticsLabel(FishCatalogFilter.verified),
+      '圖鑑篩選：真實認證，這個分類暫時沒有魚種',
     );
   });
 }

@@ -43,6 +43,15 @@ Last updated: 2026-08-03
   and leaderboard controls were already covered by Material semantics and
   refresh tooltips; remaining secondary-screen semantics are still open.
 
+- The encyclopedia secondary-screen audit now exposes a single readable
+  progress announcement containing unlocked count, percentage, and verified
+  photo-proof count. Loading and empty-filter states are live regions, with the
+  active filter included in the empty result announcement. The focused helper
+  contract and a widget semantics-tree test passed, followed by the full
+  `496`-test Flutter suite and `flutter analyze --no-pub`. Unknown cards keep
+  their existing locked, non-actionable semantics; other secondary screens and
+  the full device accessibility matrix remain open.
+
 - Notification permission opt-in now has a real token-registration boundary:
   migration `0027_notification_device_tokens.sql` stores tokens behind
   authenticated RPCs, denies raw token reads to clients, and covers

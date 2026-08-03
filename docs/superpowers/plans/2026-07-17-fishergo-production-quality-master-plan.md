@@ -125,6 +125,15 @@ encyclopedia and leaderboard controls were confirmed to use existing Material
 semantics and refresh tooltips. Remaining secondary-screen semantics are still
 open.
 
+Encyclopedia secondary-screen semantics mitigation added on 2026-08-03: the
+progress bar now announces unlocked count, percentage, and verified photo-proof
+count as one readable state; loading and empty-filter results are live regions,
+and the active filter is included in the empty result announcement. The focused
+helper contract, widget semantics-tree test, full `496`-test Flutter suite, and
+analyzer passed. Unknown cards retain their locked, non-actionable semantics;
+the remaining secondary-screen audit and full device accessibility matrix are
+still open.
+
 ### P1: Assets and binaries are oversized
 
 Measured baseline:

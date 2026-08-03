@@ -104,6 +104,12 @@ binary. The focused theme test, analyzer, Web release build, client artifact
 secret scan, and asset budget pass. This remains a mitigation until a device
 matrix confirms the required glyph coverage on Android, iOS, and Web.
 
+Primary map-control mitigation added on 2026-08-03: GameHome now exposes
+state-aware semantics for locating, radar mode, and announcements, and the
+fishing overlay close action has an explicit tooltip. The source contract and a
+fresh API 35 startup smoke pass; this is not yet a full secondary-screen
+accessibility audit.
+
 ### P1: Assets and binaries are oversized
 
 Measured baseline:

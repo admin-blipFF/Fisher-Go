@@ -20,6 +20,14 @@ Last updated: 2026-08-03
   a platform-fallback mitigation; device-specific font coverage still needs
   Android/iOS/Web visual confirmation before the glyph action can be closed.
 
+- The primary GameHome map HUD now exposes state-aware semantics for locating,
+  radar mode, and announcements, and the fishing overlay close icon has an
+  explicit tooltip. The focused source contract passed, and the fresh API 35
+  startup smoke still passed identity choice, tutorial skip, GameHome,
+  rotation, and encyclopedia flow while explicitly skipping API 23. This
+  closes the primary map-control slice; secondary screens still need a full
+  semantics audit before the broader accessibility action can be closed.
+
 - Notification permission opt-in now has a real token-registration boundary:
   migration `0027_notification_device_tokens.sql` stores tokens behind
   authenticated RPCs, denies raw token reads to clients, and covers

@@ -1134,42 +1134,47 @@ class _GameHomeScreenState extends State<GameHomeScreen> {
                 Positioned(
                   top: MediaQuery.of(context).padding.top + 62,
                   right: 12,
-                  child: GestureDetector(
-                    onTap: () {
-                      AnnouncementModal.show(context);
-                      setState(() => _showAnnouncementRedDot = false);
-                    },
-                    child: Stack(
-                      clipBehavior: Clip.none,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(30),
-                            boxShadow: [
-                              BoxShadow(color: Colors.black26, blurRadius: 6)
-                            ],
+                  child: Semantics(
+                    button: true,
+                    excludeSemantics: true,
+                    label: _showAnnouncementRedDot ? '公告通知，有新公告' : '公告通知',
+                    child: GestureDetector(
+                      onTap: () {
+                        AnnouncementModal.show(context);
+                        setState(() => _showAnnouncementRedDot = false);
+                      },
+                      child: Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(30),
+                              boxShadow: [
+                                BoxShadow(color: Colors.black26, blurRadius: 6)
+                              ],
+                            ),
+                            child: const Icon(Icons.notifications,
+                                color: Colors.black54, size: 24),
                           ),
-                          child: const Icon(Icons.notifications,
-                              color: Colors.black54, size: 24),
-                        ),
-                        if (_showAnnouncementRedDot)
-                          Positioned(
-                            right: -2,
-                            top: -2,
-                            child: Container(
-                              width: 14,
-                              height: 14,
-                              decoration: BoxDecoration(
-                                color: Colors.red,
-                                shape: BoxShape.circle,
-                                border:
-                                    Border.all(color: Colors.white, width: 1.5),
+                          if (_showAnnouncementRedDot)
+                            Positioned(
+                              right: -2,
+                              top: -2,
+                              child: Container(
+                                width: 14,
+                                height: 14,
+                                decoration: BoxDecoration(
+                                  color: Colors.red,
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                      color: Colors.white, width: 1.5),
+                                ),
                               ),
                             ),
-                          ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -2270,6 +2275,7 @@ class _FishingOverlayState extends State<_FishingOverlay>
           right: 8,
           child: SafeArea(
             child: IconButton.filled(
+              tooltip: '關閉釣魚小遊戲',
               onPressed: widget.onClose,
               icon: const Icon(Icons.close),
               style: IconButton.styleFrom(
@@ -5152,43 +5158,53 @@ class _LocateButton extends StatelessWidget {
         : hasLiveLocation
             ? 'GPS ${accuracyMeters?.round() ?? '?'}m'
             : '重新定位';
+    final semanticLabel = isLocating
+        ? '定位中'
+        : hasLiveLocation
+            ? '目前位置，GPS 精度 ${accuracyMeters?.round() ?? '?'} 米，重新定位'
+            : '重新定位，取得目前位置';
 
-    return GestureDetector(
-      onTap: isLocating ? null : onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-        decoration: BoxDecoration(
-          color: Colors.black.withValues(alpha: 0.68),
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: accent.withValues(alpha: 0.75)),
-          boxShadow: const [
-            BoxShadow(
-              color: Colors.black38,
-              blurRadius: 10,
-              offset: Offset(0, 4),
+    return Semantics(
+      button: true,
+      enabled: !isLocating,
+      label: semanticLabel,
+      child: GestureDetector(
+        onTap: isLocating ? null : onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+          decoration: BoxDecoration(
+            color: Colors.black.withValues(alpha: 0.68),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: accent.withValues(alpha: 0.75)),
+            boxShadow: const [
+              BoxShadow(
+                color: Colors.black38,
+                blurRadius: 10,
+                offset: Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Row(mainAxisSize: MainAxisSize.min, children: [
+            Icon(
+              isLocating
+                  ? Icons.sync
+                  : hasLiveLocation
+                      ? Icons.my_location
+                      : Icons.location_searching,
+              color: accent,
+              size: 18,
             ),
-          ],
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 11,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ]),
         ),
-        child: Row(mainAxisSize: MainAxisSize.min, children: [
-          Icon(
-            isLocating
-                ? Icons.sync
-                : hasLiveLocation
-                    ? Icons.my_location
-                    : Icons.location_searching,
-            color: accent,
-            size: 18,
-          ),
-          const SizedBox(width: 6),
-          Text(
-            label,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 11,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ]),
       ),
     );
   }
@@ -5271,26 +5287,32 @@ class _TopStatusBar extends StatelessWidget {
         ),
       ),
       const SizedBox(width: 8),
-      GestureDetector(
-        onTap: onToggleAuto,
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-          decoration: BoxDecoration(
-            color: autoEnabled ? Colors.green : Colors.black54,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Row(
-            children: [
-              Icon(Icons.navigation,
-                  color: autoEnabled ? Colors.white : Colors.white54, size: 16),
-              const SizedBox(width: 4),
-              Text(
-                '雷達',
-                style: TextStyle(
+      Semantics(
+        button: true,
+        excludeSemantics: true,
+        label: autoEnabled ? '雷達模式，已啟用，切換為手動' : '雷達模式，已停用，切換為自動',
+        child: GestureDetector(
+          onTap: onToggleAuto,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+            decoration: BoxDecoration(
+              color: autoEnabled ? Colors.green : Colors.black54,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.navigation,
                     color: autoEnabled ? Colors.white : Colors.white54,
-                    fontSize: 12),
-              ),
-            ],
+                    size: 16),
+                const SizedBox(width: 4),
+                Text(
+                  '雷達',
+                  style: TextStyle(
+                      color: autoEnabled ? Colors.white : Colors.white54,
+                      fontSize: 12),
+                ),
+              ],
+            ),
           ),
         ),
       ),

@@ -34,6 +34,7 @@ import '../data/offline_sync_coordinator.dart';
 import '../data/hk_fishing_spots_geocoded_seed.dart';
 import '../data/virtual_fishing_session_service.dart';
 import '../domain/catch_log_entry.dart';
+import 'catch_log_semantics.dart';
 
 class CatchLogScreen extends StatefulWidget {
   const CatchLogScreen({
@@ -306,26 +307,31 @@ class _CatchLogScreenState extends State<CatchLogScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Photo section - tap to pick
-          InkWell(
-            onTap: _pickPhoto,
-            child: Container(
-              height: 180,
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: Colors.grey.shade200,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.grey.shade300),
+          Semantics(
+            button: true,
+            label: '選擇魚獲相片',
+            child: InkWell(
+              onTap: _pickPhoto,
+              child: Container(
+                height: 180,
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade200,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.grey.shade300),
+                ),
+                child: _photoBytes != null
+                    ? ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: Image.memory(
+                          _photoBytes!,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) =>
+                              _buildPhotoPlaceholder(),
+                        ),
+                      )
+                    : _buildPhotoPlaceholder(),
               ),
-              child: _photoBytes != null
-                  ? ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
-                      child: Image.memory(
-                        _photoBytes!,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => _buildPhotoPlaceholder(),
-                      ),
-                    )
-                  : _buildPhotoPlaceholder(),
             ),
           ),
           const SizedBox(height: 8),
@@ -565,16 +571,20 @@ class _CatchLogScreenState extends State<CatchLogScreen> {
           point: LatLng(rendered.latitude, rendered.longitude),
           width: 44,
           height: 44,
-          child: GestureDetector(
-            onTap: () {
-              if (rendered.spots.length == 1) {
-                _showSpotBottomSheet(rendered.spots.first);
-                return;
-              }
-              _showClusterBottomSheet(rendered);
-            },
-            child: _FishingSpotMapMarker(
-              count: rendered.spots.length,
+          child: Semantics(
+            button: true,
+            label: catchLogSpotSemanticsLabel(rendered.spots.length),
+            child: GestureDetector(
+              onTap: () {
+                if (rendered.spots.length == 1) {
+                  _showSpotBottomSheet(rendered.spots.first);
+                  return;
+                }
+                _showClusterBottomSheet(rendered);
+              },
+              child: _FishingSpotMapMarker(
+                count: rendered.spots.length,
+              ),
             ),
           ),
         ),
@@ -2497,27 +2507,33 @@ class _GameTopStatusBar extends StatelessWidget {
                 ],
               ),
             ),
-            GestureDetector(
-              onTap: onToggleAuto,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
-                decoration: BoxDecoration(
-                  color: autoEnabled
-                      ? Colors.greenAccent.withValues(alpha: 0.22)
-                      : Colors.orangeAccent.withValues(alpha: 0.22),
-                  borderRadius: BorderRadius.circular(999),
-                  border: Border.all(
-                    color: autoEnabled ? Colors.green : Colors.orange,
-                  ),
-                ),
-                child: Text(
-                  autoEnabled ? 'AUTO' : 'MANUAL',
-                  style: TextStyle(
+            Semantics(
+              button: true,
+              excludeSemantics: true,
+              label: catchLogRadarSemanticsLabel(autoEnabled),
+              child: GestureDetector(
+                onTap: onToggleAuto,
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
+                  decoration: BoxDecoration(
                     color: autoEnabled
-                        ? Colors.green.shade900
-                        : Colors.orange.shade900,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w900,
+                        ? Colors.greenAccent.withValues(alpha: 0.22)
+                        : Colors.orangeAccent.withValues(alpha: 0.22),
+                    borderRadius: BorderRadius.circular(999),
+                    border: Border.all(
+                      color: autoEnabled ? Colors.green : Colors.orange,
+                    ),
+                  ),
+                  child: Text(
+                    autoEnabled ? 'AUTO' : 'MANUAL',
+                    style: TextStyle(
+                      color: autoEnabled
+                          ? Colors.green.shade900
+                          : Colors.orange.shade900,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w900,
+                    ),
                   ),
                 ),
               ),
@@ -2616,37 +2632,43 @@ class _GameSideHudButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.94),
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: Colors.cyanAccent.withValues(alpha: 0.85)),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.18),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: SizedBox(
-          width: 56,
-          height: 56,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(icon, color: Colors.blue.shade800, size: 22),
-              const SizedBox(height: 2),
-              Text(
-                label,
-                style: const TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w900,
-                ),
+    return Semantics(
+      button: true,
+      excludeSemantics: true,
+      label: label,
+      child: GestureDetector(
+        onTap: onTap,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.94),
+            borderRadius: BorderRadius.circular(18),
+            border:
+                Border.all(color: Colors.cyanAccent.withValues(alpha: 0.85)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.18),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
               ),
             ],
+          ),
+          child: SizedBox(
+            width: 56,
+            height: 56,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(icon, color: Colors.blue.shade800, size: 22),
+                const SizedBox(height: 2),
+                Text(
+                  label,
+                  style: const TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -2667,45 +2689,50 @@ class _GameHudButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.white.withValues(alpha: 0.94),
-              border: Border.all(color: Colors.cyanAccent, width: 2),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.22),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
+    return Semantics(
+      button: true,
+      excludeSemantics: true,
+      label: label,
+      child: GestureDetector(
+        onTap: onTap,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withValues(alpha: 0.94),
+                border: Border.all(color: Colors.cyanAccent, width: 2),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.22),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Icon(icon, color: Colors.blue.shade800, size: 24),
+            ),
+            const SizedBox(height: 4),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+              decoration: BoxDecoration(
+                color: Colors.black.withValues(alpha: 0.58),
+                borderRadius: BorderRadius.circular(999),
+              ),
+              child: Text(
+                label,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w800,
                 ),
-              ],
-            ),
-            child: Icon(icon, color: Colors.blue.shade800, size: 24),
-          ),
-          const SizedBox(height: 4),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-            decoration: BoxDecoration(
-              color: Colors.black.withValues(alpha: 0.58),
-              borderRadius: BorderRadius.circular(999),
-            ),
-            child: Text(
-              label,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 11,
-                fontWeight: FontWeight.w800,
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

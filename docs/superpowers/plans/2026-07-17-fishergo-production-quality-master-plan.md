@@ -110,6 +110,13 @@ fishing overlay close action has an explicit tooltip. The source contract and a
 fresh API 35 startup smoke pass; this is not yet a full secondary-screen
 accessibility audit.
 
+CatchLog control mitigation added on 2026-08-03: the real-photo form, fishing
+spot markers, radar toggle, and custom navigation HUD controls now expose
+explicit semantics. The source/data/photo contracts and full `490`-test Flutter
+suite passed, and the API 35 limited-photo smoke passed on `emulator-5554` while
+the API 23 photo-frame remained excluded. Profile/equipment and remaining
+secondary-screen semantics are still open.
+
 ### P1: Assets and binaries are oversized
 
 Measured baseline:

@@ -28,6 +28,13 @@ Last updated: 2026-08-03
   closes the primary map-control slice; secondary screens still need a full
   semantics audit before the broader accessibility action can be closed.
 
+- CatchLog's real-photo form, fishing-spot map marker, radar toggle, and custom
+  navigation HUD controls now expose explicit semantics. The focused source
+  contract and CatchLog data/photo tests passed, the full Flutter suite passed
+  `490` tests, and the API 35 limited-photo smoke passed on `emulator-5554`;
+  API 23 remained excluded. Profile/equipment and other secondary-screen
+  semantics remain to be audited.
+
 - Notification permission opt-in now has a real token-registration boundary:
   migration `0027_notification_device_tokens.sql` stores tokens behind
   authenticated RPCs, denies raw token reads to clients, and covers

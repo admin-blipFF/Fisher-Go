@@ -27,6 +27,12 @@ void main() {
     expect(source, contains('重新定位'));
     expect(source, contains(r"Tap-BenchmarkControl $locationUiXml '重新定位'"));
     expect(source, contains('GPS '));
+    expect(
+      source,
+      contains(
+        r'content-desc="([^"]*GPS\s+\d+(?:\.\d+)?m[^"]*)"',
+      ),
+    );
     expect(source, contains(r'$locationDescription'));
     expect(source, contains('logcat -c'));
     expect(source, contains('com.fishergo.app'));

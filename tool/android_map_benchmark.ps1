@@ -195,11 +195,12 @@ for ($locationAttempt = 0; $locationAttempt -lt 8; $locationAttempt++) {
     }
   }
   # A valid emulator fix changes the same production control's label to its
-  # accuracy (for example, "GPS 15m"). It remains the explicit recenter
-  # action, so accept that semantic state as well.
+  # accuracy (for example, "目前位置，GPS 精度 15 米，重新定位 / GPS 15m").
+  # Match and tap the complete content-desc because Android accessibility
+  # combines the spoken label and the visible compact label in one attribute.
   $gpsDescriptionMatch = [regex]::Match(
     $locationUiXml,
-    'content-desc="(GPS [^"]+)"'
+    'content-desc="([^"]*GPS\s+\d+(?:\.\d+)?m[^"]*)"'
   )
   if ($gpsDescriptionMatch.Success) {
     $locationDescription = $gpsDescriptionMatch.Groups[1].Value

@@ -103,6 +103,7 @@ void main() {
 
     expect(source, contains('Build signed Android x64 smoke APK'));
     expect(source, contains('--target-platform android-x64'));
+    expect(source, contains('--dart-define=FISHERGO_MAP_PERF=true'));
     expect(source, contains('build/release/app-release-arm64.apk'));
     expect(source, contains('build/release/app-release-x64-smoke.apk'));
     expect(source, contains('reactivecircus/android-emulator-runner@v2'));
@@ -113,6 +114,9 @@ void main() {
       contains('-ApkPath build/release/app-release-x64-smoke.apk'),
     );
     expect(source, contains('-Variant signed-release-api35'));
+    expect(source, contains('-WarmupRounds 1'));
+    expect(source, contains('-RequireHostGpu'));
+    expect(source, contains('-RequireMapReadiness'));
     expect(source, contains('tmp/android-release-smoke-api35.json'));
     expect(source, contains('android-release-smoke-api35'));
     expect(source, contains('name: API 35 signed release APK smoke'));

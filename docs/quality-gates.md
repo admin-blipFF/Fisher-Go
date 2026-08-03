@@ -2427,6 +2427,11 @@ Latest artifact evidence:
   ref before packaging. This prevents a signed artifact from silently shipping
   the offline fixture path or targeting the wrong project; protected keystore
   provisioning and Play App Signing remain owner-controlled.
+- The signed x86_64 API 35 release smoke now enables `FISHERGO_MAP_PERF`, warms
+  the map once, requires host-GPU rendering and map-readiness telemetry, and
+  records a minimum-60-frame trace. The 20 ms budget remains reporting-only
+  until the known Android motion failure is resolved; invalid or
+  software-rendered traces now fail the smoke boundary.
 - The latest current-source local release rebuild produced an arm64 AAB of
   `74.4 MiB` and an arm64 APK of `92.4 MiB`; both builds emitted one Dart
   symbol file, and the client-secret scan plus asset-budget check passed. These

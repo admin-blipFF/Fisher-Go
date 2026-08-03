@@ -1090,6 +1090,13 @@ release artifacts. The shared identity and workflow contracts are locally
 tested; protected signing, the actual CI emulator run, and Play distribution
 remain owner-controlled.
 
+The signed x86_64 API 35 smoke now builds with `FISHERGO_MAP_PERF=true` and
+requires one warm-up round, host-GPU rendering, and map-readiness telemetry
+before it records the minimum-60-frame trace. The 20 ms frame budget remains
+reported rather than enforced because the current emulator evidence still
+fails that gate; this change prevents incomplete or software-rendered traces
+from being treated as valid performance evidence.
+
 The Android release workflow now also fails closed before packaging when
 either public Supabase build value is missing, preventing a signed release
 from silently shipping the offline fixture path. It also verifies the HTTPS

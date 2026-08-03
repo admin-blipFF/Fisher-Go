@@ -150,6 +150,7 @@ jobs:
           --dart-define=FISHERGO_ANALYTICS_ENABLED="$FISHERGO_ANALYTICS_ENABLED"
           --dart-define=FISHERGO_ACCOUNT_DELETION_ENABLED="$FISHERGO_ACCOUNT_DELETION_ENABLED"
           --dart-define=FISHERGO_MAPLIBRE=true
+          --dart-define=FISHERGO_MAP_PERF=true
           --dart-define=FISHERGO_RELEASE_ID="$FISHERGO_RELEASE_ID"
           --dart-define=FISHERGO_PRIVACY_URL="$FISHERGO_PRIVACY_URL"
           --dart-define=FISHERGO_SUPPORT_EMAIL="$FISHERGO_SUPPORT_EMAIL"
@@ -195,7 +196,10 @@ jobs:
               -MinimumApi 35 \
               -Variant signed-release-api35 \
               -ApkPath build/release/app-release-x64-smoke.apk \
+              -WarmupRounds 1 \
               -MinimumFrameCount 60 \
+              -RequireHostGpu \
+              -RequireMapReadiness \
               -OutputPath tmp/android-release-smoke-api35.json
 
       - name: Build Web release companion

@@ -474,6 +474,10 @@ canonical Supabase URL/project-ref preflight with the protected anon key. This
 prevents a mismatched project-ref secret from applying migrations to an
 unintended project; the owner-controlled password and migration-history repair
 decision remain required.
+The dependent hosted-gameplay smoke repeats the identity check against the
+migration job's exported project ref before reading or mutating any smoke
+boundary, so its separate protected environment cannot silently target a
+different project.
 The non-destructive hosted audit now confirms the target project is reachable
 and has Google plus anonymous providers enabled, but the public habitat
 verifier fails because hosted spot `P017` lacks the expected

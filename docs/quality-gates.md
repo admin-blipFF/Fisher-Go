@@ -11,8 +11,10 @@ Last updated: 2026-08-03
   verifier and workflow source tests pass. Before `supabase link` or any
   migration mutation, the same protected step now also verifies that the
   canonical `SUPABASE_URL` is reachable and matches `SUPABASE_PROJECT_REF`.
-  The hosted application run remains owner-controlled and has not been
-  executed from this workspace.
+  The dependent hosted-gameplay smoke repeats that identity check against the
+  migration job's exported project ref before any anon-key verifier runs. The
+  hosted application run remains owner-controlled and has not been executed
+  from this workspace.
 
 - The hosted Auth provider preflight now fails closed when either required
   provider is disabled: the live smoke explicitly requires both Google and

@@ -180,6 +180,20 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
+      - name: Verify Supabase project identity
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$SUPABASE_URL"
+          test -n "$SUPABASE_ANON_KEY"
+          test -n "$SUPABASE_PROJECT_REF"
+          test "$SUPABASE_PROJECT_REF" = "${{ needs.apply-and-verify.outputs.project_ref }}"
+          dart run tool/verify_supabase_project_identity.dart
+
       - name: Verify hosted fishing-spot habitat weights
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}

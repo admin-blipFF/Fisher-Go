@@ -161,6 +161,30 @@ void main() {
       workflow,
       contains(r'SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}'),
     );
+    final smokeJob = workflow.indexOf('hosted-gameplay-smoke:');
+    expect(smokeJob, greaterThanOrEqualTo(0));
+    final smokeIdentity = workflow.indexOf(
+      'name: Verify Supabase project identity',
+      smokeJob,
+    );
+    final smokeHabitat = workflow.indexOf(
+      'dart run tool/verify_supabase_fishing_spot_habitat.dart',
+      smokeJob,
+    );
+    expect(smokeIdentity, greaterThanOrEqualTo(smokeJob));
+    expect(smokeHabitat, greaterThan(smokeIdentity));
+    expect(
+      workflow,
+      contains(
+        r'SUPABASE_EXPECTED_PROJECT_REF: ${{ needs.apply-and-verify.outputs.project_ref }}',
+      ),
+    );
+    expect(
+      workflow,
+      contains(
+        r'test "$SUPABASE_PROJECT_REF" = "${{ needs.apply-and-verify.outputs.project_ref }}"',
+      ),
+    );
     expect(
       workflow,
       contains(r'SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}'),

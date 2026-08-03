@@ -14,6 +14,31 @@ void main() {
     expect(workflow, contains('flutter test --no-pub'));
     expect(
         workflow, contains('environment: fishergo-account-deletion-release'));
+    final preflightStep = workflow.indexOf(
+      'name: Verify protected deletion inputs before deploy',
+    );
+    final deployStep = workflow.indexOf(
+      'name: Deploy protected delete-account function',
+    );
+    expect(preflightStep, greaterThanOrEqualTo(0));
+    expect(deployStep, greaterThanOrEqualTo(0));
+    expect(preflightStep, lessThan(deployStep));
+    final preflightSource = workflow.substring(preflightStep, deployStep);
+    for (final secret in [
+      'SUPABASE_ACCESS_TOKEN',
+      'SUPABASE_PROJECT_REF',
+      'SUPABASE_URL',
+      'SUPABASE_ANON_KEY',
+      'SUPABASE_SERVICE_ROLE_KEY',
+      'FISHERGO_SMOKE_DELETION_EMAIL',
+      'FISHERGO_SMOKE_DELETION_PASSWORD',
+    ]) {
+      expect(
+        preflightSource,
+        contains('test -n "\$$secret"'),
+        reason: 'deletion release must require $secret before deploy',
+      );
+    }
     expect(
         workflow,
         contains(

@@ -15,10 +15,29 @@ void main() {
     expect(source, contains('tool/verify_supabase_auth_upgrade.dart'));
     expect(source, contains('tool/verify_supabase_catch_photo_storage.dart'));
     expect(source, contains('tool/verify_supabase_analytics_ingestion.dart'));
+    final preflightStep = source.indexOf(
+      'Verify protected live smoke inputs before remote checks',
+    );
     final identityStep = source.indexOf('Verify Supabase project identity');
     final providerStep = source.indexOf('Verify Auth provider configuration');
+    expect(preflightStep, greaterThanOrEqualTo(0));
     expect(identityStep, greaterThanOrEqualTo(0));
     expect(providerStep, greaterThanOrEqualTo(0));
+    expect(preflightStep, lessThan(identityStep));
+    final preflightSource = source.substring(preflightStep, identityStep);
+    for (final secret in [
+      'SUPABASE_URL',
+      'SUPABASE_ANON_KEY',
+      'SUPABASE_PROJECT_REF',
+      'FISHERGO_SMOKE_UPGRADE_EMAIL',
+      'FISHERGO_SMOKE_UPGRADE_PASSWORD',
+    ]) {
+      expect(
+        preflightSource,
+        contains('test -n "\$$secret"'),
+        reason: 'live smoke must require $secret before remote checks',
+      );
+    }
     expect(identityStep, lessThan(providerStep));
     final analyticsStep = source.indexOf('Verify analytics ingestion');
     expect(analyticsStep, greaterThan(identityStep));

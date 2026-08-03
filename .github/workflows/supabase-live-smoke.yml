@@ -24,6 +24,22 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
+      - name: Verify protected live smoke inputs before remote checks
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+          FISHERGO_SMOKE_UPGRADE_EMAIL: ${{ secrets.FISHERGO_SMOKE_UPGRADE_EMAIL }}
+          FISHERGO_SMOKE_UPGRADE_PASSWORD: ${{ secrets.FISHERGO_SMOKE_UPGRADE_PASSWORD }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$SUPABASE_URL"
+          test -n "$SUPABASE_ANON_KEY"
+          test -n "$SUPABASE_PROJECT_REF"
+          test -n "$FISHERGO_SMOKE_UPGRADE_EMAIL"
+          test -n "$FISHERGO_SMOKE_UPGRADE_PASSWORD"
+
       - name: Verify Supabase project identity
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}

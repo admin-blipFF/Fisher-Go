@@ -128,6 +128,9 @@ whose project ref matches `SUPABASE_PROJECT_REF`; only then does it fail closed
 unless both Google and anonymous providers are enabled before checking
 anonymous account upgrade, gameplay session behavior, and private catch-photo
 storage. Use disposable test identities only.
+The workflow now performs a complete protected-input preflight before any
+analytics, gameplay, or account-upgrade request: the URL, anon key, project
+ref, and disposable upgrade email/password must all be present.
 
 Run **Supabase account deletion release** with its protected environment after
 the deletion policy has been reviewed. Confirm the disposable account and all
@@ -137,6 +140,9 @@ hidden by default; only release builds that explicitly pass
 workflow now performs the same canonical URL/project-ref identity check before
 deploying the Edge Function. Web deployment scripts propagate this flag and
 reject values other than `true`/`false`.
+Before deploying the Edge Function, it also verifies the service-role key and
+disposable deletion email/password, so missing smoke credentials cannot leave
+an unverified function deployment behind.
 
 The live Auth upgrade smoke also deletes its disposable account through the
 authenticated `/auth/v1/user` endpoint after the identity-preservation check;

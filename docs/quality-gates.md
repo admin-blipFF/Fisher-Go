@@ -165,6 +165,13 @@ Last updated: 2026-08-03
   apply the pending content migrations. The exact owner sequence is recorded
   in `docs/hosted-supabase-release-runbook.md`.
 
+- The protected Supabase live-smoke workflow now validates every required
+  disposable upgrade credential before sending analytics, gameplay, or Auth
+  requests. The account-deletion release workflow likewise validates its
+  service-role and disposable deletion credentials before deploying the Edge
+  Function. Both fail-closed boundaries are covered by source contracts; no
+  hosted mutation is claimed from this workspace.
+
 - The fishing-spot client boundary now requires more than the database's
   `active`, `verified`, and `public_access` flags: coordinates and precision
   must be finite and in range, and every row must carry a non-empty source,

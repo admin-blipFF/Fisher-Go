@@ -25,8 +25,12 @@ Last updated: 2026-08-03
   explicit tooltip. The focused source contract passed, and the fresh API 35
   startup smoke still passed identity choice, tutorial skip, GameHome,
   rotation, and encyclopedia flow while explicitly skipping API 23. This
-  closes the primary map-control slice; secondary screens still need a full
-  semantics audit before the broader accessibility action can be closed.
+  closes the primary map-control slice. The right-side account, encyclopedia,
+  equipment, catch-log, leaderboard, and admin HUD buttons now also promote
+  their navigation callbacks to the semantics nodes, so assistive activation
+  performs the same route change as a pointer tap. Secondary screens still
+  need a full semantics audit before the broader accessibility action can be
+  closed.
 
 - CatchLog's real-photo form, fishing-spot map marker, radar toggle, and custom
   navigation HUD controls now expose explicit semantics. The focused source

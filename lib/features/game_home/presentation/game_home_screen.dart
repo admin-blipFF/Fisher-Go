@@ -5452,6 +5452,7 @@ class _HudBtn extends StatelessWidget {
     return Semantics(
       button: true,
       label: label,
+      onTap: onTap,
       child: GestureDetector(
         onTap: onTap,
         child: Column(mainAxisSize: MainAxisSize.min, children: [

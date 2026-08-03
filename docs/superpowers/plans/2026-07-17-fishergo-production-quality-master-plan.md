@@ -110,6 +110,13 @@ fishing overlay close action has an explicit tooltip. The source contract and a
 fresh API 35 startup smoke pass; this is not yet a full secondary-screen
 accessibility audit.
 
+The primary map-control follow-up now promotes the shared right-side HUD
+navigation callbacks to the semantics nodes for account, encyclopedia,
+equipment, catch-log, leaderboard, and admin buttons. The source contract
+passes and assistive activation follows the same navigation path as a pointer
+tap; the remaining secondary-screen audit and full device accessibility matrix
+are still open.
+
 CatchLog control mitigation added on 2026-08-03: the real-photo form, fishing
 spot markers, radar toggle, and custom navigation HUD controls now expose
 explicit semantics. The source/data/photo contracts and full `507`-test Flutter

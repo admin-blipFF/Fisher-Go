@@ -30,4 +30,11 @@ void main() {
   test('fishing overlay close action has a discoverable tooltip', () {
     expect(source, contains("tooltip: '關閉釣魚小遊戲'"));
   });
+
+  test('side HUD buttons promote their activation callback to semantics', () {
+    expect(
+      source,
+      contains('label: label,\n      onTap: onTap,'),
+    );
+  });
 }

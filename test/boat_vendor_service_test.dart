@@ -73,4 +73,21 @@ void main() {
     );
     await target.close();
   });
+
+  test('boat spot result preserves success and failure states', () async {
+    expect(await BoatVendorService.getBoatSpotResult('4sea', 0), isNull);
+
+    expect(
+      await BoatVendorService.recordBoatSpotAttempt('4sea', 0, 'success'),
+      isTrue,
+    );
+    expect(await BoatVendorService.getBoatSpotResult('4sea', 0), 'success');
+    expect(await BoatVendorService.hasBoatSpotAttempted('4sea', 0), isTrue);
+
+    expect(
+      await BoatVendorService.recordBoatSpotAttempt('4sea', 0, 'fail'),
+      isFalse,
+    );
+    expect(await BoatVendorService.getBoatSpotResult('4sea', 0), 'success');
+  });
 }

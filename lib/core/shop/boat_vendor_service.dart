@@ -155,21 +155,39 @@ class BoatVendorService {
     if (result != 'success' && result != 'fail') return false;
     final box = await _box;
     final key = 'boat_spot_results_$vendorId';
-    final stored =
-        (box.get(key, defaultValue: <String, String>{}) as Map<String, String>);
+    final stored = <String, String>{};
+    final raw = box.get(key);
+    if (raw is Map) {
+      for (final entry in raw.entries) {
+        if (entry.key is String && entry.value is String) {
+          stored[entry.key as String] = entry.value as String;
+        }
+      }
+    }
     if (stored.containsKey('$spotIndex')) return false; // already attempted
     stored['$spotIndex'] = result;
     await box.put(key, stored);
     return true;
   }
 
+  /// Returns the persisted result for a boat route spot.
+  ///
+  /// Keeping the result, rather than only an attempted flag, lets the route
+  /// screen show success and failure accurately after it is reopened.
+  static Future<String?> getBoatSpotResult(
+      String vendorId, int spotIndex) async {
+    final box = await _box;
+    final raw = box.get('boat_spot_results_$vendorId');
+    if (raw is! Map) return null;
+    final result = raw['$spotIndex'];
+    return result is String && (result == 'success' || result == 'fail')
+        ? result
+        : null;
+  }
+
   /// Returns true if this boat spot has already been attempted.
   static Future<bool> hasBoatSpotAttempted(
       String vendorId, int spotIndex) async {
-    final box = await _box;
-    final key = 'boat_spot_results_$vendorId';
-    final stored =
-        (box.get(key, defaultValue: <String, String>{}) as Map<String, String>);
-    return stored.containsKey('$spotIndex');
+    return await getBoatSpotResult(vendorId, spotIndex) != null;
   }
 }

@@ -52,6 +52,15 @@ Last updated: 2026-08-03
   their existing locked, non-actionable semantics; other secondary screens and
   the full device accessibility matrix remain open.
 
+- The boat-route secondary-screen audit fixed persisted spot-state rendering:
+  reopening a route now reads the saved `success`/`fail` result instead of
+  collapsing every attempted spot to a misleading `可作釣` label. Route
+  progress, spot status, and the completion banner expose explicit semantics;
+  the service regression, pure helper contract, and widget semantics smoke
+  passed, followed by the full `500`-test Flutter suite and analyzer. The
+  API 23 photo-frame remains excluded; device-matrix accessibility coverage
+  for the remaining secondary screens is still open.
+
 - Notification permission opt-in now has a real token-registration boundary:
   migration `0027_notification_device_tokens.sql` stores tokens behind
   authenticated RPCs, denies raw token reads to clients, and covers

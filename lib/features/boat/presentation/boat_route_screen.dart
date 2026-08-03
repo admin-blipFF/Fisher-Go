@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../domain/boat_vendor.dart';
 import '../../../core/shop/boat_vendor_service.dart';
+import 'boat_route_semantics.dart';
 
 /// Shows the active boat vendor's route — one attempt per spot.
 class BoatRouteScreen extends StatefulWidget {
@@ -34,10 +35,10 @@ class _BoatRouteScreenState extends State<BoatRouteScreen> {
 
   Future<void> _loadStatus() async {
     for (var i = 0; i < widget.vendor.spotNames.length; i++) {
-      final attempted =
-          await BoatVendorService.hasBoatSpotAttempted(widget.vendor.id, i);
+      final result =
+          await BoatVendorService.getBoatSpotResult(widget.vendor.id, i);
       if (!mounted) return;
-      setState(() => _spotStatus[i] = attempted ? 'done' : null);
+      setState(() => _spotStatus[i] = result);
     }
   }
 
@@ -48,6 +49,7 @@ class _BoatRouteScreenState extends State<BoatRouteScreen> {
     return switch (status) {
       'success' => '✅ 成功',
       'fail' => '❌ 失敗',
+      'done' => '✅ 已完成',
       _ => '🎣 可作釣',
     };
   }
@@ -56,6 +58,7 @@ class _BoatRouteScreenState extends State<BoatRouteScreen> {
     return switch (status) {
       'success' => Colors.green.shade700,
       'fail' => Colors.red.shade700,
+      'done' => Colors.green.shade700,
       _ => Colors.blue.shade700,
     };
   }
@@ -64,6 +67,7 @@ class _BoatRouteScreenState extends State<BoatRouteScreen> {
     return switch (status) {
       'success' => Icons.check_circle,
       'fail' => Icons.cancel,
+      'done' => Icons.check_circle,
       _ => Icons.phishing,
     };
   }
@@ -78,45 +82,56 @@ class _BoatRouteScreenState extends State<BoatRouteScreen> {
       body: Column(
         children: [
           // Route progress
-          Container(
-            padding: const EdgeInsets.all(16),
-            color: Colors.blue.shade800,
-            child: Row(
-              children: [
-                const Icon(Icons.route, color: Colors.white, size: 28),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '${widget.vendor.name} · ${widget.vendor.zoneName}',
-                        style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        '已完成 $_doneCount / ${widget.vendor.spotNames.length} 個釣點',
-                        style: const TextStyle(color: Colors.white70),
-                      ),
-                    ],
+          Semantics(
+            container: true,
+            excludeSemantics: true,
+            label: boatRouteProgressSemanticsLabel(
+              vendorName: widget.vendor.name,
+              zoneName: widget.vendor.zoneName,
+              completed: _doneCount,
+              total: widget.vendor.spotNames.length,
+              allDone: _allDone,
+            ),
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              color: Colors.blue.shade800,
+              child: Row(
+                children: [
+                  const Icon(Icons.route, color: Colors.white, size: 28),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '${widget.vendor.name} · ${widget.vendor.zoneName}',
+                          style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          '已完成 $_doneCount / ${widget.vendor.spotNames.length} 個釣點',
+                          style: const TextStyle(color: Colors.white70),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: _allDone ? Colors.green : Colors.orange,
-                    borderRadius: BorderRadius.circular(20),
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: _allDone ? Colors.green : Colors.orange,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      _allDone ? '全部完成' : '進行中',
+                      style: const TextStyle(color: Colors.white, fontSize: 13),
+                    ),
                   ),
-                  child: Text(
-                    _allDone ? '全部完成' : '進行中',
-                    style: const TextStyle(color: Colors.white, fontSize: 13),
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
           // Spot list
@@ -134,12 +149,21 @@ class _BoatRouteScreenState extends State<BoatRouteScreen> {
                   margin: const EdgeInsets.only(bottom: 12),
                   child: ListTile(
                     contentPadding: const EdgeInsets.all(12),
-                    leading: CircleAvatar(
-                      backgroundColor:
-                          _statusColor(status).withValues(alpha: 0.2),
-                      child: Icon(
-                        _statusIcon(status),
-                        color: _statusColor(status),
+                    leading: Semantics(
+                      container: true,
+                      excludeSemantics: true,
+                      label: boatRouteSpotSemanticsLabel(
+                        spotName: name,
+                        status: boatRouteStatusSemanticsLabel(status),
+                        canFish: !done,
+                      ),
+                      child: CircleAvatar(
+                        backgroundColor:
+                            _statusColor(status).withValues(alpha: 0.2),
+                        child: Icon(
+                          _statusIcon(status),
+                          color: _statusColor(status),
+                        ),
                       ),
                     ),
                     title: Text(
@@ -198,23 +222,29 @@ class _BoatRouteScreenState extends State<BoatRouteScreen> {
           ),
           // All-done banner
           if (_allDone)
-            Container(
-              padding: const EdgeInsets.all(20),
-              color: Colors.green.shade700,
-              child: const Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.emoji_events, color: Colors.amber, size: 32),
-                  SizedBox(width: 12),
-                  Text(
-                    '路線完成！感謝乘搭',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
+            Semantics(
+              container: true,
+              liveRegion: true,
+              excludeSemantics: true,
+              label: '船線已完成，所有釣點均已作釣',
+              child: Container(
+                padding: const EdgeInsets.all(20),
+                color: Colors.green.shade700,
+                child: const Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.emoji_events, color: Colors.amber, size: 32),
+                    SizedBox(width: 12),
+                    Text(
+                      '路線完成！感謝乘搭',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
         ],

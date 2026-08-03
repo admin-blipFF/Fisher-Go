@@ -134,6 +134,14 @@ analyzer passed. Unknown cards retain their locked, non-actionable semantics;
 the remaining secondary-screen audit and full device accessibility matrix are
 still open.
 
+Boat-route secondary-screen mitigation added on 2026-08-03: route reopening now
+reads and preserves each persisted `success`/`fail` result, so an attempted spot
+is no longer rendered as available for fishing. Route progress, spot status, and
+route completion now expose explicit semantics. The service regression, helper
+contract, widget semantics smoke, full `500`-test Flutter suite, and analyzer
+passed. Remaining secondary-screen semantics and the full device accessibility
+matrix are still open.
+
 ### P1: Assets and binaries are oversized
 
 Measured baseline:

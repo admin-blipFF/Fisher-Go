@@ -572,6 +572,19 @@ the accepted adaptive `0.75` idle preset remains unchanged. Evidence is
 `tmp/web-map-benchmark-motion-pixel-control-390-1440-20260803.json` and
 `tmp/web-map-benchmark-motion-pixel-candidate-diagnostic-20260803.json`.
 
+The following Web canvas antialias candidate was also rejected. The new
+query-gated `?fishergo_canvas_antialias=0` path disabled MapLibre WebGL MSAA
+while keeping the style, GPS camera, tile source, and marker contract fixed.
+Both matched pairs passed populated visual goldens and HTTP 200 OpenFreeMap
+checks, but desktop repeats remained at p95 `66.6/66.7 ms` with about
+`21%` jank and mobile showed no stable gain. The hook was removed because
+canvas antialiasing is not the primary release-gate bottleneck. Evidence is
+`tmp/web-map-benchmark-canvas-antialias-control-20260803.json`,
+`tmp/web-map-benchmark-canvas-antialias-candidate-20260803.json`,
+`tmp/web-map-benchmark-canvas-antialias-control-repeat-20260803.json`,
+`tmp/web-map-benchmark-canvas-antialias-candidate-repeat-20260803.json`, and
+`tmp/web-map-benchmark-canvas-antialias-diagnostic-20260803.json`.
+
 **Migration**
 
 1. Put the new map behind a feature flag.

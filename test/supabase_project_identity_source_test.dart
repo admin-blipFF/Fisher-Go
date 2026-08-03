@@ -7,11 +7,14 @@ void main() {
       () {
     final tool = File('tool/verify_supabase_project_identity.dart');
     final workflow = File('.github/workflows/supabase-live-smoke.yml');
+    final example = File('.env.example');
 
     expect(tool.existsSync(), isTrue);
     expect(workflow.existsSync(), isTrue);
+    expect(example.existsSync(), isTrue);
     final source = tool.readAsStringSync();
     final workflowSource = workflow.readAsStringSync();
+    final exampleSource = example.readAsStringSync();
 
     expect(source, contains('SUPABASE_URL'));
     expect(source, contains('SUPABASE_ANON_KEY'));
@@ -31,5 +34,6 @@ void main() {
       workflowSource,
       contains(r'SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}'),
     );
+    expect(exampleSource, contains('SUPABASE_PROJECT_REF=your-project-ref'));
   });
 }

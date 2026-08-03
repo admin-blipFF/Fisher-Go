@@ -546,6 +546,21 @@ temporary raster golden were removed. Evidence is
 `tmp/web-map-benchmark-raster-control-repeat-390-1440.json`, and
 `tmp/web-map-benchmark-raster-candidate-repeat-390-1440.json`.
 
+The Web native-player sprite diagnostic was then rejected. A build-gated
+candidate registered the selected avatar body asset in a MapLibre-native
+`MarkerLayer` and preserved OpenFreeMap responses, populated visual goldens,
+GPS centering, and compass rotation. The first matched pair measured mobile
+`54.99/55.38 FPS` with p95 `33.3/33.3 ms` and desktop `39.78/39.89 FPS` with
+p95 `66.6/66.6 ms`; repeats measured mobile `54.30/54.64 FPS` and desktop
+`38.40/40.36 FPS`, with desktop jank `20.42%/21.39%`. Browser inspection
+confirmed the candidate showed the selected body but lost the existing
+marker glow/navigation treatment, so the Web flag and asset path were
+removed. The current Flutter marker remains the production Web path. Evidence
+is `tmp/web-map-benchmark-native-player-control-390-1440.json`,
+`tmp/web-map-benchmark-native-player-candidate-390-1440.json`,
+`tmp/web-map-benchmark-native-player-control-repeat-390-1440.json`, and
+`tmp/web-map-benchmark-native-player-candidate-repeat-390-1440.json`.
+
 **Migration**
 
 1. Put the new map behind a feature flag.

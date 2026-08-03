@@ -4,6 +4,16 @@ Last updated: 2026-08-03
 
 ## Current verification snapshot (2026-08-03; production evidence through 2026-08-03)
 
+- A fresh current-source Android vertical-slice rerun passed on API 35
+  `emulator-5554`: startup/auth, map rotation, GPS-centered verified-spot
+  selection, bite-first fishing minigame, Daily Task reward claim, offline
+  reconnect, denied-location recovery, and a real network-off/network-on
+  recovery flow. The preflight skipped API 23 serial `0123456789ABCDEF`.
+  The verified-spot run used `114.109537072,22.354208013`; the other flows
+  used the Sha Tin GPS fixture. This closes a fresh correctness pass only;
+  Android native motion p95 remains a separate Gate 2 failure. Evidence:
+  `tmp/android-vertical-slice-smoke-20260803.json`.
+
 - On 2026-08-03, the GitHub-connected Vercel project auto-deployed commit
   `5692b7b` to both canonical production aliases. The live verifier returned
   HTTP 200 for both roots, HTTP 404 for both `/assets/.env` paths, matching

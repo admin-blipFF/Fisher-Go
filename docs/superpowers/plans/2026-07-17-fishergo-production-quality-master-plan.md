@@ -374,6 +374,14 @@ a downstream anon-key habitat verifier before hosted gameplay smoke; linked
 production content deployment remains an owner-controlled action and has not
 run in this workspace.
 
+An API 35 current-source vertical-slice rerun passed on `emulator-5554` for
+startup/auth, map rotation, GPS-centered verified-spot selection, the
+bite-first minigame, Daily Task reward claim, offline reconnect,
+denied-location recovery, and a real network-toggle recovery. The preflight
+continued to exclude API 23 serial `0123456789ABCDEF`. This is correctness
+evidence only; the Android native motion p95 gate remains open. Evidence is
+`tmp/android-vertical-slice-smoke-20260803.json`.
+
 ## 9. Workstream 5: Map Engine Proof
 
 **Candidates**

@@ -109,8 +109,9 @@ emitted by `apply-and-verify`. The smoke must report all of these checks:
 - server event configuration returns only valid active parent-event boosts and
   rejects anonymous access.
 
-Each authenticated gameplay, analytics, and event-configuration smoke deletes
-the disposable Auth identity in its `finally` block after the checks. If the
+Each authenticated gameplay, analytics, event-configuration, and catch-photo
+smoke deletes the disposable Auth identity in its `finally` block after the
+checks. The catch-photo smoke removes its uploaded object first. If the
 authenticated delete fails, the tool falls back to sign-out and emits a
 warning; do not treat that fallback as proof that the disposable account was
 removed.

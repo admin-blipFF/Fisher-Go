@@ -1259,6 +1259,9 @@ Last updated: 2026-08-03
   boundary for their disposable identities. Sign-out is only a fallback when
   deletion fails, and the warning is retained so a green functional check does
   not masquerade as cleanup evidence.
+- The private catch-photo smoke now deletes its uploaded object first and then
+  removes the disposable Auth identity through the same boundary. Sign-out is
+  retained only as a cleanup-failure fallback.
 - Account deletion is now source-ready: the Profile confirmation flow clears
   the local account namespace only after a successful `delete-account` Edge
    Function response. The function removes current `profiles`, `catches`,

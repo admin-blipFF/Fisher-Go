@@ -22,5 +22,9 @@ void main() {
     expect(source, contains('_operationTimeout'));
     expect(source, contains('_cleanupTimeout'));
     expect(source, contains('cleanup failed'));
+    expect(source, contains("'/auth/v1/user'"));
+    expect(source, contains('.delete('));
+    expect(source, contains('disposable account cleanup'));
+    expect(source, contains('deletionSucceeded'));
   });
 }

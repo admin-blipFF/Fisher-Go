@@ -806,6 +806,18 @@ Last updated: 2026-08-03
   and the asset budget plus client secret scans passed. The new regression is
   covered by `test/mobile_fish_assets_test.dart`; this improves bundle hygiene
   but does not close either motion-performance gate.
+- The rebuilt Web release was rerun locally on both gameplay viewports after
+  the asset cleanup. OpenFreeMap tiles, populated-map goldens, and the
+  cache-disabled bootstrap budget passed; `390x844` measured `56.61 FPS`,
+  p95 `33.3 ms`, `2.12%` jank, while `1440x900` measured `39.11 FPS`, p95
+  `66.6 ms`, `20.51%` jank. Evidence:
+  `tmp/web-map-benchmark-release-asset-cleanup-20260803.json`; the wide-screen
+  motion gate remains open.
+- The current source was also exercised on API 35 `emulator-5554` with the
+  host-GPU and map-readiness gates enabled. The debug perf trace measured gfx
+  p95 `65 ms`, `46.95%` jank, and no ANR; it is valid evidence that the Android
+  `20 ms` motion gate remains open, not a release pass. API 23 was not used.
+  Evidence: `tmp/android-map-benchmark-debug-perf-asset-cleanup-api35.json`.
 - After the asset manifest change, the API 35 emulator smoke was rerun on
   `emulator-5554`; the complete Android vertical slice passed:
   `startup_auth_flow_test.dart`, `fishing_minigame_flow_test.dart`,

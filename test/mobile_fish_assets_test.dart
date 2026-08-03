@@ -31,7 +31,9 @@ void main() {
   });
 
   test('avatar asset manifest excludes backup layers and legacy SVGs', () {
-    final pubspec = File('pubspec.yaml').readAsStringSync();
+    final pubspec = File('pubspec.yaml')
+        .readAsStringSync()
+        .replaceAll('\r\n', '\n');
     expect(pubspec, isNot(contains('    - assets/avatar/layers/\n')));
     expect(pubspec, isNot(contains('assets/avatar/layers/_opaque_backup')));
 
@@ -45,6 +47,12 @@ void main() {
     for (final path in pngs) {
       expect(pubspec, contains('    - $path'));
     }
+    final avatarEntries = pubspec
+        .split('\n')
+        .where((line) => line.startsWith('    - assets/avatar/layers/'))
+        .toList(growable: false);
+    expect(avatarEntries, everyElement(endsWith('.png')),
+        reason: 'Every avatar asset must be an explicit runtime PNG entry.');
   });
 
   test('Flutter engine decodes the compressed fish assets', () async {

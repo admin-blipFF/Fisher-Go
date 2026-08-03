@@ -275,7 +275,10 @@ class _ProfileScreenState extends State<ProfileScreen>
   }
 
   Future<void> _deleteAccount() async {
-    if (!SupabaseConfig.isConfigured) return;
+    if (!PublicAppConfig.accountDeletionEnabled ||
+        !SupabaseConfig.isConfigured) {
+      return;
+    }
     final user = Supabase.instance.client.auth.currentUser;
     if (user == null || user.isAnonymous) return;
 
@@ -667,17 +670,18 @@ class _ProfileScreenState extends State<ProfileScreen>
               child: const Text('登出'),
             ),
           ),
-          Align(
-            alignment: Alignment.centerRight,
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-              child: OutlinedButton.icon(
-                onPressed: _isLoading ? null : _deleteAccount,
-                icon: const Icon(Icons.delete_forever_outlined),
-                label: const Text('刪除帳戶'),
+          if (PublicAppConfig.accountDeletionEnabled)
+            Align(
+              alignment: Alignment.centerRight,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                child: OutlinedButton.icon(
+                  onPressed: _isLoading ? null : _deleteAccount,
+                  icon: const Icon(Icons.delete_forever_outlined),
+                  label: const Text('刪除帳戶'),
+                ),
               ),
             ),
-          ),
         ],
       ),
     );

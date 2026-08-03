@@ -16,6 +16,15 @@ if [ "${VERCEL_ENV:-preview}" = "production" ] ||
   : "${SUPABASE_ANON_KEY:?SUPABASE_ANON_KEY is required for production Vercel builds}"
 fi
 
+ACCOUNT_DELETION_ENABLED="${FISHERGO_ACCOUNT_DELETION_ENABLED:-false}"
+case "$ACCOUNT_DELETION_ENABLED" in
+  true|false) ;;
+  *)
+    echo "FISHERGO_ACCOUNT_DELETION_ENABLED must be true or false." >&2
+    exit 1
+    ;;
+esac
+
 BUILD_TIME="$(TZ='Asia/Hong_Kong' date '+%Y-%m-%d %H:%M HKT')"
 BUILD_ID="$(TZ='Asia/Hong_Kong' date '+%Y%m%d%H%M%S')"
 GIT_SHA="${FISHERGO_GIT_SHA:-${VERCEL_GIT_COMMIT_SHA:-${GITHUB_SHA:-unknown}}}"
@@ -48,6 +57,7 @@ flutter build web --release \
   --dart-define=FISHERGO_PRIVACY_URL="${FISHERGO_PRIVACY_URL:-}" \
   --dart-define=FISHERGO_SUPPORT_EMAIL="${FISHERGO_SUPPORT_EMAIL:-}" \
   --dart-define=FISHERGO_ANALYTICS_ENABLED="${FISHERGO_ANALYTICS_ENABLED:-false}" \
+  --dart-define=FISHERGO_ACCOUNT_DELETION_ENABLED="$ACCOUNT_DELETION_ENABLED" \
   --dart-define=FISHERGO_MAPLIBRE=true \
   --dart-define=FISHERGO_RELEASE_ID="$RELEASE_ID" \
   --dart-define=BUILD_TIME="$BUILD_TIME"

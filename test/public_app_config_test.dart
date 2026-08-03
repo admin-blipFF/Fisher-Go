@@ -12,6 +12,10 @@ void main() {
     expect(PublicAppConfig.fishingSpotsEnabled, isTrue);
   });
 
+  test('destructive account deletion stays disabled by default', () {
+    expect(PublicAppConfig.accountDeletionEnabled, isFalse);
+  });
+
   test('legal and support links are public build-time configuration', () {
     expect(PublicAppConfig.privacyPolicyUrl, isA<String>());
     expect(PublicAppConfig.supportEmail, isA<String>());

@@ -18,6 +18,7 @@ jobs:
       SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
       SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
       FISHERGO_ANALYTICS_ENABLED: 'true'
+      FISHERGO_ACCOUNT_DELETION_ENABLED: ${{ vars.FISHERGO_ACCOUNT_DELETION_ENABLED || 'false' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -95,6 +96,7 @@ jobs:
           --dart-define=SUPABASE_URL="$SUPABASE_URL"
           --dart-define=SUPABASE_ANON_KEY="$SUPABASE_ANON_KEY"
           --dart-define=FISHERGO_ANALYTICS_ENABLED="$FISHERGO_ANALYTICS_ENABLED"
+          --dart-define=FISHERGO_ACCOUNT_DELETION_ENABLED="$FISHERGO_ACCOUNT_DELETION_ENABLED"
           --dart-define=FISHERGO_MAPLIBRE=true
           --dart-define=FISHERGO_RELEASE_ID="$FISHERGO_RELEASE_ID"
           --dart-define=FISHERGO_PRIVACY_URL="$FISHERGO_PRIVACY_URL"
@@ -114,6 +116,7 @@ jobs:
           --dart-define=SUPABASE_URL="$SUPABASE_URL"
           --dart-define=SUPABASE_ANON_KEY="$SUPABASE_ANON_KEY"
           --dart-define=FISHERGO_ANALYTICS_ENABLED="$FISHERGO_ANALYTICS_ENABLED"
+          --dart-define=FISHERGO_ACCOUNT_DELETION_ENABLED="$FISHERGO_ACCOUNT_DELETION_ENABLED"
           --dart-define=FISHERGO_MAPLIBRE=true
           --dart-define=FISHERGO_RELEASE_ID="$FISHERGO_RELEASE_ID"
           --dart-define=FISHERGO_PRIVACY_URL="$FISHERGO_PRIVACY_URL"
@@ -142,6 +145,7 @@ jobs:
           --dart-define=SUPABASE_URL="$SUPABASE_URL"
           --dart-define=SUPABASE_ANON_KEY="$SUPABASE_ANON_KEY"
           --dart-define=FISHERGO_ANALYTICS_ENABLED="$FISHERGO_ANALYTICS_ENABLED"
+          --dart-define=FISHERGO_ACCOUNT_DELETION_ENABLED="$FISHERGO_ACCOUNT_DELETION_ENABLED"
           --dart-define=FISHERGO_MAPLIBRE=true
           --dart-define=FISHERGO_RELEASE_ID="$FISHERGO_RELEASE_ID"
           --dart-define=FISHERGO_PRIVACY_URL="$FISHERGO_PRIVACY_URL"
@@ -197,6 +201,7 @@ jobs:
           --dart-define=SUPABASE_URL="$SUPABASE_URL"
           --dart-define=SUPABASE_ANON_KEY="$SUPABASE_ANON_KEY"
           --dart-define=FISHERGO_ANALYTICS_ENABLED="$FISHERGO_ANALYTICS_ENABLED"
+          --dart-define=FISHERGO_ACCOUNT_DELETION_ENABLED="$FISHERGO_ACCOUNT_DELETION_ENABLED"
           --dart-define=FISHERGO_MAPLIBRE=true
           --dart-define=FISHERGO_RELEASE_ID="$FISHERGO_RELEASE_ID"
           --dart-define=FISHERGO_PRIVACY_URL="$FISHERGO_PRIVACY_URL"

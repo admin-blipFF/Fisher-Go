@@ -106,6 +106,10 @@ try {
 $privacyUrl = if ([string]::IsNullOrWhiteSpace($env:FISHERGO_PRIVACY_URL)) { '' } else { $env:FISHERGO_PRIVACY_URL }
 $supportEmail = if ([string]::IsNullOrWhiteSpace($env:FISHERGO_SUPPORT_EMAIL)) { '' } else { $env:FISHERGO_SUPPORT_EMAIL }
 $analyticsEnabled = if ([string]::IsNullOrWhiteSpace($env:FISHERGO_ANALYTICS_ENABLED)) { 'false' } else { $env:FISHERGO_ANALYTICS_ENABLED }
+$accountDeletionEnabled = if ([string]::IsNullOrWhiteSpace($env:FISHERGO_ACCOUNT_DELETION_ENABLED)) { 'false' } else { $env:FISHERGO_ACCOUNT_DELETION_ENABLED.ToLowerInvariant() }
+if ($accountDeletionEnabled -notin @('true', 'false')) {
+    throw 'FISHERGO_ACCOUNT_DELETION_ENABLED must be true or false.'
+}
 $flutterArgs = @(
     'build',
     'web',
@@ -114,6 +118,7 @@ $flutterArgs = @(
     "--dart-define=FISHERGO_PRIVACY_URL=$privacyUrl",
     "--dart-define=FISHERGO_SUPPORT_EMAIL=$supportEmail",
     "--dart-define=FISHERGO_ANALYTICS_ENABLED=$analyticsEnabled",
+    "--dart-define=FISHERGO_ACCOUNT_DELETION_ENABLED=$accountDeletionEnabled",
     '--dart-define=FISHERGO_MAPLIBRE=true',
     "--dart-define=FISHERGO_RELEASE_ID=$releaseId",
     "--dart-define=BUILD_TIME=$buildTime"
@@ -175,6 +180,8 @@ $vercelDeployArgs = @(
     "FISHERGO_SUPPORT_EMAIL=$supportEmail",
     '--build-env',
     "FISHERGO_ANALYTICS_ENABLED=$analyticsEnabled",
+    '--build-env',
+    "FISHERGO_ACCOUNT_DELETION_ENABLED=$accountDeletionEnabled",
     '--build-env',
     "FISHERGO_DEPLOY_RELEASE_ID=$releaseId",
     '--build-env',

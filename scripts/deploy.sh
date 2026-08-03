@@ -26,6 +26,15 @@ fi
 : "${SUPABASE_URL:?SUPABASE_URL is required for production deployment}"
 : "${SUPABASE_ANON_KEY:?SUPABASE_ANON_KEY is required for production deployment}"
 
+ACCOUNT_DELETION_ENABLED="${FISHERGO_ACCOUNT_DELETION_ENABLED:-false}"
+case "$ACCOUNT_DELETION_ENABLED" in
+  true|false) ;;
+  *)
+    echo "FISHERGO_ACCOUNT_DELETION_ENABLED must be true or false." >&2
+    exit 1
+    ;;
+esac
+
 BUILD_TIME="$(TZ='Asia/Hong_Kong' date '+%Y-%m-%d %H:%M HKT')"
 BUILD_ID="$(TZ='Asia/Hong_Kong' date '+%Y%m%d%H%M%S')"
 GIT_SHA="${FISHERGO_GIT_SHA:-$(git rev-parse HEAD 2>/dev/null || printf 'unknown')}"
@@ -55,6 +64,7 @@ flutter build web \
   --dart-define=FISHERGO_PRIVACY_URL="${FISHERGO_PRIVACY_URL:-}" \
   --dart-define=FISHERGO_SUPPORT_EMAIL="${FISHERGO_SUPPORT_EMAIL:-}" \
   --dart-define=FISHERGO_ANALYTICS_ENABLED="${FISHERGO_ANALYTICS_ENABLED:-false}" \
+  --dart-define=FISHERGO_ACCOUNT_DELETION_ENABLED="$ACCOUNT_DELETION_ENABLED" \
   --dart-define=FISHERGO_MAPLIBRE=true \
   --dart-define=FISHERGO_RELEASE_ID="$RELEASE_ID" \
   --dart-define=BUILD_TIME="$BUILD_TIME"
@@ -90,6 +100,7 @@ DEPLOY_OUTPUT="$(npx --yes vercel deploy . --prod \
   --build-env="FISHERGO_PRIVACY_URL=${FISHERGO_PRIVACY_URL:-}" \
   --build-env="FISHERGO_SUPPORT_EMAIL=${FISHERGO_SUPPORT_EMAIL:-}" \
   --build-env="FISHERGO_ANALYTICS_ENABLED=${FISHERGO_ANALYTICS_ENABLED:-false}" \
+  --build-env="FISHERGO_ACCOUNT_DELETION_ENABLED=$ACCOUNT_DELETION_ENABLED" \
   --build-env="FISHERGO_DEPLOY_RELEASE_ID=$RELEASE_ID" \
   --build-env="FISHERGO_RELEASE_ID=$RELEASE_ID" \
   --build-env="FISHERGO_GIT_SHA=$GIT_SHA" \

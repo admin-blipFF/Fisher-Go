@@ -45,7 +45,8 @@ void main() {
     expect(windowsScript, contains('fisher-go.app'));
     expect(windowsScript, contains('www.fisher-go.app'));
     expect(windowsScript, contains('vercel alias set'));
-    expect(windowsScript, contains('tool/check_client_artifacts_for_secrets.dart'));
+    expect(windowsScript,
+        contains('tool/check_client_artifacts_for_secrets.dart'));
     expect(windowsScript, contains('tool/verify_deployed_web.dart'));
     expect(windowsScript, contains('tool/write_release_manifest.dart'));
     expect(windowsScript, contains("'--build-env'"));
@@ -76,9 +77,24 @@ void main() {
     expect(script, contains('--dart-define=FISHERGO_MAPLIBRE=true'));
     expect(script, contains('--dart-define=FISHERGO_PRIVACY_URL='));
     expect(script, contains('--dart-define=FISHERGO_SUPPORT_EMAIL='));
+    expect(
+        script, contains('--dart-define=FISHERGO_ACCOUNT_DELETION_ENABLED='));
+    expect(script, contains('--build-env="FISHERGO_ACCOUNT_DELETION_ENABLED='));
     expect(vercelBuild, contains('--dart-define=FISHERGO_MAPLIBRE=true'));
     expect(vercelBuild, contains('--dart-define=FISHERGO_PRIVACY_URL='));
     expect(vercelBuild, contains('--dart-define=FISHERGO_SUPPORT_EMAIL='));
+    expect(
+      vercelBuild,
+      contains('--dart-define=FISHERGO_ACCOUNT_DELETION_ENABLED='),
+    );
+    expect(
+      windowsScript,
+      contains('--dart-define=FISHERGO_ACCOUNT_DELETION_ENABLED='),
+    );
+    expect(
+      windowsScript,
+      contains(r'FISHERGO_ACCOUNT_DELETION_ENABLED=$accountDeletionEnabled'),
+    );
     expect(vercelBuild, contains('tool/write_release_manifest.dart'));
     expect(workflow, contains('--dart-define=FISHERGO_MAPLIBRE=true'));
     expect(
@@ -108,7 +124,8 @@ void main() {
     final windowsScript = File('scripts/deploy.ps1').readAsStringSync();
 
     expect(script, contains('git status --porcelain'));
-    expect(script, contains('Production deployment requires a clean Git worktree'));
+    expect(script,
+        contains('Production deployment requires a clean Git worktree'));
     expect(script.indexOf('git status --porcelain'),
         lessThan(script.indexOf('if [ -f .env ]')));
     expect(windowsScript, contains('git status --porcelain'));

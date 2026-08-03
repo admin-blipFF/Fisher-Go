@@ -1115,6 +1115,12 @@ Current progress: the protected live-smoke workflow now verifies Supabase URL
 and project-ref identity before running provider, gameplay, account-upgrade,
 or photo-storage checks. The identity verifier is anon-key-only and
 fail-closed when credentials are absent or the endpoint is unreachable.
+Account deletion is now fail-closed at the product boundary: the Profile
+action and client invocation require
+`FISHERGO_ACCOUNT_DELETION_ENABLED=true`, which defaults to false. The Web
+release scripts propagate and validate this value, so the action can only be
+published after the protected Edge Function deployment and disposable-account
+smoke are complete. The hosted deployment and smoke remain owner-controlled.
 
 ## 14. Workstream 10: Live Game Systems
 

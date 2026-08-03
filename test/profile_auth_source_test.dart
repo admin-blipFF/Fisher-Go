@@ -17,10 +17,15 @@ void main() {
     final source = File(
       'lib/features/profile/presentation/profile_screen.dart',
     ).readAsStringSync();
+    final config =
+        File('lib/core/config/public_app_config.dart').readAsStringSync();
 
     expect(source, contains('delete-account'));
     expect(source, contains('clearCurrentAccountData'));
     expect(source, contains('刪除帳戶'));
+    expect(config, contains('FISHERGO_ACCOUNT_DELETION_ENABLED'));
+    expect(source, contains('PublicAppConfig.accountDeletionEnabled'));
+    expect(source, contains('if (PublicAppConfig.accountDeletionEnabled)'));
   });
 
   test('profile exposes only owner-configured privacy and support links', () {

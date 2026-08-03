@@ -19,6 +19,12 @@ void main() {
     expect(source, contains('Verify cross-platform release identity'));
     expect(source, contains('Resolve release id'));
     expect(source, contains('FISHERGO_RELEASE_ID'));
+    expect(
+      source,
+      contains(
+        r"FISHERGO_ACCOUNT_DELETION_ENABLED: ${{ vars.FISHERGO_ACCOUNT_DELETION_ENABLED || 'false' }}",
+      ),
+    );
     expect(source, contains('name: Verify production build configuration'));
     expect(source, contains(r'test -n "$SUPABASE_URL"'));
     expect(source, contains(r'test -n "$SUPABASE_ANON_KEY"'));
@@ -59,6 +65,10 @@ void main() {
     expect(source, contains('flutter build apk --release'));
     expect(source, contains('--dart-define=FISHERGO_PRIVACY_URL='));
     expect(source, contains('--dart-define=FISHERGO_SUPPORT_EMAIL='));
+    expect(
+      source,
+      contains('--dart-define=FISHERGO_ACCOUNT_DELETION_ENABLED='),
+    );
     expect(source, contains('--split-debug-info=build/app/symbols/aab'));
     expect(source, contains('--split-debug-info=build/app/symbols/apk'));
     expect(source, contains('--target-platform android-arm64'));

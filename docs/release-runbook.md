@@ -120,7 +120,11 @@ storage. Use disposable test identities only.
 
 Run **Supabase account deletion release** with its protected environment after
 the deletion policy has been reviewed. Confirm the disposable account and all
-private catch-photo objects are removed.
+private catch-photo objects are removed. The client keeps the deletion action
+hidden by default; only release builds that explicitly pass
+`FISHERGO_ACCOUNT_DELETION_ENABLED=true` after this smoke may expose it. The
+Web deployment scripts propagate this flag and reject values other than
+`true`/`false`.
 
 ## 3. Android Release
 

@@ -1231,6 +1231,11 @@ Last updated: 2026-08-03
   Its first step runs the deletion source contracts before deployment. The
   workflow is source-verified and fail-closed, but has not run because the
   required protected environment secrets are not present in this workspace.
+  The Profile action now remains hidden by default through
+  `FISHERGO_ACCOUNT_DELETION_ENABLED=false`; the Web deployment scripts
+  propagate an explicit `true`/`false` value and reject invalid values. The
+  flag should only be enabled after the hosted function deployment and
+  disposable-account smoke pass.
   A local unsigned x64 proof built an AAB (`74.2 MiB`) and APK (`93.7 MiB`),
   each with a `3.99 MiB` `app.android-x64.symbols` file. These are artifact
   contract proofs only; protected signing is still required for Play upload.

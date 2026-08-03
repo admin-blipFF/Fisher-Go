@@ -46,6 +46,13 @@ class PublicAppConfig {
     'FISHERGO_ANALYTICS_ENABLED',
     defaultValue: false,
   );
+
+  /// Keep the destructive account action hidden until the hosted function
+  /// deployment and disposable-account smoke have passed.
+  static const accountDeletionEnabled = bool.fromEnvironment(
+    'FISHERGO_ACCOUNT_DELETION_ENABLED',
+    defaultValue: false,
+  );
   static const mapLibreEnabled = bool.fromEnvironment(
     'FISHERGO_MAPLIBRE',
     defaultValue: false,

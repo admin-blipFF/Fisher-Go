@@ -46,9 +46,11 @@ Source readiness now includes:
    removes current and legacy user-owned rows, removes private catch-photo
    objects, and calls `auth.admin.deleteUser`.
 
-The Edge Function is **not yet deployed to the hosted Supabase project**. Do
-not publish the deletion button as a completed production capability until it
-is deployed and a disposable signed-in deletion smoke has passed.
+The Edge Function is **not yet deployed to the hosted Supabase project**. The
+Profile deletion action is therefore disabled by default through
+`FISHERGO_ACCOUNT_DELETION_ENABLED=false`. Do not publish a build with that
+flag set to `true` until the function is deployed and a disposable signed-in
+deletion smoke has passed.
 
 ## Support and Reporting
 
@@ -84,5 +86,8 @@ the final policy URL or support mailbox.
   `lib/features/profile/presentation/profile_screen.dart`; final public values
   remain an owner action.
 - Protected function deployment and live deletion smoke: **open**.
+- Client deletion action: hidden unless
+  `FISHERGO_ACCOUNT_DELETION_ENABLED=true` is explicitly supplied after the
+  hosted smoke.
 - Privacy policy URL, support contact, provider terms, screenshots, and final
   Play answers: **owner action**.

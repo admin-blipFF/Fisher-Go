@@ -19,21 +19,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          channel: stable
-          cache: true
-
-      - name: Install dependencies
-        run: flutter pub get
-
-      - name: Verify deletion source contracts
-        run: >-
-          flutter test --no-pub --reporter compact
-          test/delete_account_source_test.dart
-          test/supabase_account_deletion_workflow_source_test.dart
-
       - name: Verify protected deletion inputs before deploy
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
@@ -53,6 +38,21 @@ jobs:
           test -n "$SUPABASE_SERVICE_ROLE_KEY"
           test -n "$FISHERGO_SMOKE_DELETION_EMAIL"
           test -n "$FISHERGO_SMOKE_DELETION_PASSWORD"
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Verify deletion source contracts
+        run: >-
+          flutter test --no-pub --reporter compact
+          test/delete_account_source_test.dart
+          test/supabase_account_deletion_workflow_source_test.dart
 
       - name: Deploy protected delete-account function
         env:

@@ -1218,8 +1218,8 @@ release cannot bypass the consolidated checks.
 - Add privacy, account deletion, support, and report flows.
 
 Current progress: the protected live-smoke workflow now verifies Supabase URL
-and project-ref identity before running provider, gameplay, account-upgrade,
-or photo-storage checks. The identity verifier is anon-key-only and
+and project-ref identity immediately after checkout, before Flutter setup or
+provider, gameplay, account-upgrade, or photo-storage checks. The identity verifier is anon-key-only and
 fail-closed when credentials are absent or the endpoint is unreachable.
 Account deletion is now fail-closed at the product boundary: the Profile
 action and client invocation require
@@ -1229,7 +1229,12 @@ published after the protected Edge Function deployment and disposable-account
   smoke are complete. The local function boundary now removes all current
   player-owned tables, including reward transactions, fishing sessions,
   notification tokens, and hashed analytics rows, before deleting the Auth user.
-  The hosted deployment and smoke remain owner-controlled.
+The hosted deployment and smoke remain owner-controlled.
+
+The account-deletion release workflow applies the same checkout-first
+protected-input boundary for its access token, project identity, service-role
+key, and disposable smoke credentials before Flutter setup. Its hosted
+function deployment and deletion smoke remain owner-controlled.
 
 The local deletion boundary now also removes account-scoped announcement
 state, the legacy user-keyed fish collection cache entry, and the legacy

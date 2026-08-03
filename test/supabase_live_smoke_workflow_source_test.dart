@@ -21,9 +21,12 @@ void main() {
     final preflightStep = source.indexOf(
       'Verify protected live smoke inputs before remote checks',
     );
+    final setupFlutterStep = source.indexOf('name: Set up Flutter');
     final identityStep = source.indexOf('Verify Supabase project identity');
     final providerStep = source.indexOf('Verify Auth provider configuration');
     expect(preflightStep, greaterThanOrEqualTo(0));
+    expect(setupFlutterStep, greaterThanOrEqualTo(0));
+    expect(preflightStep, lessThan(setupFlutterStep));
     expect(identityStep, greaterThanOrEqualTo(0));
     expect(providerStep, greaterThanOrEqualTo(0));
     expect(preflightStep, lessThan(identityStep));

@@ -20,10 +20,13 @@ void main() {
     final preflightStep = workflow.indexOf(
       'name: Verify protected deletion inputs before deploy',
     );
+    final setupFlutterStep = workflow.indexOf('name: Set up Flutter');
     final deployStep = workflow.indexOf(
       'name: Deploy protected delete-account function',
     );
     expect(preflightStep, greaterThanOrEqualTo(0));
+    expect(setupFlutterStep, greaterThanOrEqualTo(0));
+    expect(preflightStep, lessThan(setupFlutterStep));
     expect(deployStep, greaterThanOrEqualTo(0));
     expect(preflightStep, lessThan(deployStep));
     final preflightSource = workflow.substring(preflightStep, deployStep);

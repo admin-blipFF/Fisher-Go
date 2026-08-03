@@ -132,8 +132,9 @@ unless both Google and anonymous providers are enabled before checking
 anonymous account upgrade, gameplay session behavior, and private catch-photo
 storage. Use disposable test identities only.
 The workflow now performs a complete protected-input preflight before any
-analytics, gameplay, or account-upgrade request: the URL, anon key, project
-ref, and disposable upgrade email/password must all be present.
+Flutter setup or analytics, gameplay, or account-upgrade request: the URL,
+anon key, project ref, and disposable upgrade email/password must all be
+present.
 It also uses a non-cancelling concurrency group, so a second live-smoke run
 waits instead of sharing the same disposable identity concurrently.
 
@@ -147,7 +148,9 @@ deploying the Edge Function. Web deployment scripts propagate this flag and
 reject values other than `true`/`false`.
 Before deploying the Edge Function, it also verifies the service-role key and
 disposable deletion email/password, so missing smoke credentials cannot leave
-an unverified function deployment behind.
+an unverified function deployment behind. This deletion preflight now runs
+immediately after checkout, before Flutter setup, so a missing protected value
+does not consume the build/test environment first.
 Account deletion runs use a separate non-cancelling concurrency group so two
 deletion smokes cannot race over the same disposable account or photo objects.
 

@@ -19,15 +19,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          channel: stable
-          cache: true
-
-      - name: Install dependencies
-        run: flutter pub get
-
       - name: Verify protected live smoke inputs before remote checks
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
@@ -43,6 +34,15 @@ jobs:
           test -n "$SUPABASE_PROJECT_REF"
           test -n "$FISHERGO_SMOKE_UPGRADE_EMAIL"
           test -n "$FISHERGO_SMOKE_UPGRADE_PASSWORD"
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
 
       - name: Verify Supabase project identity
         env:

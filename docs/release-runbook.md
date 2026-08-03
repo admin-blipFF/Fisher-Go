@@ -25,6 +25,11 @@ catches. The workflow never prints credentials, access tokens, or UUIDs.
 Run **Actions -> Supabase content release -> Run workflow** on the intended
 branch. The `apply-and-verify` job will link the project, apply all versioned
 migrations, run linked pgTAP, and run public-schema lint.
+Before linking or mutating the database, the job verifies that the canonical
+`SUPABASE_URL` is reachable and matches `SUPABASE_PROJECT_REF`. The dependent
+`hosted-gameplay-smoke` job repeats that check and compares its protected
+project ref with the ref exported by `apply-and-verify` before any hosted
+verifier runs.
 
 The job first prints a read-only `supabase db push --linked --include-all
 --dry-run` migration plan, captures it in the runner temporary directory, and
@@ -76,7 +81,7 @@ the compatibility-only SQL, uses the workflow input
    `supabase migration repair 001 002 --linked --status reverted --yes`, which edits
    migration history only; it does not roll back schema or grants.
 3. The CI checkout temporarily excludes the two compatibility markers, then
-   the dry-run must plan only local `0012` through `0026` before apply and hosted
+   the dry-run must plan only local `0012` through `0027` before apply and hosted
    smoke.
 
 With the input left `false`, the workflow never runs repair and remains

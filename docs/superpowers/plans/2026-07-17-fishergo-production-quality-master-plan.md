@@ -1049,6 +1049,11 @@ release artifacts. The shared identity and workflow contracts are locally
 tested; protected signing, the actual CI emulator run, and Play distribution
 remain owner-controlled.
 
+The Android release workflow now also fails closed before packaging when
+either public Supabase build value is missing, preventing a signed release
+from silently shipping the offline fixture path. Protected signing, the CI
+emulator run, and Play distribution remain owner-controlled.
+
 The restored production source was rebuilt for both release targets after the
 rejected fill-AA experiment: Web package `89.6 MiB` and arm64 AAB `75.7 MiB`.
 The client secret scan and asset-budget check passed; `jarsigner` still reports

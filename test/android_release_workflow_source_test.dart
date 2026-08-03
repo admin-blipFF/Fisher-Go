@@ -19,6 +19,9 @@ void main() {
     expect(source, contains('Verify cross-platform release identity'));
     expect(source, contains('Resolve release id'));
     expect(source, contains('FISHERGO_RELEASE_ID'));
+    expect(source, contains('name: Verify production build configuration'));
+    expect(source, contains(r'test -n "$SUPABASE_URL"'));
+    expect(source, contains(r'test -n "$SUPABASE_ANON_KEY"'));
     expect(
       source,
       contains(

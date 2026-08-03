@@ -2368,6 +2368,10 @@ Latest artifact evidence:
   build id, build time, and Git SHA fields with the Web manifest, providing a
   traceable release record instead of leaving artifacts only on the ephemeral
   runner.
+- The Android release workflow now fails before signing or packaging if either
+  production public Supabase build value is absent. This prevents a signed
+  artifact from silently shipping the offline fixture path; protected
+  keystore provisioning and Play App Signing remain owner-controlled.
 - The latest current-source local release rebuild produced an arm64 AAB of
   `74.4 MiB` and an arm64 APK of `92.4 MiB`; both builds emitted one Dart
   symbol file, and the client-secret scan plus asset-budget check passed. These

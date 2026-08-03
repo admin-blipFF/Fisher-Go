@@ -38,6 +38,13 @@ jobs:
           test -n "$app_version"
           echo "FISHERGO_RELEASE_ID=${app_version}-${GITHUB_SHA:0:12}" >> "$GITHUB_ENV"
 
+      - name: Verify production build configuration
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$SUPABASE_URL"
+          test -n "$SUPABASE_ANON_KEY"
+
       - name: Write release manifest
         env:
           FISHERGO_BUILD_ID: android-${{ github.run_number }}

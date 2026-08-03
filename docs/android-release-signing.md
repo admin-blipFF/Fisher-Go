@@ -43,6 +43,8 @@ the GitHub commit/version, builds the arm64 AAB and a matching arm64 APK,
 keeps separate Dart symbol directories for the AAB and APK builds,
 validates the keystore password, key password, and alias before `keytool`,
 verifies both JAR signatures, fails if both symbol files were not produced,
+fails before packaging when the protected production build is missing either
+public Supabase build value,
 and then runs the
 client-secret and asset-budget checks for the Android and companion Web
 artifacts. Only after all checks pass does it upload `app-release.aab`,

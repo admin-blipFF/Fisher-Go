@@ -2368,6 +2368,11 @@ Open items:
 1. Reduce slow UI-thread and MapLibre draw-command/composition frames without
    weakening geography; the Android game 3D style is visually accepted but
    still measures p95 near 30 ms rather than the 20 ms target.
+   The 2026-08-03 Web tile-cache depth 1/2 experiments preserved OpenFreeMap
+   tile responses and both visual goldens, but the fresh production-like
+   matched run regressed from `39.14 FPS` / `66.7 ms` p95 / `20.51%` jank at
+   the default to `34.18 FPS` / `83.2 ms` p95 / `25.29%` with level 2. No
+   adaptive cache default was promoted; the query remains diagnostic-only.
 2. Keep the Sha Tin and Victoria Harbour boundary/bearing matrices as release-candidate checks. The current final height-cap APK has passed both local 0/90/180/270 matrices and Harbour marker selection; repeat them only after the next map-style or renderer change.
 3. Re-run deployed Web cold/cache readiness and Android topology readings only
    after the next map-style or renderer change; the current post-extrusion-cap

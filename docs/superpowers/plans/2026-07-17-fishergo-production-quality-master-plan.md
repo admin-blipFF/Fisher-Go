@@ -753,6 +753,14 @@ the exact public release-manifest check to the Chromium guest/tutorial/map
 smoke and uploads both viewport screenshots. Motion-budget enforcement is
 opt-in until the wide-screen gate is closed.
 
+The GitHub-connected Vercel project auto-deployed commit `69f3963` to
+Production on 2026-08-03. The deployed verifier passed both custom aliases,
+404 secret-asset checks, matching release manifests, and cache-header checks.
+The live populated-map runner measured `56.84 FPS` / p95 `33.3 ms` /
+`1.41%` jank at 390x844 and `42.23 FPS` / p95 `50.1 ms` / `19.34%` jank at
+1440x900; the release boundary is healthy, while the wide-screen motion gate
+remains open.
+
 The Vercel build boundary now also fails closed when `VERCEL_ENV=production`
 (or `FISHERGO_REQUIRE_SUPABASE=true`) and either public Supabase build value is
 missing. Preview/local diagnostics retain the deliberate no-Supabase path;

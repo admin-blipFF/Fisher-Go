@@ -478,6 +478,18 @@ renderer remains unchanged and the 20 ms motion gate stays open. Evidence is
 `tmp/android-map-benchmark-landcover-control-20260803.json` and
 `tmp/android-map-benchmark-landcover-candidate-20260803.json`.
 
+The current-source textureless direct-Hybrid-Composition proof was also
+rechecked on API 35. The HUD and real OSM map remained visible, but gfx p95 was
+`53 ms` with `96.63%` jank and Flutter total p95 `105 ms`, so the product keeps
+texture mode and the retained `tlhc_vd` composition. A native-only follow-up
+then hid the `building-3d` layer only during camera motion and restored it at
+idle. Its control/candidate p95 was `42/44 ms` and jank `9.66%/10.94%`; the
+lower p99 did not offset the worse p95/jank, so that profile-only callback was
+removed as well. Evidence is `tmp/android-map-benchmark-hc-textureless-current-
+20260803.json`, `tmp/android-native-map-benchmark-building-motion-control-
+20260803.json`, and `tmp/android-native-map-benchmark-building-motion-toggle-
+20260803.json`.
+
 **Migration**
 
 1. Put the new map behind a feature flag.

@@ -105,10 +105,10 @@ emitted by `apply-and-verify`. The smoke must report all of these checks:
 
 After the content release succeeds, run the manual **Supabase live smoke**
 workflow. Its first step verifies that `SUPABASE_URL` is an HTTPS Supabase host
-whose project ref matches `SUPABASE_PROJECT_REF`; only then does it verify
-Google/anonymous provider configuration, anonymous account upgrade, gameplay
-session behavior, and private catch-photo storage. Use disposable test
-identities only.
+whose project ref matches `SUPABASE_PROJECT_REF`; only then does it fail closed
+unless both Google and anonymous providers are enabled before checking
+anonymous account upgrade, gameplay session behavior, and private catch-photo
+storage. Use disposable test identities only.
 
 Run **Supabase account deletion release** with its protected environment after
 the deletion policy has been reviewed. Confirm the disposable account and all

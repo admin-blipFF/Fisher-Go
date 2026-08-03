@@ -19,6 +19,9 @@ Future<void> main() async {
   final requireGoogle =
       Platform.environment['FISHERGO_REQUIRE_GOOGLE_PROVIDER']?.trim() ==
           'true';
+  final requireAnonymous =
+      Platform.environment['FISHERGO_REQUIRE_ANONYMOUS_PROVIDER']?.trim() ==
+          'true';
   final missing = <String>[
     if (url.isEmpty) 'SUPABASE_URL',
     if (anonKey.isEmpty) 'SUPABASE_ANON_KEY',
@@ -61,6 +64,9 @@ Future<void> main() async {
     );
     if (requireGoogle && !googleEnabled) {
       throw StateError('Google provider is disabled in Supabase Auth.');
+    }
+    if (requireAnonymous && !anonymousEnabled) {
+      throw StateError('Anonymous provider is disabled in Supabase Auth.');
     }
   } on TimeoutException {
     rethrow;

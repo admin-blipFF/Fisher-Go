@@ -409,6 +409,11 @@ catch-photo upload/sign/read/cleanup smoke. This closes the local environment
 alignment slice only; hosted email/Google upgrade and hosted migration
 application remain owner-controlled release gates.
 
+The hosted Auth provider preflight now requires both Google and anonymous
+providers before the live smoke proceeds. This makes the guest-first startup
+contract fail closed at provider configuration time rather than waiting for a
+later anonymous signup or account-upgrade step; the check remains anon-key-only.
+
 ## 8. Workstream 4: Verified Fishing-Spot Registry
 
 **Create**

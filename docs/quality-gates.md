@@ -11,6 +11,11 @@ Last updated: 2026-08-03
   verifier and workflow source tests pass; the hosted application run remains
   owner-controlled and has not been executed from this workspace.
 
+- The hosted Auth provider preflight now fails closed when either required
+  provider is disabled: the live smoke explicitly requires both Google and
+  anonymous sign-in before running account-upgrade or gameplay checks. The
+  check remains anon-key-only and never exposes provider credentials.
+
 - The shared Flutter theme now supplies a regional Traditional Chinese platform
   fallback list (`Noto Sans CJK TC`, `Noto Sans TC`, `PingFang TC`, and
   `Microsoft JhengHei`, then `sans-serif`) to every production text theme,

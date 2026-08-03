@@ -14,6 +14,8 @@ void main() {
     expect(source, contains("'google'"));
     expect(source, contains("'anonymous_users'"));
     expect(source, contains('FISHERGO_REQUIRE_GOOGLE_PROVIDER'));
+    expect(source, contains('FISHERGO_REQUIRE_ANONYMOUS_PROVIDER'));
+    expect(source, contains('requireAnonymous'));
     expect(source, contains('_operationTimeout'));
     expect(source, contains('client.close()'));
     expect(source, contains('exitCode = 2'));
@@ -28,5 +30,9 @@ void main() {
 
     expect(source, contains('tool/verify_supabase_auth_provider_config.dart'));
     expect(source, contains("FISHERGO_REQUIRE_GOOGLE_PROVIDER: 'true'"));
+    expect(
+      source,
+      contains("FISHERGO_REQUIRE_ANONYMOUS_PROVIDER: 'true'"),
+    );
   });
 }

@@ -13,6 +13,7 @@ import '../../../core/config/public_app_config.dart';
 import '../../../core/config/supabase_config.dart';
 import '../../../core/notifications/notification_opt_in.dart';
 import '../../../core/notifications/notification_permission_service.dart';
+import '../../../core/notifications/notification_token_registration_service.dart';
 import '../data/player_progress_service.dart';
 import '../data/profile_wallet_service.dart';
 import '../domain/game_shop_item.dart';
@@ -36,6 +37,7 @@ class _ProfileScreenState extends State<ProfileScreen>
   final _passwordController = TextEditingController();
   final _notificationStore = NotificationPreferenceStore();
   final _notificationPermission = NotificationPermissionService();
+  final _notificationTokenRegistration = NotificationTokenRegistrationService();
 
   bool _isLoading = false;
   bool _isProfileLoading = true;
@@ -913,6 +915,8 @@ class _ProfileScreenState extends State<ProfileScreen>
     setState(() => _notificationLoading = true);
     final status = await _notificationPermission.request();
     if (status == NotificationPermissionStatus.granted) {
+      final token = await _notificationPermission.deviceToken();
+      unawaited(_notificationTokenRegistration.register(token));
       await _notificationStore.setEnabled();
     } else if (status == NotificationPermissionStatus.denied) {
       await _notificationStore.setDeclined();

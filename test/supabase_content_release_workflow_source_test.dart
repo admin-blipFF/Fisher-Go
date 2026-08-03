@@ -91,6 +91,8 @@ void main() {
       'supabase/tests/real_catch_moderation_shape_test.sql',
       'supabase/tests/server_authoritative_rewards_shape_test.sql',
       'supabase/tests/server_event_config_shape_test.sql',
+      'supabase/tests/notification_device_tokens_shape_test.sql',
+      'supabase/tests/notification_device_tokens_behavior_test.sql',
     ]) {
       expect(
         workflow,

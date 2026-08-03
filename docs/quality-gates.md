@@ -11,6 +11,15 @@ Last updated: 2026-08-03
   verifier and workflow source tests pass; the hosted application run remains
   owner-controlled and has not been executed from this workspace.
 
+- Notification permission opt-in now has a real token-registration boundary:
+  migration `0027_notification_device_tokens.sql` stores tokens behind
+  authenticated RPCs, denies raw token reads to clients, and covers
+  cross-player behavior in local pgTAP. The Flutter profile asks the native
+  bridge for a provider token and registers it best-effort after permission is
+  granted. The current bridge returns no token until an FCM/APNs/Web Push SDK
+  is configured, so hosted migration and live delivery remain owner-controlled.
+  The full local proof passed `482` Flutter tests and `285` pgTAP assertions.
+
 - A fresh current-source Android vertical-slice rerun passed on API 35
   `emulator-5554`: startup/auth, map rotation, GPS-centered verified-spot
   selection, bite-first fishing minigame, Daily Task reward claim, offline

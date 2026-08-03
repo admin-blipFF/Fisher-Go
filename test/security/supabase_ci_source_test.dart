@@ -234,4 +234,25 @@ void main() {
     expect(behavior, contains('stable fish id'));
     expect(behavior, contains('extensions.finish()'));
   });
+
+  test('notification device tokens are private and RPC-owned', () {
+    final shape = File(
+      'supabase/tests/notification_device_tokens_shape_test.sql',
+    ).readAsStringSync().toLowerCase();
+    final behavior = File(
+      'supabase/tests/notification_device_tokens_behavior_test.sql',
+    ).readAsStringSync().toLowerCase();
+    final migration = File(
+      'supabase/migrations/0027_notification_device_tokens.sql',
+    ).readAsStringSync().toLowerCase();
+
+    expect(migration, contains('player_notification_tokens'));
+    expect(migration, contains('security definer'));
+    expect(shape, contains('anonymous cannot read notification tokens'));
+    expect(shape, contains('anonymous cannot register notification tokens'));
+    expect(behavior,
+        contains('a different player cannot read another player token'));
+    expect(behavior, contains('extensions.finish()'));
+    expect(shape, contains('finish()'));
+  });
 }

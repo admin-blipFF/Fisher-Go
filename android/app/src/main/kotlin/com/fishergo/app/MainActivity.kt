@@ -27,6 +27,9 @@ class MainActivity : FlutterActivity() {
                 "status" -> result.success(notificationStatus())
                 "request" -> requestNotifications(result)
                 "openSettings" -> openNotificationSettings(result)
+                // Provider SDK integration supplies this value in a later
+                // release; permission state remains useful without a token.
+                "deviceToken" -> result.success(null)
                 else -> result.notImplemented()
             }
         }

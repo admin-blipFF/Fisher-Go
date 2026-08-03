@@ -1006,7 +1006,7 @@ workflow smoke validates its response. Migration
 gives admins a bounded queue with short-lived photo URLs. Local shape,
 behavior, source, analyzer, and history tests are green. The local
 event-configuration smoke returned a valid empty projection, and the full
-local proof now passes `462` Flutter tests plus `265` pgTAP assertions.
+local proof now passes `482` Flutter tests plus `285` pgTAP assertions.
 Migration `0024_fishing_spot_content_constraints.sql` now adds admin-only
 habitat/species-weight editing with bounded slug/fish-ID validation in both
 the Admin tool and the database. The content-tool source/history tests are
@@ -1023,7 +1023,14 @@ deferred choices per account, and requests `POST_NOTIFICATIONS` through a
 native Android 13+ callback. Web and unsupported platforms remain unavailable
 without showing a misleading prompt. A denied permission exposes a system-
 settings recovery action and refreshes when the app resumes; provider token
-registration and live push delivery are intentionally still separate work.
+registration now has a real RPC boundary. Migration
+`0027_notification_device_tokens.sql` stores provider tokens behind
+authenticated register/unregister functions and denies raw token reads to
+clients. The Profile flow asks the native bridge for a provider token and
+registers it best-effort after permission is granted. The current Android
+bridge returns no token until an FCM/APNs/Web Push SDK is configured, so live
+provider delivery remains separate and hosted migration remains an
+owner-controlled gate.
 Hosted migrations remain an owner-controlled gate; the latest source is
 available as a Vercel Preview, not a production alias.
 
@@ -1037,7 +1044,8 @@ pgTAP shape proof. The protected content-release workflow now also runs the
 linked RLS behavior test plus the current read-only or rollback-safe shape
 suites for analytics, retention, catch-photo storage, fishing-spot content and
 moderation, reward tickets, gameplay sessions, real-catch moderation, wallet
-operations, and event configuration after applying migrations. The workflow
+operations, event configuration, and notification-token privacy after applying
+migrations. The workflow
 source contract passes. Before applying, it captures the linked dry-run and
 passes it through `tool/verify_supabase_migration_plan.dart`; only local
 four-digit migration IDs at or above `0012` are allowed after legacy markers

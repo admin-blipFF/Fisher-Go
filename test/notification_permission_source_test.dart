@@ -16,6 +16,7 @@ void main() {
     expect(activity, contains('fishergo/notifications'));
     expect(activity, contains('requestNotifications'));
     expect(activity, contains('openNotificationSettings'));
+    expect(activity, contains('deviceToken'));
     expect(activity, contains('ACTION_APP_NOTIFICATION_SETTINGS'));
     expect(activity, contains('EXTRA_APP_PACKAGE'));
     expect(activity, contains('onRequestPermissionsResult'));
@@ -32,5 +33,7 @@ void main() {
     expect(source, contains('_buildNotificationSettingsPanel'));
     expect(source, contains('_openNotificationSettings'));
     expect(source, contains('didChangeAppLifecycleState'));
+    expect(source, contains('NotificationTokenRegistrationService'));
+    expect(source, contains('_notificationPermission.deviceToken()'));
   });
 }

@@ -47,7 +47,8 @@ After the migration push, linked database verification runs the remote RLS
 behavior suite plus read-only or transaction-rollback schema shape suites for
 analytics, retention, catch-photo storage, fishing-spot content and
 moderation, reward tickets, gameplay sessions, real-catch moderation, wallet
-operations, and server event configuration. This catches a migration that
+operations, server event configuration, and notification-token privacy. This
+catches a migration that
 applies successfully but leaves a required table, policy, RPC, index, or
 storage constraint missing before the live gameplay smoke begins.
 

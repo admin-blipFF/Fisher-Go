@@ -1,5 +1,7 @@
 import 'package:flutter/services.dart';
 
+import 'notification_device_token.dart';
+
 enum NotificationPermissionStatus { granted, denied, unavailable }
 
 typedef NotificationPlatformInvoker = Future<Object?> Function(String method);
@@ -40,6 +42,18 @@ class NotificationPermissionService {
       return false;
     } on PlatformException {
       return false;
+    }
+  }
+
+  Future<NotificationDeviceToken?> deviceToken() async {
+    try {
+      return notificationDeviceTokenFromPlatformValue(
+        await _invoke('deviceToken'),
+      );
+    } on MissingPluginException {
+      return null;
+    } on PlatformException {
+      return null;
     }
   }
 

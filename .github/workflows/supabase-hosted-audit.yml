@@ -1,0 +1,74 @@
+name: Supabase hosted audit
+
+on:
+  workflow_dispatch:
+    inputs:
+      expected_project_ref:
+        description: Optional project ref assertion for this read-only audit
+        required: false
+        default: ''
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: fishergo-hosted-audit
+  cancel-in-progress: false
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: fishergo-live-smoke
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Verify canonical project identity
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+        run: |
+          set -euo pipefail
+          test -n "$SUPABASE_URL"
+          test -n "$SUPABASE_ANON_KEY"
+          test -n "$SUPABASE_PROJECT_REF"
+          dart run tool/verify_supabase_project_identity.dart
+
+      - name: Verify Auth providers
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          FISHERGO_REQUIRE_GOOGLE_PROVIDER: 'true'
+          FISHERGO_REQUIRE_ANONYMOUS_PROVIDER: 'true'
+        run: dart run tool/verify_supabase_auth_provider_config.dart
+
+      - name: Verify fishing-spot habitat content
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+          SUPABASE_EXPECTED_PROJECT_REF: ${{ inputs.expected_project_ref }}
+        run: dart run tool/verify_supabase_fishing_spot_habitat.dart
+
+      - name: Write safe audit scope
+        if: always()
+        run: |
+          {
+            echo '### Hosted Supabase audit scope'
+            echo ''
+            echo '- Read-only checks: canonical project identity, Auth provider flags, and verified fishing-spot habitat content.'
+            echo '- This workflow does not request or use a database password, Supabase access token, service-role key, or migration command.'
+            echo '- A failing habitat check is content drift evidence; use the protected content-release workflow for any approved migration.'
+          } >> "$GITHUB_STEP_SUMMARY"

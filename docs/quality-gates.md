@@ -129,6 +129,10 @@ Last updated: 2026-08-03
   by the habitat migration, rather than one representative row per habitat
   group. This confirms hosted content drift rather than a client fallback
   issue; no migration was applied from the workspace.
+  A new manual `.github/workflows/supabase-hosted-audit.yml` workflow now
+  exposes the same identity, provider, and habitat checks without requesting
+  a database password, access token, or migration command; its read-only scope
+  is locked by `test/supabase_hosted_audit_workflow_source_test.dart`.
   The protected content-release workflow still requires the owner-controlled
   database password and legacy-history decision before it can reconcile and
   apply the pending content migrations.

@@ -25,10 +25,13 @@ catches. The workflow never prints credentials, access tokens, or UUIDs.
 Run **Actions -> Supabase content release -> Run workflow** on the intended
 branch. The `apply-and-verify` job will link the project, apply all versioned
 migrations, run linked pgTAP, and run public-schema lint.
-Before any of those mutation steps, the workflow verifies every required
-protected input, including both disposable RLS test users. If legacy history
-repair is selected, it also requires the exact owner confirmation value;
-missing inputs fail before `supabase link` or `supabase db push`.
+Immediately after checkout, before Flutter/CLI setup, the workflow verifies
+every required protected input, including both disposable RLS test users. If
+legacy history repair is selected, it also requires the exact owner
+confirmation value; missing inputs fail before dependencies, `supabase link`,
+or `supabase db push`. The dependent hosted gameplay smoke performs its own
+URL, anon-key, and project-ref preflight before installing Flutter and also
+requires the ref exported by the migration job to match.
 Before linking or mutating the database, the job verifies that the canonical
 `SUPABASE_URL` is reachable and matches `SUPABASE_PROJECT_REF`. The dependent
 `hosted-gameplay-smoke` job repeats that check and compares its protected

@@ -1818,9 +1818,16 @@ Evidence from this run:
 - `.github/workflows/supabase-content-release.yml` now runs that proof after
   linked migration/lint checks. It requires only protected
   `FISHERGO_RLS_USER_A/B_EMAIL/PASSWORD` values and never logs tokens or user
-  identifiers. The hosted execution remains owner-controlled until those two
-  disposable accounts are configured and the content-release workflow is
-  dispatched.
+  identifiers. Its complete protected-input preflight now runs immediately
+  after checkout, before Flutter/CLI setup, and the dependent hosted gameplay
+  smoke has a separate URL/anon-key/project-ref preflight before its own setup.
+  The hosted execution remains owner-controlled until those two disposable
+  accounts are configured and the content-release workflow is dispatched.
+- A fresh local reset on 2026-08-03 reapplied migrations through `0027` from
+  zero; `npx supabase test db` passed all `23` files and `285` assertions, and
+  `npx supabase db lint --local --schema public --fail-on error` returned no
+  schema errors. This refreshes local evidence only and does not close the
+  hosted migration gate.
 
 ## Gate 2: MapLibre Engine Decision
 

@@ -509,6 +509,11 @@ different project.
 The migration job also uploads before/after history and the verified dry-run
 plan for 14 days, including failure paths, so owner review has durable evidence
 beyond transient workflow logs.
+The content-release job now performs its complete protected-input preflight
+immediately after checkout, before Flutter/CLI setup, and the dependent hosted
+gameplay smoke performs a separate URL/anon-key/project-ref preflight before
+its own setup. Both paths remain owner-controlled and have not been dispatched
+against the hosted project from this workspace.
 The non-destructive hosted audit now confirms the target project is reachable
 and has Google plus anonymous providers enabled, but the public habitat
 verifier fails because hosted spot `P017` lacks the expected

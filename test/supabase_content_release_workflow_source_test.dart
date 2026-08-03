@@ -21,10 +21,13 @@ void main() {
     final preflightStep = workflow.indexOf(
       'name: Verify protected release inputs before mutation',
     );
+    final setupFlutterStep = workflow.indexOf('name: Set up Flutter');
     final migrationStep = workflow.indexOf(
       'name: Link and apply migrations',
     );
     expect(preflightStep, greaterThanOrEqualTo(0));
+    expect(setupFlutterStep, greaterThanOrEqualTo(0));
+    expect(preflightStep, lessThan(setupFlutterStep));
     expect(migrationStep, greaterThanOrEqualTo(0));
     expect(preflightStep, lessThan(migrationStep));
     final preflightEnd = workflow.indexOf('name: Link and apply migrations',
@@ -204,6 +207,29 @@ void main() {
     );
     final smokeJob = workflow.indexOf('hosted-gameplay-smoke:');
     expect(smokeJob, greaterThanOrEqualTo(0));
+    final smokePreflight = workflow.indexOf(
+      'name: Verify protected live smoke inputs before setup',
+      smokeJob,
+    );
+    final smokeSetup = workflow.indexOf('name: Set up Flutter', smokeJob);
+    expect(smokePreflight, greaterThanOrEqualTo(smokeJob));
+    expect(smokeSetup, greaterThan(smokePreflight));
+    final smokePreflightSource = workflow.substring(smokePreflight, smokeSetup);
+    for (final secret in [
+      'SUPABASE_URL',
+      'SUPABASE_ANON_KEY',
+      'SUPABASE_PROJECT_REF',
+    ]) {
+      expect(
+        smokePreflightSource,
+        contains('test -n "\$$secret"'),
+        reason: 'hosted smoke must require $secret before setup',
+      );
+    }
+    expect(
+      smokePreflightSource,
+      contains(r'test "$SUPABASE_PROJECT_REF" = "${{ needs.apply-and-verify.outputs.project_ref }}"'),
+    );
     final smokeIdentity = workflow.indexOf(
       'name: Verify Supabase project identity',
       smokeJob,

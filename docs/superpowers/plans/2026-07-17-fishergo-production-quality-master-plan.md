@@ -611,6 +611,16 @@ raised jank to `40.13%`. Both visual goldens passed, but the combined motion
 budget did not, so the production camera remains at zoom `16.0` and future
 work must target renderer/composition cost rather than hiding geography.
 
+The 2026-08-03 Web marker-motion candidate was also rejected after matched
+local Chromium runs. Hiding Flutter marker labels and animation during camera
+motion kept both visual goldens, tile responses, and bootstrap budgets green,
+but 1440x900 stayed at `66.7 ms` p95 / `22.75%` jank versus control and mobile
+fell from `54.39 FPS` / `3.32%` jank to `53.13 FPS` / `4.53%`. The candidate
+flag and source wiring were removed; the remaining wide-screen bottleneck is
+MapLibre canvas composition. Evidence is
+`tmp/web-map-benchmark-marker-control-390-1440.json` and
+`tmp/web-map-benchmark-marker-candidate-390-1440.json`.
+
 The 2026-08-03 Android merged-landcover diagnostic was also rejected after a
 matched API 35 host-GPU run on `emulator-5554`. Merging the OSM grass, wood,
 and farmland classes into one filtered fill kept map readiness and geography

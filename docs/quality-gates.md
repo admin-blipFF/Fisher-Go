@@ -2692,6 +2692,14 @@ or forbidden client token therefore blocks artifact publication.
 1. Reduce slow UI-thread and MapLibre draw-command/composition frames without
    weakening geography; the Android game 3D style is visually accepted but
    still measures p95 near 30 ms rather than the 20 ms target.
+   A new Web marker-motion candidate was rejected on 2026-08-03 after matched
+   local Chromium runs. The candidate hid Flutter marker labels and animation
+   while the camera moved, but 1440x900 remained `66.7 ms` p95 with
+   `22.75%` jank versus control `66.7 ms` / `22.75%`; 390x844 moved from
+   `54.39 FPS` / `3.32%` jank to `53.13 FPS` / `4.53%`. Both visual goldens,
+   tile checks, and bootstrap budgets passed, so the candidate flag and source
+   wiring were removed. The remaining Web bottleneck is MapLibre canvas
+   composition, not the Flutter marker labels.
    The 2026-08-03 `road-main` expression cleanup removed dead `minor/service`
    branches that were unreachable under its major-road filter. Two matched
    API 35 host-GPU pairs kept p95 at `32/38 ms` control versus `32/32 ms`

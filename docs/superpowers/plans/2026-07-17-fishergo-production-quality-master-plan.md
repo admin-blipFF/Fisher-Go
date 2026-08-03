@@ -1126,6 +1126,17 @@ The client secret scan and asset-budget check passed; `jarsigner` still reports
 the local AAB as unsigned. Its SHA256 is
 `BEF81EA3EF3B5DDB8D877A3D307011BE310BAA268F698AB9DBE4D8676F1BF6AC`.
 
+The local read-only release audit is now consolidated in
+`tool/verify_release_readiness.dart`. It composes package presence,
+cross-platform manifest identity, artifact secret scanning, asset budgets,
+public release metadata, and Android signature verification. It supports a
+`--strict` mode for complete release evidence and never builds, deploys, or
+mutates Supabase. The 2026-08-03 current workspace audit recorded 4 PASS,
+0 FAIL, 2 OWNER_GATE for missing local privacy/support metadata and an
+unsigned local Android artifact, and 1 SKIP because the Android release
+manifest was not present locally. This improves local evidence without
+closing the protected signing, hosted Supabase, or motion-budget gates.
+
 **Operations**
 
 - Add crash reporting with release/environment tags. The bounded local

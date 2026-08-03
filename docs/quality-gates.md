@@ -2664,6 +2664,25 @@ Open items:
 
 ### Remaining Work
 
+The local release-readiness audit is now available as a single read-only
+check. It composes the existing Web/package presence, Android AAB presence,
+cross-platform manifest identity, client-artifact secret scan, asset budget,
+public metadata, and Android signature checks without building, deploying, or
+mutating Supabase:
+
+```text
+dart run tool/verify_release_readiness.dart
+```
+
+Use `--strict` when a complete artifact set and all owner-provided release
+inputs must be present; use `--skip-signing` only for a source/local audit.
+On 2026-08-03 the current local output recorded 4 PASS, 0 FAIL, 2
+OWNER_GATE (privacy/support metadata and unsigned Android artifact), and 1
+SKIP (Android manifest pair not present locally). The Web package measured
+`86.9 MiB`, the Android AAB was present, the client secret scan passed, and the
+asset budget passed. This is a clearer readiness report, not a replacement for
+the protected signed-release workflow or hosted Supabase evidence.
+
 1. Reduce slow UI-thread and MapLibre draw-command/composition frames without
    weakening geography; the Android game 3D style is visually accepted but
    still measures p95 near 30 ms rather than the 20 ms target.

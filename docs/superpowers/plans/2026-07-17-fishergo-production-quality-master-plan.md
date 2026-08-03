@@ -356,6 +356,14 @@ identity smoke is available at
 `tool/verify_supabase_auth_upgrade.dart` and requires a disposable test
 account before it can produce live evidence.
 
+Local guest-auth configuration was aligned with the same cloud-guest contract
+on 2026-08-03: `supabase/config.toml` enables anonymous sign-ins and a source
+contract locks the setting. A clean local reset and stack restart passed all
+23 pgTAP files (285 assertions), public-schema lint, and the anonymous private
+catch-photo upload/sign/read/cleanup smoke. This closes the local environment
+alignment slice only; hosted email/Google upgrade and hosted migration
+application remain owner-controlled release gates.
+
 ## 8. Workstream 4: Verified Fishing-Spot Registry
 
 **Create**

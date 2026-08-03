@@ -62,6 +62,16 @@ Last updated: 2026-08-03
   database password and legacy-history decision before it can reconcile and
   apply the pending content migrations.
 
+- Local guest-auth configuration was aligned with the hosted guest path on
+  2026-08-03. `supabase/config.toml` now enables anonymous sign-ins and keeps
+  the bounded anonymous rate limit; `test/supabase_local_auth_config_source_test.dart`
+  locks the assignment lines rather than matching comments. After a clean
+  local reset and Supabase stack restart, `npx supabase test db --local`
+  passed 23 files with 285 assertions, public-schema lint found no errors,
+  and the anonymous private catch-photo smoke uploaded, signed-read,
+  deleted, and signed out successfully. This is local evidence only; hosted
+  email/Google upgrade and hosted migration application remain owner gates.
+
 - A fresh current-source Android vertical-slice rerun passed on API 35
   `emulator-5554`: startup/auth, map rotation, GPS-centered verified-spot
   selection, bite-first fishing minigame, Daily Task reward claim, offline

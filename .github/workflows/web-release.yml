@@ -72,5 +72,8 @@ jobs:
           printf 'FISHERGO_RELEASE_ID=%s\n' "$release_id" >> "$GITHUB_ENV"
           echo "Resolved release id: $release_id"
 
+      - name: Verify public release configuration
+        run: dart run tool/verify_public_release_config.dart
+
       - name: Deploy, promote, and verify canonical aliases
         run: bash scripts/deploy.sh

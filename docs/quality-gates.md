@@ -621,6 +621,12 @@ Last updated: 2026-08-03
   Supabase build value is absent, while retaining the no-Supabase preview/local
   diagnostic path. The source contract and shell syntax checks pass in
   `test/deploy_script_source_test.dart` and `scripts/vercel-build.sh`.
+- Public release metadata now fails closed through
+  `tool/verify_public_release_config.dart`: production requires an HTTPS
+  privacy-policy URL and a valid support email. Android/Web workflows and both
+  production deploy scripts invoke the check; preview/local diagnostics remain
+  exempt. The validator and source contracts pass locally, while protected
+  owner secrets and an actual release dispatch remain required evidence.
 - On 2026-08-01, the current source also built an arm64 Android release AAB at
   `75.7 MiB`. The client secret scan and asset budget passed. `jarsigner`
   correctly reported the local artifact as unsigned, so this is a build and

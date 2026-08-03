@@ -29,6 +29,9 @@ void main() {
     expect(source, contains(r'test -n "$SUPABASE_URL"'));
     expect(source, contains(r'test -n "$SUPABASE_ANON_KEY"'));
     expect(source, contains(r'test -n "$SUPABASE_PROJECT_REF"'));
+    expect(source, contains(r'test -n "$FISHERGO_PRIVACY_URL"'));
+    expect(source, contains(r'test -n "$FISHERGO_SUPPORT_EMAIL"'));
+    expect(source, contains('tool/verify_public_release_config.dart'));
     expect(source, contains('name: Verify Supabase project identity'));
     expect(source, contains('tool/verify_supabase_project_identity.dart'));
     expect(

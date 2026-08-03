@@ -105,6 +105,10 @@ try {
 
 $privacyUrl = if ([string]::IsNullOrWhiteSpace($env:FISHERGO_PRIVACY_URL)) { '' } else { $env:FISHERGO_PRIVACY_URL }
 $supportEmail = if ([string]::IsNullOrWhiteSpace($env:FISHERGO_SUPPORT_EMAIL)) { '' } else { $env:FISHERGO_SUPPORT_EMAIL }
+$publicConfigResult = & dart run tool/verify_public_release_config.dart
+if ($LASTEXITCODE -ne 0) {
+    throw "Public release configuration validation failed: $($publicConfigResult -join ' ')"
+}
 $analyticsEnabled = if ([string]::IsNullOrWhiteSpace($env:FISHERGO_ANALYTICS_ENABLED)) { 'false' } else { $env:FISHERGO_ANALYTICS_ENABLED }
 $accountDeletionEnabled = if ([string]::IsNullOrWhiteSpace($env:FISHERGO_ACCOUNT_DELETION_ENABLED)) { 'false' } else { $env:FISHERGO_ACCOUNT_DELETION_ENABLED.ToLowerInvariant() }
 if ($accountDeletionEnabled -notin @('true', 'false')) {

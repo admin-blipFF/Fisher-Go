@@ -1097,6 +1097,14 @@ Supabase URL host against the protected project ref before packaging, so the
 signed artifact cannot silently target a different project. Protected signing,
 the CI emulator run, and Play distribution remain owner-controlled.
 
+Public release metadata is now fail-closed across the Android release
+workflow, Web release workflow, Linux/Windows production deploy scripts, and
+the Vercel production build boundary. `tool/verify_public_release_config.dart`
+requires an HTTPS privacy-policy URL and a valid support email, while preview
+and local diagnostics retain the no-metadata path. The validator and release
+source contracts pass locally; owner-provided legal URLs and the actual
+production release dispatch remain required evidence.
+
 The restored production source was rebuilt for both release targets after the
 rejected fill-AA experiment: Web package `89.6 MiB` and arm64 AAB `75.7 MiB`.
 The client secret scan and asset-budget check passed; `jarsigner` still reports

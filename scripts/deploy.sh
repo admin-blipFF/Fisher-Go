@@ -25,6 +25,7 @@ fi
 : "${VERCEL_TOKEN:?VERCEL_TOKEN is required for production deployment}"
 : "${SUPABASE_URL:?SUPABASE_URL is required for production deployment}"
 : "${SUPABASE_ANON_KEY:?SUPABASE_ANON_KEY is required for production deployment}"
+dart run tool/verify_public_release_config.dart
 
 ACCOUNT_DELETION_ENABLED="${FISHERGO_ACCOUNT_DELETION_ENABLED:-false}"
 case "$ACCOUNT_DELETION_ENABLED" in

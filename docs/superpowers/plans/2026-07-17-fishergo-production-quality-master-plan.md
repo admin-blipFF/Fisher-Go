@@ -532,6 +532,20 @@ code. Evidence is `tmp/web-map-benchmark-road-merge-control-390-1440.json`,
 `tmp/web-map-benchmark-road-merge-control-repeat-390-1440.json`, and
 `tmp/web-map-benchmark-road-merge-candidate-repeat-390-1440.json`.
 
+The following Web raster-basemap diagnostic was rejected as well. A valid
+query-gated Carto `light_nolabels` raster style loaded real OSM-derived
+roads/water/land and preserved GPS camera, rotation, markers, tile responses,
+and both visual goldens. The first desktop control/candidate pair measured
+`41.31/39.53 FPS`, p95 `66.6/50.0 ms`, and jank `19.42%/23.86%`; the matched
+repeat measured `41.54/36.00 FPS`, p95 `50.1/66.6 ms`, and jank
+`20.77%/26.67%`. The candidate's pale cartographic surface also missed the
+FisherGO game-map visual direction, so the query, source contract, and
+temporary raster golden were removed. Evidence is
+`tmp/web-map-benchmark-raster-control-390-1440.json`,
+`tmp/web-map-benchmark-raster-candidate-390-1440-v4.json`,
+`tmp/web-map-benchmark-raster-control-repeat-390-1440.json`, and
+`tmp/web-map-benchmark-raster-candidate-repeat-390-1440.json`.
+
 **Migration**
 
 1. Put the new map behind a feature flag.

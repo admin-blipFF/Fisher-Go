@@ -469,6 +469,11 @@ the local database suite. The protected content-release workflow now includes
 a downstream anon-key habitat verifier before hosted gameplay smoke; linked
 production content deployment remains an owner-controlled action and has not
 run in this workspace.
+Before linking or mutating the database, that workflow now runs the shared
+canonical Supabase URL/project-ref preflight with the protected anon key. This
+prevents a mismatched project-ref secret from applying migrations to an
+unintended project; the owner-controlled password and migration-history repair
+decision remain required.
 The non-destructive hosted audit now confirms the target project is reachable
 and has Google plus anonymous providers enabled, but the public habitat
 verifier fails because hosted spot `P017` lacks the expected

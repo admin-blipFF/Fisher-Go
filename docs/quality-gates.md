@@ -8,8 +8,11 @@ Last updated: 2026-08-03
   migration dry-run and validates its plan before applying it. The guard allows
   only the current local migration range, rejects legacy or unexpected IDs,
   revert actions, and unknown output, and accepts an explicit no-op. The
-  verifier and workflow source tests pass; the hosted application run remains
-  owner-controlled and has not been executed from this workspace.
+  verifier and workflow source tests pass. Before `supabase link` or any
+  migration mutation, the same protected step now also verifies that the
+  canonical `SUPABASE_URL` is reachable and matches `SUPABASE_PROJECT_REF`.
+  The hosted application run remains owner-controlled and has not been
+  executed from this workspace.
 
 - The hosted Auth provider preflight now fails closed when either required
   provider is disabled: the live smoke explicitly requires both Google and

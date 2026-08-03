@@ -18,6 +18,30 @@ void main() {
     expect(workflow, contains('environment: fishergo-content-release'));
     expect(workflow, contains('supabase/setup-cli@v1'));
     expect(workflow, contains('flutter test --no-pub'));
+    final migrationStep = workflow.indexOf(
+      'name: Link and apply migrations',
+    );
+    expect(migrationStep, greaterThanOrEqualTo(0));
+    final migrationStepEnd = workflow.indexOf(
+      'name: Export linked project ref',
+      migrationStep,
+    );
+    expect(migrationStepEnd, greaterThan(migrationStep));
+    final migrationSource = workflow.substring(migrationStep, migrationStepEnd);
+    expect(
+      migrationSource,
+      contains(r'SUPABASE_URL: ${{ secrets.SUPABASE_URL }}'),
+    );
+    expect(
+      migrationSource,
+      contains(r'SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}'),
+    );
+    final identityCheck = migrationSource.indexOf(
+      'dart run tool/verify_supabase_project_identity.dart',
+    );
+    final linkCommand = migrationSource.indexOf('supabase link --project-ref');
+    expect(identityCheck, greaterThanOrEqualTo(0));
+    expect(linkCommand, greaterThan(identityCheck));
     expect(workflow, contains('test/analytics_ingestion_source_test.dart'));
     expect(workflow,
         contains('test/supabase_analytics_ingestion_source_test.dart'));
@@ -77,7 +101,8 @@ void main() {
     expect(workflow, contains('supabase test db --linked'));
     expect(
       workflow,
-      contains(r'''supabase test db --linked supabase/tests/remote_player_rls_shape_test.sql \
+      contains(
+          r'''supabase test db --linked supabase/tests/remote_player_rls_shape_test.sql \
             supabase/tests/remote_player_rls_behavior_test.sql'''),
     );
     for (final path in [
@@ -118,8 +143,8 @@ void main() {
         contains('dart run tool/verify_supabase_gameplay_session.dart'));
     expect(workflow,
         contains('dart run tool/verify_supabase_analytics_ingestion.dart'));
-    expect(workflow,
-        contains('dart run tool/verify_supabase_event_config.dart'));
+    expect(
+        workflow, contains('dart run tool/verify_supabase_event_config.dart'));
     expect(
       workflow,
       contains(r'SUPABASE_URL: ${{ secrets.SUPABASE_URL }}'),

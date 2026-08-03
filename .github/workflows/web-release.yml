@@ -38,6 +38,24 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Verify protected Web release inputs before build
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+          FISHERGO_PRIVACY_URL: ${{ secrets.FISHERGO_PRIVACY_URL }}
+          FISHERGO_SUPPORT_EMAIL: ${{ secrets.FISHERGO_SUPPORT_EMAIL }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$VERCEL_TOKEN"
+          test -n "$SUPABASE_URL"
+          test -n "$SUPABASE_ANON_KEY"
+          test -n "$SUPABASE_PROJECT_REF"
+          test -n "$FISHERGO_PRIVACY_URL"
+          test -n "$FISHERGO_SUPPORT_EMAIL"
+
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:

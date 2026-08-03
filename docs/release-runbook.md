@@ -195,6 +195,9 @@ so the post-deploy manifest check covers the deployment that Vercel actually
 built rather than only the runner's local build. The remote build uses the
 dedicated `FISHERGO_DEPLOY_RELEASE_ID` channel so a stale project-level
 `FISHERGO_RELEASE_ID` cannot replace the selected release.
+The workflow checks all six protected inputs immediately after checkout and
+before Flutter or Node setup. Missing credentials, Supabase identity, or
+privacy/support metadata therefore fail without starting a production build.
 The Vercel build script also fails closed when `VERCEL_ENV=production` (or
 `FISHERGO_REQUIRE_SUPABASE=true`) and either public Supabase build value or
 project ref is missing; preview/local diagnostics may still run without

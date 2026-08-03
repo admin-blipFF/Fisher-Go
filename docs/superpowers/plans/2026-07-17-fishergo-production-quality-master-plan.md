@@ -1099,7 +1099,10 @@ build values and the protected project ref to Vercel's remote build, verifies
 that the canonical URL belongs to that project before promotion, then runs the
 canonical alias verifier. The Linux and Windows production deploy scripts and
 `scripts/vercel-build.sh` enforce the same project-ref boundary. The workflow
-is source-tested and YAML-validated but has not been dispatched; the manual
+now fails closed immediately after checkout when its Vercel token, public
+Supabase values, project ref, or privacy/support metadata is absent, before
+Flutter or Node setup. It is source-tested and YAML-validated but has not been
+dispatched; the manual
 remote deployment path has nevertheless completed the current Web production
 promotion. The wide-screen motion budget remains open after the production
 smoke (p95 `66.7 ms`, jank `20.94%`).

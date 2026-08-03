@@ -131,9 +131,11 @@ void main() {
 
     expect(vercelBuild, contains('VERCEL_ENV'));
     expect(vercelBuild, contains('FISHERGO_REQUIRE_SUPABASE'));
-    expect(vercelBuild, contains(r': "${SUPABASE_URL:?'));
-    expect(vercelBuild, contains(r': "${SUPABASE_ANON_KEY:?'));
-    expect(vercelBuild, contains(r': "${SUPABASE_PROJECT_REF:?'));
+    expect(vercelBuild, contains('required_production_vars'));
+    expect(vercelBuild, contains('missing_production_vars'));
+    expect(vercelBuild, contains(r'${!variable_name:-}'));
+    expect(vercelBuild,
+        contains('Missing required production Vercel environment variables'));
     expect(vercelBuild, contains('production'));
     expect(vercelBuild, contains('FISHERGO_PRIVACY_URL'));
     expect(vercelBuild, contains('FISHERGO_SUPPORT_EMAIL'));

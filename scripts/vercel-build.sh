@@ -12,11 +12,24 @@ fi
 # preview/local builds usable without Supabase for map and UI diagnostics.
 if [ "${VERCEL_ENV:-preview}" = "production" ] ||
   [ "${FISHERGO_REQUIRE_SUPABASE:-false}" = "true" ]; then
-  : "${SUPABASE_URL:?SUPABASE_URL is required for production Vercel builds}"
-  : "${SUPABASE_ANON_KEY:?SUPABASE_ANON_KEY is required for production Vercel builds}"
-  : "${SUPABASE_PROJECT_REF:?SUPABASE_PROJECT_REF is required for production Vercel builds}"
-  : "${FISHERGO_PRIVACY_URL:?FISHERGO_PRIVACY_URL is required for production Vercel builds}"
-  : "${FISHERGO_SUPPORT_EMAIL:?FISHERGO_SUPPORT_EMAIL is required for production Vercel builds}"
+  required_production_vars=(
+    SUPABASE_URL
+    SUPABASE_ANON_KEY
+    SUPABASE_PROJECT_REF
+    FISHERGO_PRIVACY_URL
+    FISHERGO_SUPPORT_EMAIL
+  )
+  missing_production_vars=()
+  for variable_name in "${required_production_vars[@]}"; do
+    if [ -z "${!variable_name:-}" ]; then
+      missing_production_vars+=("$variable_name")
+    fi
+  done
+  if [ "${#missing_production_vars[@]}" -gt 0 ]; then
+    printf 'Missing required production Vercel environment variables: %s\n' \
+      "${missing_production_vars[*]}" >&2
+    exit 1
+  fi
 fi
 
 ACCOUNT_DELETION_ENABLED="${FISHERGO_ACCOUNT_DELETION_ENABLED:-false}"

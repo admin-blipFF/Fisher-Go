@@ -32,4 +32,10 @@ void main() {
     expect(source, contains('excludeSemantics: true'));
     expect(source, contains('class _EquipmentSlotDef'));
   });
+
+  test('profile shop routes expose an explicit Web back action', () {
+    expect(source, contains('_profileShopAppBar'));
+    expect(source, contains("tooltip: '返回'"));
+    expect(source, contains('Navigator.of(routeContext).pop()'));
+  });
 }

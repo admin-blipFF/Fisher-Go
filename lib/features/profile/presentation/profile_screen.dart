@@ -1599,7 +1599,7 @@ class _ProfileScreenState extends State<ProfileScreen>
       MaterialPageRoute<void>(
         builder: (routeContext) => StatefulBuilder(
           builder: (routeContext, routeSetState) => Scaffold(
-            appBar: AppBar(title: const Text('裝備商店')),
+            appBar: _profileShopAppBar(routeContext, '裝備商店'),
             body: ListView(
               padding: const EdgeInsets.all(16),
               children: [
@@ -1619,13 +1619,24 @@ class _ProfileScreenState extends State<ProfileScreen>
       MaterialPageRoute<void>(
         builder: (routeContext) => StatefulBuilder(
           builder: (routeContext, routeSetState) => Scaffold(
-            appBar: AppBar(title: const Text('釣魚道具商城')),
+            appBar: _profileShopAppBar(routeContext, '釣魚道具商城'),
             body: ListView(
               padding: const EdgeInsets.all(16),
               children: [_buildGameItemShopPanel(routeSetState: routeSetState)],
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  AppBar _profileShopAppBar(BuildContext routeContext, String title) {
+    return AppBar(
+      title: Text(title),
+      leading: IconButton(
+        tooltip: '返回',
+        onPressed: () => Navigator.of(routeContext).pop(),
+        icon: const Icon(Icons.arrow_back),
       ),
     );
   }

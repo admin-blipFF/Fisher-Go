@@ -376,6 +376,14 @@ Profile before returning to GameHome. The clean-install run passed on
 extends secondary-screen navigation evidence but does not close the full
 cross-platform accessibility matrix.
 
+The Web secondary-screen production smoke now follows the same two Profile
+shop paths at `390x844`. It scrolls lazy-built Flutter content until the shop
+controls enter the Web semantics tree, verifies both shop action surfaces,
+captures screenshots, and returns through an explicit `返回` AppBar action.
+The current local Web release build passed Account, Encyclopedia, Catch Log,
+Leaderboard, Equipment Shop, and Fishing Item Shop in one run. This strengthens
+Web accessibility evidence without claiming the full cross-platform matrix.
+
 ## 7. Workstream 3: Auth and Onboarding State Machine
 
 **Create**

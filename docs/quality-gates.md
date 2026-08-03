@@ -131,6 +131,14 @@ Last updated: 2026-08-03
   explicitly skipped. This extends navigation evidence without claiming the
   full Android/iOS/Web accessibility matrix is closed.
 
+- The current Web release smoke now covers the same Profile shop subflows at
+  `390x844`: it opens `裝備商店` and `釣魚道具商城`, scrolls lazy-built content
+  into the Web semantics tree, verifies stable shop actions, captures both
+  screens, and returns through the explicit `返回` AppBar action. The latest
+  local release build passed all four secondary screens plus both shops;
+  API 23 remains irrelevant and excluded from this Web evidence. The broader
+  cross-platform accessibility matrix is still open.
+
 - Notification permission opt-in now has a real token-registration boundary:
   migration `0027_notification_device_tokens.sql` stores tokens behind
   authenticated RPCs, denies raw token reads to clients, and covers

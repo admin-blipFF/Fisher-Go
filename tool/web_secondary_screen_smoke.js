@@ -82,6 +82,89 @@ async function openSecondaryScreen(page, screen) {
   return {entry: screen.entry, title: screen.title, stable: screen.stable, screenshot};
 }
 
+async function openProfileShopFromMap(page, shop) {
+  const accountEntry = page.getByRole('button', {name: '帳戶', exact: true});
+  await accountEntry.waitFor({state: 'visible', timeout: 20000});
+  await accountEntry.click();
+  await page.getByText('個人資料', {exact: true}).waitFor({
+    state: 'visible',
+    timeout: 20000,
+  });
+
+  const shopButton = page.getByRole('button', {name: shop.shop, exact: true});
+  await page.mouse.move(195, 700);
+  for (let attempt = 0; attempt < 10; attempt += 1) {
+    if (await shopButton.count() > 0 &&
+        await shopButton.first().isVisible().catch(() => false)) {
+      break;
+    }
+    await page.mouse.wheel(0, 650);
+    await page.waitForTimeout(250);
+  }
+  await shopButton.waitFor({state: 'attached', timeout: 10000});
+  await shopButton.scrollIntoViewIfNeeded();
+  await shopButton.waitFor({state: 'visible', timeout: 10000});
+  await shopButton.click();
+  await page.getByText(shop.shop, {exact: true}).last().waitFor({
+    state: 'visible',
+    timeout: 20000,
+  });
+
+  const stableText = page.getByText(shop.match || shop.stable, {exact: false}).last();
+  const stableAction = shop.stableRole
+    ? page.getByRole(shop.stableRole, shop.stableName
+        ? {name: shop.stableName}
+        : undefined).first()
+    : null;
+  let stableContent = null;
+  await page.mouse.move(195, 700);
+  for (let attempt = 0; attempt < 10; attempt += 1) {
+    if (await stableText.count() > 0 &&
+        await stableText.first().isVisible().catch(() => false)) {
+      stableContent = stableText;
+      break;
+    }
+    if (stableAction && await stableAction.count() > 0 &&
+        await stableAction.first().isVisible().catch(() => false)) {
+      stableContent = stableAction;
+      break;
+    }
+    await page.mouse.wheel(0, 700);
+    await page.waitForTimeout(250);
+  }
+  if (!stableContent) {
+    throw new Error(`Shop content did not become accessible: ${shop.shop}`);
+  }
+  await stableContent.waitFor({state: 'attached', timeout: 10000});
+  await stableContent.scrollIntoViewIfNeeded();
+  await stableContent.waitFor({state: 'visible', timeout: 10000});
+  const screenshot = `output/playwright/web-secondary-${shop.slug}.png`;
+  await page.screenshot({path: screenshot});
+
+  const backButton = page.getByRole('button', {name: '返回', exact: true});
+  await backButton.waitFor({state: 'visible', timeout: 10000});
+  await backButton.click();
+  await page.getByText('個人資料', {exact: true}).waitFor({
+    state: 'visible',
+    timeout: 10000,
+  });
+
+  const returnButton = page.getByRole('button', {name: '返回地圖', exact: true});
+  await returnButton.waitFor({state: 'visible', timeout: 10000});
+  await returnButton.click();
+  await page.locator('canvas.maplibregl-canvas').waitFor({
+    state: 'attached',
+    timeout: 20000,
+  });
+  return {
+    entry: '帳戶',
+    shop: shop.shop,
+    title: shop.shop,
+    stable: shop.stable,
+    screenshot,
+  };
+}
+
 async function main() {
   fs.mkdirSync(path.dirname(outputPath), {recursive: true});
   fs.mkdirSync(path.resolve('output/playwright'), {recursive: true});
@@ -123,6 +206,27 @@ async function main() {
     const results = [];
     for (const screen of screens) {
       results.push(await openSecondaryScreen(page, screen));
+    }
+    const profileShops = [
+      {
+        shop: '裝備商店',
+        stable: '可購買並裝備到外圍裝備槽：魚竿、釣箱、冰箱、上衣、褲、鞋、帽、防曬面罩',
+        match: '可購買並裝備到外圍裝備槽',
+        stableRole: 'button',
+        stableName: '購買',
+        slug: 'account-equipment-shop',
+      },
+      {
+        shop: '釣魚道具商城',
+        stable: '魚餌、誘餌、探測器與掃描券用於釣點刷魚、解鎖灰章及相片驗證活動。',
+        match: '魚餌、誘餌、探測器與掃描券',
+        stableRole: 'button',
+        stableName: /金幣/,
+        slug: 'account-fishing-item-shop',
+      },
+    ];
+    for (const shop of profileShops) {
+      results.push(await openProfileShopFromMap(page, shop));
     }
     const output = {
       smoke: 'FisherGO Web secondary screens',

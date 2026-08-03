@@ -17,6 +17,7 @@ import '../../../core/notifications/notification_token_registration_service.dart
 import '../data/player_progress_service.dart';
 import '../data/profile_wallet_service.dart';
 import '../domain/game_shop_item.dart';
+import 'profile_semantics.dart';
 import '../../../domain/boat_vendor.dart';
 import '../../../features/shop/presentation/boat_vendor_shop_card.dart';
 
@@ -1241,83 +1242,94 @@ class _ProfileScreenState extends State<ProfileScreen>
     return Positioned(
       left: slot.left,
       top: slot.top,
-      child: Tooltip(
-        message: '點按選擇${slot.label}${item == null ? '' : '：${item.name}'}',
-        child: InkWell(
-          borderRadius: BorderRadius.circular(24),
-          onTap: () => _openEquipmentPicker(slot),
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 180),
-            width: 72,
-            height: 72,
-            padding: const EdgeInsets.all(3),
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: RadialGradient(
-                colors: selected
-                    ? [
-                        rarityColor.withValues(alpha: 0.90),
-                        const Color(0xFF0B1D24)
-                      ]
-                    : [const Color(0xFF163944), const Color(0xFF06151B)],
-              ),
-              border: Border.all(
-                color: selected
-                    ? Colors.white
-                    : rarityColor.withValues(alpha: 0.72),
-                width: selected ? 3 : 2,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: rarityColor.withValues(alpha: selected ? 0.42 : 0.20),
-                  blurRadius: selected ? 18 : 10,
-                  spreadRadius: selected ? 2 : 0,
+      child: Semantics(
+        button: true,
+        excludeSemantics: true,
+        label: profileEquipmentSlotSemanticsLabel(
+          slotLabel: slot.label,
+          equippedItemName: item?.name,
+          selected: selected,
+        ),
+        onTap: () => _openEquipmentPicker(slot),
+        child: Tooltip(
+          message: '點按選擇${slot.label}${item == null ? '' : '：${item.name}'}',
+          child: InkWell(
+            borderRadius: BorderRadius.circular(24),
+            onTap: () => _openEquipmentPicker(slot),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 180),
+              width: 72,
+              height: 72,
+              padding: const EdgeInsets.all(3),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: RadialGradient(
+                  colors: selected
+                      ? [
+                          rarityColor.withValues(alpha: 0.90),
+                          const Color(0xFF0B1D24)
+                        ]
+                      : [const Color(0xFF163944), const Color(0xFF06151B)],
                 ),
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.40),
-                  blurRadius: 10,
-                  offset: const Offset(0, 5),
+                border: Border.all(
+                  color: selected
+                      ? Colors.white
+                      : rarityColor.withValues(alpha: 0.72),
+                  width: selected ? 3 : 2,
                 ),
-              ],
-            ),
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                if (item == null)
-                  Icon(slot.icon,
-                      size: 28, color: Colors.white.withValues(alpha: 0.88))
-                else
-                  ClipOval(
-                    child: Transform.scale(
-                      scale: 1.35,
-                      child: Image.asset(
-                        _assetForItemId(item.id),
-                        fit: BoxFit.contain,
-                        errorBuilder: (_, __, ___) =>
-                            Icon(slot.icon, size: 28, color: Colors.white),
+                boxShadow: [
+                  BoxShadow(
+                    color:
+                        rarityColor.withValues(alpha: selected ? 0.42 : 0.20),
+                    blurRadius: selected ? 18 : 10,
+                    spreadRadius: selected ? 2 : 0,
+                  ),
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.40),
+                    blurRadius: 10,
+                    offset: const Offset(0, 5),
+                  ),
+                ],
+              ),
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  if (item == null)
+                    Icon(slot.icon,
+                        size: 28, color: Colors.white.withValues(alpha: 0.88))
+                  else
+                    ClipOval(
+                      child: Transform.scale(
+                        scale: 1.35,
+                        child: Image.asset(
+                          _assetForItemId(item.id),
+                          fit: BoxFit.contain,
+                          errorBuilder: (_, __, ___) =>
+                              Icon(slot.icon, size: 28, color: Colors.white),
+                        ),
+                      ),
+                    ),
+                  Positioned(
+                    bottom: 0,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 7, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.72),
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                      child: Text(
+                        slot.label,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w900,
+                        ),
                       ),
                     ),
                   ),
-                Positioned(
-                  bottom: 0,
-                  child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.72),
-                      borderRadius: BorderRadius.circular(999),
-                    ),
-                    child: Text(
-                      slot.label,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 10,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
@@ -1406,67 +1418,79 @@ class _ProfileScreenState extends State<ProfileScreen>
         ? const Color(0xFF6EF7D1)
         : _rarityColorForTier(equippedItem.tier);
 
-    return InkWell(
-      borderRadius: BorderRadius.circular(18),
+    return Semantics(
+      button: true,
+      excludeSemantics: true,
+      label: profileEquipmentSlotSemanticsLabel(
+        slotLabel: slot.label,
+        equippedItemName: equippedItem?.name,
+        selected: true,
+      ),
       onTap: () => _openEquipmentPicker(slot),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-        decoration: BoxDecoration(
-          color: Colors.black.withValues(alpha: 0.36),
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: rarityColor.withValues(alpha: 0.55)),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 42,
-              height: 42,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: rarityColor.withValues(alpha: 0.18),
-                border: Border.all(color: rarityColor.withValues(alpha: 0.70)),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(18),
+        onTap: () => _openEquipmentPicker(slot),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          decoration: BoxDecoration(
+            color: Colors.black.withValues(alpha: 0.36),
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(color: rarityColor.withValues(alpha: 0.55)),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 42,
+                height: 42,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: rarityColor.withValues(alpha: 0.18),
+                  border:
+                      Border.all(color: rarityColor.withValues(alpha: 0.70)),
+                ),
+                child: Icon(slot.icon, color: Colors.white, size: 22),
               ),
-              child: Icon(slot.icon, color: Colors.white, size: 22),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    '正在調整：${slot.label}',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w900,
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      '正在調整：${slot.label}',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w900,
+                      ),
                     ),
-                  ),
-                  Text(
-                    equippedItem == null ? '未裝備｜點擊選擇' : equippedItem.name,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.70),
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
+                    Text(
+                      equippedItem == null ? '未裝備｜點擊選擇' : equippedItem.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.70),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-              decoration: BoxDecoration(
-                color: rarityColor.withValues(alpha: 0.20),
-                borderRadius: BorderRadius.circular(999),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                decoration: BoxDecoration(
+                  color: rarityColor.withValues(alpha: 0.20),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: const Text(
+                  '更換',
+                  style: TextStyle(
+                      color: Colors.white, fontWeight: FontWeight.w900),
+                ),
               ),
-              child: const Text(
-                '更換',
-                style:
-                    TextStyle(color: Colors.white, fontWeight: FontWeight.w900),
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

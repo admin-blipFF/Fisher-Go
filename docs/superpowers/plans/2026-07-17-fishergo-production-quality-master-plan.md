@@ -117,6 +117,14 @@ suite passed, and the API 35 limited-photo smoke passed on `emulator-5554` while
 the API 23 photo-frame remained excluded. Profile/equipment and remaining
 secondary-screen semantics are still open.
 
+Profile equipment semantics mitigation added on 2026-08-03: the custom slot
+markers and selected-equipment panel now expose the slot, equipped item,
+selection state, and replacement action through explicit button semantics. The
+focused profile contract and full `492`-test Flutter suite passed; the
+encyclopedia and leaderboard controls were confirmed to use existing Material
+semantics and refresh tooltips. Remaining secondary-screen semantics are still
+open.
+
 ### P1: Assets and binaries are oversized
 
 Measured baseline:

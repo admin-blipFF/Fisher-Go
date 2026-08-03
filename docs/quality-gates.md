@@ -35,6 +35,14 @@ Last updated: 2026-08-03
   API 23 remained excluded. Profile/equipment and other secondary-screen
   semantics remain to be audited.
 
+- Profile's custom equipment-slot markers and selected-equipment panel now
+  expose explicit button semantics containing the slot, equipped item, current
+  selection state, and replacement action. The focused profile contract,
+  profile/auth/notification tests, full `492`-test Flutter suite, analyzer,
+  Web release build, asset budget, and client secret scan passed. Encyclopedia
+  and leaderboard controls were already covered by Material semantics and
+  refresh tooltips; remaining secondary-screen semantics are still open.
+
 - Notification permission opt-in now has a real token-registration boundary:
   migration `0027_notification_device_tokens.sql` stores tokens behind
   authenticated RPCs, denies raw token reads to clients, and covers

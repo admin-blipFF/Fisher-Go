@@ -275,8 +275,8 @@ time budget remain open gates and are not claimed closed by this consistency
 change.
 
 The API 35 CI smoke workflow now fails fast with `set -euo pipefail` and its
-source contract covers all 12 startup, map, minigame, offline, reward,
-permission, and photo profiles. The latest local suite has `418` passing
+source contract covers all 13 startup, map, minigame, offline, reward,
+permission, photo, and notification profiles. The latest local suite has `418` passing
 tests; this strengthens release evidence without claiming the still-open
 Android or wide-screen Web motion budgets.
 
@@ -1031,6 +1031,11 @@ registers it best-effort after permission is granted. The current Android
 bridge returns no token until an FCM/APNs/Web Push SDK is configured, so live
 provider delivery remains separate and hosted migration remains an
 owner-controlled gate.
+An API 35 clean-install integration rerun now proves the timing boundary: the
+notification prompt is absent with zero catches, appears after a seeded first
+catch, and disappears when the player chooses `稍後`; API 23 remains excluded
+by the smoke preflight. This proves opt-in sequencing only, not provider
+delivery.
 Hosted migrations remain an owner-controlled gate; the latest source is
 available as a Vercel Preview, not a production alias.
 

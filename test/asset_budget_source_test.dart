@@ -65,5 +65,7 @@ void main() {
         contains('-TestFile location_service_disabled_flow_test.dart'));
     expect(workflow,
         contains('-TestFile limited_photo_permission_flow_test.dart'));
+    expect(workflow,
+        contains('-TestFile notification_opt_in_flow_test.dart'));
   });
 }

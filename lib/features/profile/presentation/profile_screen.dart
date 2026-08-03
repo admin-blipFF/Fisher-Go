@@ -17,6 +17,7 @@ import '../../../core/notifications/notification_token_registration_service.dart
 import '../data/player_progress_service.dart';
 import '../data/profile_wallet_service.dart';
 import '../domain/game_shop_item.dart';
+import 'daily_task_semantics.dart';
 import 'profile_semantics.dart';
 import '../../../domain/boat_vendor.dart';
 import '../../../features/shop/presentation/boat_vendor_shop_card.dart';
@@ -979,69 +980,110 @@ class _ProfileScreenState extends State<ProfileScreen>
   Widget _buildDailyTaskRow(PlayerDailyTaskSummary task) {
     final theme = Theme.of(context);
     final color = task.isCompleted ? Colors.teal : theme.colorScheme.primary;
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Row(
-        children: [
-          Icon(
-            task.isCompleted
-                ? Icons.check_circle
-                : Icons.radio_button_unchecked,
-            color: color,
-            size: 22,
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        task.title,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(fontWeight: FontWeight.w700),
+    return Semantics(
+      container: true,
+      label: dailyTaskSemanticsLabel(
+        title: task.title,
+        current: task.current,
+        target: task.target,
+        rewardCoins: task.rewardCoins,
+        isCompleted: task.isCompleted,
+        isClaimed: task.isClaimed,
+        canClaim: task.canClaim,
+      ),
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 8),
+        child: Row(
+          children: [
+            Icon(
+              task.isCompleted
+                  ? Icons.check_circle
+                  : Icons.radio_button_unchecked,
+              color: color,
+              size: 22,
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          task.title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(fontWeight: FontWeight.w700),
+                        ),
+                      ),
+                      Text(
+                        '${task.current}/${task.target}',
+                        style: theme.textTheme.bodySmall
+                            ?.copyWith(fontWeight: FontWeight.w800),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Semantics(
+                    container: true,
+                    label: dailyTaskProgressSemanticsLabel(
+                      title: task.title,
+                      current: task.current,
+                      target: task.target,
+                    ),
+                    value: '${task.current}/${task.target}',
+                    child: ExcludeSemantics(
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(999),
+                        child: LinearProgressIndicator(
+                          value: task.progress,
+                          minHeight: 6,
+                          color: color,
+                          backgroundColor:
+                              theme.colorScheme.surfaceContainerHighest,
+                        ),
                       ),
                     ),
-                    Text(
-                      '${task.current}/${task.target}',
-                      style: theme.textTheme.bodySmall
-                          ?.copyWith(fontWeight: FontWeight.w800),
-                    ),
-                  ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 10),
+            if (task.canClaim)
+              Semantics(
+                container: true,
+                button: true,
+                label: dailyTaskClaimSemanticsLabel(
+                  title: task.title,
+                  rewardCoins: task.rewardCoins,
                 ),
-                const SizedBox(height: 4),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(999),
-                  child: LinearProgressIndicator(
-                    value: task.progress,
-                    minHeight: 6,
-                    color: color,
-                    backgroundColor: theme.colorScheme.surfaceContainerHighest,
+                onTap: () => _claimDailyTaskReward(task),
+                child: ExcludeSemantics(
+                  child: FilledButton.tonal(
+                    onPressed: () => _claimDailyTaskReward(task),
+                    child: Text('+${task.rewardCoins}'),
                   ),
                 ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 10),
-          if (task.canClaim)
-            FilledButton.tonal(
-              onPressed: () => _claimDailyTaskReward(task),
-              child: Text('+${task.rewardCoins}'),
-            )
-          else if (task.isClaimed)
-            const Text(
-              '已領',
-              style: TextStyle(fontWeight: FontWeight.w800),
-            )
-          else
-            Text(
-              '+${task.rewardCoins}',
-              style: theme.textTheme.bodySmall,
-            ),
-        ],
+              )
+            else if (task.isClaimed)
+              Semantics(
+                label: dailyTaskClaimedSemanticsLabel(
+                  title: task.title,
+                  rewardCoins: task.rewardCoins,
+                ),
+                child: const Text(
+                  '已領',
+                  style: TextStyle(fontWeight: FontWeight.w800),
+                ),
+              )
+            else
+              Text(
+                '+${task.rewardCoins}',
+                style: theme.textTheme.bodySmall,
+              ),
+          ],
+        ),
       ),
     );
   }

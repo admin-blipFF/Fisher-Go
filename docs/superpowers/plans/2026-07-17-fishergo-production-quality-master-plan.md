@@ -142,6 +142,15 @@ contract, widget semantics smoke, full `500`-test Flutter suite, and analyzer
 passed. Remaining secondary-screen semantics and the full device accessibility
 matrix are still open.
 
+Daily Task secondary-screen mitigation added on 2026-08-03: each task now
+announces its title, current/target progress, completion or claimed state, and
+coin reward. The progress indicator exposes a separate value-bearing semantics
+node, while the visible `+N` claim control keeps its existing layout and gains
+an explicit reward label and accessibility action. The helper/source contracts,
+player-progress regression, full `503`-test Flutter suite, and analyzer passed.
+Remaining secondary-screen semantics and the full device accessibility matrix
+are still open.
+
 ### P1: Assets and binaries are oversized
 
 Measured baseline:

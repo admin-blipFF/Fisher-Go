@@ -61,6 +61,15 @@ Last updated: 2026-08-03
   API 23 photo-frame remains excluded; device-matrix accessibility coverage
   for the remaining secondary screens is still open.
 
+- The Daily Task row now exposes a readable task state with current/target
+  progress, completion or claimed status, and coin reward. Its progress bar is
+  represented by a separate value-bearing semantics node, and the visible
+  `+N` action keeps an explicit `領取每日任務獎勵` label and accessibility tap
+  action. The helper/source contracts and player-progress regression passed;
+  the full Flutter suite now passes `503` tests and `flutter analyze --no-pub`
+  reports no issues. The API 23 photo-frame remains excluded; the remaining
+  secondary-screen audit and full device accessibility matrix are still open.
+
 - Notification permission opt-in now has a real token-registration boundary:
   migration `0027_notification_device_tokens.sql` stores tokens behind
   authenticated RPCs, denies raw token reads to clients, and covers

@@ -16,6 +16,7 @@ void main() {
     expect(source, contains('SUPABASE_URL'));
     expect(source, contains('SUPABASE_ANON_KEY'));
     expect(source, contains('SUPABASE_PROJECT_REF'));
+    expect(source, contains('isTrustedSupabaseUrl'));
     expect(source, contains('/auth/v1/settings'));
     expect(source, contains('_operationTimeout'));
     expect(source, contains('exitCode = 2'));

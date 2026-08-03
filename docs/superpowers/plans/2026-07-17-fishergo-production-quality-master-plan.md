@@ -414,6 +414,11 @@ providers before the live smoke proceeds. This makes the guest-first startup
 contract fail closed at provider configuration time rather than waiting for a
 later anonymous signup or account-upgrade step; the check remains anon-key-only.
 
+The shared Supabase project identity helper now accepts only the canonical
+HTTPS `<project-ref>.supabase.co` endpoint with no proxy path or query. Live
+smoke and Android release checks use the same rule, and lookalike-host behavior
+is covered by tests before any authenticated request.
+
 ## 8. Workstream 4: Verified Fishing-Spot Registry
 
 **Create**

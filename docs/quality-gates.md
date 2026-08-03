@@ -2755,6 +2755,19 @@ deploying, or mutating Supabase: `4` checks passed, `0` failed, `2` remained
 owner gates (privacy/support metadata and Android signing), and `1` remained
 skipped (the local Web/Android manifest pair was not assembled together).
 
+The same day's public Vercel check passed both canonical aliases, `/assets/.env`
+404 boundaries, matching release manifests, and cache headers. It also showed
+that the aliases still serve release `0.1.1+2-3d0e5344da13`, while the latest
+pushed feature commit is `0513118`. Vercel fetched `0513118` for automatic
+deployment, but its build failed before Flutter compilation because
+`SUPABASE_PROJECT_REF` was missing from the project environment. The public
+Supabase URL, anon key, and project ref have since been configured in Vercel
+for Production and Preview. The next build will still fail closed until the
+owner supplies a real HTTPS privacy-policy URL and support email; no fake legal
+metadata was added. Evidence: `dart run tool/verify_deployed_web.dart
+--url=https://fisher-go.app --alias=https://www.fisher-go.app` and the Vercel
+deployment inspection for the `0513118` build.
+
 1. Reduce slow UI-thread and MapLibre draw-command/composition frames without
    weakening geography; the Android game 3D style is visually accepted but
    still measures p95 near 30 ms rather than the 20 ms target.

@@ -1137,6 +1137,17 @@ The live populated-map runner measured `56.84 FPS` / p95 `33.3 ms` /
 1440x900; the release boundary is healthy, while the wide-screen motion gate
 remains open.
 
+On 2026-08-04, the public verifier still passed both aliases, 404 secret
+asset checks, matching manifests, and cache headers, but the live release
+manifest was `0.1.1+2-3d0e5344da13`, not the latest pushed
+`feature/supabase-auth-mvp` commit `0513118`. Vercel did fetch `0513118` for
+automatic deployment, but the build stopped before Flutter compilation because
+the project environment lacked `SUPABASE_PROJECT_REF`. The public Supabase
+URL, anon key, and project ref are now configured for Production and Preview;
+the next protected build gate is still the owner-supplied privacy-policy URL
+and support email. Until those values are supplied and a new build reaches
+READY, the canonical aliases must not be described as serving `0513118`.
+
 The Vercel build boundary now also fails closed when `VERCEL_ENV=production`
 (or `FISHERGO_REQUIRE_SUPABASE=true`) and either public Supabase build value or
 `SUPABASE_PROJECT_REF` is missing. It verifies the canonical URL against that

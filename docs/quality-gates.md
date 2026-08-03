@@ -135,7 +135,8 @@ Last updated: 2026-08-03
   is locked by `test/supabase_hosted_audit_workflow_source_test.dart`.
   The protected content-release workflow still requires the owner-controlled
   database password and legacy-history decision before it can reconcile and
-  apply the pending content migrations.
+  apply the pending content migrations. The exact owner sequence is recorded
+  in `docs/hosted-supabase-release-runbook.md`.
 
 - The fishing-spot client boundary now requires more than the database's
   `active`, `verified`, and `public_access` flags: coordinates and precision
